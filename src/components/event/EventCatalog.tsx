@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, Calendar, MapPin, Users, Clock, Filter, Sparkles, SlidersHorizontal, X } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
+import { apiFetch, buildQuery } from '@/lib/api';
+import type { BackendEvent } from '@/types/event';
 
 interface Event {
     id: string;
@@ -34,102 +36,62 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('date-asc');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
+    const [serverEvents, setServerEvents] = useState<BackendEvent[] | null>(null);
 
-    // Memoize events data to avoid dependency issues
-    const events: Event[] = useMemo(() => [
-        {
-            id: '1',
-            title: 'Workshop React Advanced',
-            description: 'Pelajari teknik advanced React untuk pengembangan aplikasi modern',
-            date: '2025-01-15',
-            time: '09:00',
-            location: 'Jakarta Convention Center',
-            category: 'Technology',
-            price: 150000,
-            maxParticipants: 100,
-            currentParticipants: 75,
-            image: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=500',
-            organizer: 'Tech Indonesia',
-            tags: ['React', 'JavaScript', 'Frontend']
-        },
-        {
-            id: '2',
-            title: 'Digital Marketing Summit 2025',
-            description: 'Event terbesar untuk para digital marketer di Indonesia',
-            date: '2025-01-20',
-            time: '08:00',
-            location: 'Balai Kartini, Jakarta',
-            category: 'Marketing',
-            price: 300000,
-            maxParticipants: 500,
-            currentParticipants: 450,
-            image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=500',
-            organizer: 'Marketing Pro',
-            tags: ['Digital Marketing', 'SEO', 'Social Media']
-        },
-        {
-            id: '3',
-            title: 'Startup Pitch Competition',
-            description: 'Kompetisi pitch untuk startup teknologi terbaik',
-            date: '2025-01-25',
-            time: '10:00',
-            location: 'Universitas Indonesia',
-            category: 'Business',
-            price: 0,
-            maxParticipants: 200,
-            currentParticipants: 120,
-            image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500',
-            organizer: 'Startup Hub',
-            tags: ['Startup', 'Pitch', 'Investment']
-        },
-        {
-            id: '4',
-            title: 'UI/UX Design Masterclass',
-            description: 'Masterclass design UI/UX dengan mentor berpengalaman',
-            date: '2025-02-01',
-            time: '13:00',
-            location: 'Design Studio, Bandung',
-            category: 'Design',
-            price: 200000,
-            maxParticipants: 50,
-            currentParticipants: 30,
-            image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=500',
-            organizer: 'Design Academy',
-            tags: ['UI/UX', 'Design', 'Figma']
-        },
-        {
-            id: '5',
-            title: 'Blockchain & Web3 Conference',
-            description: 'Konferensi terbesar tentang teknologi blockchain dan Web3',
-            date: '2025-02-10',
-            time: '09:00',
-            location: 'Grand Hyatt, Jakarta',
-            category: 'Technology',
-            price: 500000,
-            maxParticipants: 300,
-            currentParticipants: 180,
-            image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=500',
-            organizer: 'Blockchain Indonesia',
-            tags: ['Blockchain', 'Web3', 'Cryptocurrency']
-        },
-        {
-            id: '6',
-            title: 'Photography Workshop',
-            description: 'Workshop fotografi untuk pemula hingga profesional',
-            date: '2025-02-15',
-            time: '08:00',
-            location: 'Taman Mini Indonesia Indah',
-            category: 'Creative',
-            price: 250000,
-            maxParticipants: 80,
-            currentParticipants: 45,
-            image: 'https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=500',
-            organizer: 'Photo Community',
-            tags: ['Photography', 'Creative', 'Portfolio']
-        }
-    ], []);
+    // Default fallback image provider that always returns an image
+    const defaultFlyerFor = useCallback((seed: string) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/450`, []);
 
-    const categories = ['all', 'Technology', 'Marketing', 'Business', 'Design', 'Creative'];
+    const categories = useMemo(() => ['all', 'Technology', 'Marketing', 'Business', 'Design', 'Creative'], []);
+
+    // Map backend events into CatalogEvent shape used by UI
+    const mappedServerEvents: Event[] = useMemo(() => {
+        if (!serverEvents) return [];
+        return serverEvents.map(ev => ({
+            id: ev.id,
+            title: ev.title,
+            description: ev.description,
+            date: ev.date,
+            time: ev.time,
+            location: ev.location,
+            category: (ev as any).category || 'General',
+            price: Number((ev as any).price ?? 0),
+            maxParticipants: 0,
+            currentParticipants: 0,
+            image: (ev.flyer && ev.flyer.startsWith('http')) ? ev.flyer : defaultFlyerFor(ev.id),
+            organizer: 'Panitia',
+            tags: [],
+        }));
+    }, [serverEvents, defaultFlyerFor]);
+
+    // Decide source of events: server if available, otherwise placeholder
+    const events: Event[] = useMemo(() => mappedServerEvents, [mappedServerEvents]);
+
+    // Fetch events from backend with search/sort (date-based)
+    useEffect(() => {
+        const controller = new AbortController();
+        const fetchEvents = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const sortParam = sortBy === 'date-desc' ? 'furthest' : 'nearest';
+                const q = buildQuery({
+                    search: searchQuery || undefined,
+                    sort: sortParam,
+                    category: selectedCategory !== 'all' ? selectedCategory : undefined
+                });
+                const data = await apiFetch<BackendEvent[]>(`/events${q}`, { method: 'GET' });
+                setServerEvents(data);
+            } catch (e: any) {
+                setError(e?.message || 'Gagal memuat data event');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEvents();
+        return () => controller.abort();
+    }, [searchQuery, sortBy, selectedCategory]);
 
     const filteredAndSortedEvents = useMemo(() => {
         const filtered = events.filter(event => {
@@ -187,7 +149,7 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
         return { status: 'Tersedia', color: 'bg-primary' };
     };
 
-    const containerVariants = {
+    const containerVariants = useMemo(() => ({
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -195,9 +157,9 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                 staggerChildren: 0.1
             }
         }
-    };
+    }), []);
 
-    const itemVariants = {
+    const itemVariants = useMemo(() => ({
         hidden: { opacity: 0, y: 20 },
         visible: {
             opacity: 1,
@@ -207,13 +169,13 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                 ease: "easeOut" as const
             }
         }
-    };
+    }), []);
 
-    const clearFilters = () => {
+    const clearFilters = useCallback(() => {
         setSearchQuery('');
         setSelectedCategory('all');
         setSortBy('date-asc');
-    };
+    }, []);
 
     const hasActiveFilters = searchQuery !== '' || selectedCategory !== 'all' || sortBy !== 'date-asc';
 
@@ -398,6 +360,12 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                             <span> untuk &ldquo;{searchQuery}&rdquo;</span>
                         )}
                     </p>
+                    {loading && (
+                        <Badge variant="secondary" className="text-sm">Memuat...</Badge>
+                    )}
+                    {error && !loading && (
+                        <Badge variant="destructive" className="text-sm">{error}</Badge>
+                    )}
                     {filteredAndSortedEvents.length > 0 && (
                         <Badge variant="outline" className="text-sm">
                             {filteredAndSortedEvents.length} hasil

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -52,19 +52,19 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, [isMenuOpen, mouseX, mouseY]);
 
-    const navigation = [
+    const navigation = useMemo(() => [
         { name: 'Beranda', view: 'home' as const, icon: Home, description: 'Halaman utama dan informasi terbaru' },
         { name: 'Event', view: 'events' as const, icon: Calendar, description: 'Jelajahi semua event yang tersedia' },
         { name: 'Contact', view: 'contact' as const, icon: Mail, description: 'Hubungi tim kami untuk bantuan' },
-    ];
+    ], []);
 
-    const handleNavigation = (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact') => {
+    const handleNavigation = useCallback((view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact') => {
         onViewChange(view);
         setIsMenuOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    }, [onViewChange]);
 
-    const handleDashboard = () => {
+    const handleDashboard = useCallback(() => {
         if (isLoggedIn) {
             onViewChange('dashboard');
             setIsMenuOpen(false);
@@ -73,9 +73,9 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
             onLogin();
             setIsMenuOpen(false);
         }
-    };
+    }, [isLoggedIn, onLogin, onViewChange]);
 
-    const menuVariants = {
+    const menuVariants = useMemo(() => ({
         closed: {
             opacity: 0,
             transition: {
@@ -90,9 +90,9 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                 ease: "easeInOut" as const
             }
         }
-    };
+    }), []);
 
-    const menuItemVariants = {
+    const menuItemVariants = useMemo(() => ({
         closed: {
             opacity: 0,
             y: 50,
@@ -107,7 +107,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                 ease: "easeOut" as const
             }
         })
-    };
+    }), []);
 
     return (
         <>

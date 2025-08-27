@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,14 +7,14 @@ import {
 } from 'lucide-react';
 
 export function AboutSection() {
-    const stats = [
+    const stats = useMemo(() => [
         { icon: Users, value: '50K+', label: 'Active Users', description: 'Pengguna aktif bergabung setiap bulan' },
         { icon: Award, value: '1000+', label: 'Events Hosted', description: 'Event berkualitas telah diselenggarakan' },
         { icon: Globe, value: '25+', label: 'Cities', description: 'Kota di Indonesia telah terjangkau' },
         { icon: Clock, value: '24/7', label: 'Support', description: 'Dukungan customer service terbaik' }
-    ];
+    ], []);
 
-    const features = [
+    const features = useMemo(() => [
         {
             icon: Target,
             title: 'Kurasi Berkualitas',
@@ -30,9 +30,9 @@ export function AboutSection() {
             title: 'Community Driven',
             description: 'Membangun komunitas yang kuat dengan fokus pada pengembangan skill dan networking.'
         }
-    ];
+    ], []);
 
-    const containerVariants = {
+    const containerVariants = useMemo(() => ({
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -41,9 +41,9 @@ export function AboutSection() {
                 delayChildren: 0.2
             }
         }
-    };
+    }), []);
 
-    const itemVariants = {
+    const itemVariants = useMemo(() => ({
         hidden: { opacity: 0, y: 30 },
         visible: {
             opacity: 1,
@@ -53,7 +53,7 @@ export function AboutSection() {
                 ease: "easeOut" as const
             }
         }
-    };
+    }), []);
 
     return (
         <section className="py-16 lg:py-24 bg-gradient-to-br from-muted/30 to-accent/20 relative overflow-hidden">

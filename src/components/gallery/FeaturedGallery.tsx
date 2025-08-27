@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -26,7 +26,7 @@ interface FeaturedGalleryProps {
 export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
     const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
-    const galleryItems: GalleryItem[] = [
+    const galleryItems: GalleryItem[] = useMemo(() => [
         {
             id: 1,
             type: 'event' as const,
@@ -91,9 +91,9 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
             location: 'Surabaya Convention Hall',
             isVideo: false
         }
-    ];
+    ], []);
 
-    const containerVariants = {
+    const containerVariants = useMemo(() => ({
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -102,9 +102,9 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                 delayChildren: 0.2
             }
         }
-    };
+    }), []);
 
-    const itemVariants = {
+    const itemVariants = useMemo(() => ({
         hidden: { opacity: 0, y: 30 },
         visible: {
             opacity: 1,
@@ -114,9 +114,9 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                 ease: "easeOut" as const
             }
         }
-    };
+    }), []);
 
-    const overlayVariants = {
+    const overlayVariants = useMemo(() => ({
         hidden: { opacity: 0, scale: 0.8 },
         visible: {
             opacity: 1,
@@ -133,7 +133,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                 duration: 0.2
             }
         }
-    };
+    }), []);
 
     return (
         <>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -25,13 +26,13 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
     const [isRegistered, setIsRegistered] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-
-    // Mock event data - in real app, this would be fetched based on eventId
-    const event = {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [event, setEvent] = useState<any>({
         id: eventId || '1',
-        title: 'Workshop React Advanced 2025',
+        title: 'Memuat...',
         subtitle: 'Master Modern React Development',
-        description: 'Pelajari teknik advanced React untuk pengembangan aplikasi modern dengan instruktur berpengalaman. Workshop ini akan membahas hooks, context, performance optimization, dan best practices terbaru.',
+        description: '',
         fullDescription: `
             <h3>Tentang Workshop</h3>
             <p>Workshop intensif 2 hari ini dirancang khusus untuk developer yang ingin menguasai React dengan level advanced. Anda akan belajar langsung dari praktisi berpengalaman dengan studi kasus real-world.</p>
@@ -54,12 +55,12 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
         endTime: '17:00',
         location: 'Jakarta Convention Center',
         fullAddress: 'Jl. Gatot Subroto No.Kav. 18, RT.6/RW.1, Kuningan, Setia Budi, Kota Jakarta Selatan, DKI Jakarta 12980',
-        category: 'Technology',
-        price: 750000,
+        category: 'General',
+        price: 0,
         originalPrice: 1000000,
         maxParticipants: 100,
         currentParticipants: 75,
-        image: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800',
+        image: 'https://picsum.photos/seed/placeholder/800/450',
         gallery: [
             'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800',
             'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800',
@@ -163,7 +164,35 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
             'Job referral opportunities',
             'Follow-up mentoring session'
         ]
-    };
+    });
+
+    useEffect(() => {
+        const run = async () => {
+            if (!eventId) return;
+            setLoading(true);
+            setError('');
+            try {
+                const data = await apiFetch<any>(`/events/${eventId}`);
+                setEvent((prev: any) => ({
+                    ...prev,
+                    id: data.id,
+                    title: data.title,
+                    description: data.description,
+                    date: data.date,
+                    time: data.time,
+                    location: data.location,
+                    category: (data as any).category || 'General',
+                    price: Number((data as any).price ?? 0),
+                    image: (data.flyer && data.flyer.startsWith('http')) ? data.flyer : `https://picsum.photos/seed/${data.id}/800/450`
+                }));
+            } catch (e: any) {
+                setError(e?.message || 'Gagal memuat detail event');
+            } finally {
+                setLoading(false);
+            }
+        };
+        run();
+    }, [eventId]);
 
     const handleRegister = () => {
         if (!isLoggedIn) {
