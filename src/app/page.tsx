@@ -3,16 +3,16 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import { Header } from './components/Header'
-import { Hero } from './components/Hero'
-import { AboutSection } from './components/AboutSection'
-import { EventCatalog } from './components/event/EventCatalog'
-import { AuthModal } from './components/AuthModal'
-import { UserDashboard } from './components/UserDashboard'
-import { EventDetail } from './components/event/EventDetail'
-import { Footer } from './components/Footer'
-import { FeaturedGallery } from './components/gallery/FeaturedGallery'
-import { ContactSection } from './components/ContactSection'
+import { Header } from '@/components/Header'
+import { Hero } from '@/components/Hero'
+import { AboutSection } from '@/components/AboutSection'
+import { EventCatalog } from '@/components/event/EventCatalog'
+import { AuthModal } from '@/components/AuthModal'
+import { UserDashboard } from '@/components/UserDashboard'
+import { EventDetail } from '@/components/event/EventDetail'
+import { Footer } from '@/components/Footer'
+import { FeaturedGallery } from '@/components/gallery/FeaturedGallery'
+import { ContactSection } from '@/components/ContactSection'
 
 type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact'
 
@@ -21,7 +21,14 @@ export default function HomePage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState<any>(null)
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string | null;
+}
+
+  const [user, setUser] = useState<User | null>(null)
 
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view)
@@ -38,7 +45,7 @@ export default function HomePage() {
     }, 100)
   }
 
-  const handleLogin = (userData: any) => {
+  const handleLogin = (userData: User) => {
     setIsLoggedIn(true)
     setUser(userData)
     setIsAuthModalOpen(false)
@@ -57,19 +64,19 @@ export default function HomePage() {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { duration: 0.4, ease: 'easeOut' },
+      transition: { duration: 0.4, ease: 'easeOut' as const },
     },
     out: {
       opacity: 0,
       y: -20,
       scale: 1.02,
-      transition: { duration: 0.3, ease: 'easeIn' },
+      transition: { duration: 0.3, ease: 'easeIn' as const },
     },
   }
 
   const pageTransition = {
-    type: 'tween',
-    ease: 'anticipate',
+    type: 'tween' as const,
+    ease: 'anticipate' as const,
     duration: 0.4,
   }
 
@@ -92,7 +99,7 @@ export default function HomePage() {
           </motion.div>
         )
       case 'dashboard':
-        return isLoggedIn ? (
+        return isLoggedIn && user ? (
           <motion.div
             key="dashboard"
             initial="initial"

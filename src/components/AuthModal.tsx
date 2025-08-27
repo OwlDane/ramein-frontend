@@ -8,10 +8,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin, GraduationCap, Shield } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+}
+
 interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onLogin: (userData: any) => void;
+    onLogin: (userData: User) => void;
 }
 
 export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
@@ -80,7 +87,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             } else {
                 toast.error('Email dan password harus diisi');
             }
-        } catch (error) {
+        } catch {
             toast.error('Terjadi kesalahan saat login');
         } finally {
             setIsLoading(false);
@@ -121,7 +128,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             setOtpSent(true);
             toast.success('Kode OTP telah dikirim ke email Anda');
 
-        } catch (error) {
+        } catch {
             toast.error('Terjadi kesalahan saat mendaftar');
         } finally {
             setIsLoading(false);
@@ -166,7 +173,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             setOtpData({ otp: '', email: '' });
             setOtpSent(false);
 
-        } catch (error) {
+        } catch {
             toast.error('Kode OTP tidak valid');
         } finally {
             setIsLoading(false);
@@ -179,7 +186,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             await new Promise(resolve => setTimeout(resolve, 500));
             setOtpExpiry(new Date(Date.now() + 5 * 60 * 1000));
             toast.success('Kode OTP baru telah dikirim');
-        } catch (error) {
+        } catch {
             toast.error('Gagal mengirim ulang kode OTP');
         } finally {
             setIsLoading(false);
@@ -200,7 +207,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             toast.success('Link reset password telah dikirim ke email Anda');
             setResetEmail('');
-        } catch (error) {
+        } catch {
             toast.error('Terjadi kesalahan saat mengirim link reset password');
         } finally {
             setIsLoading(false);

@@ -33,22 +33,21 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
         subtitle: 'Master Modern React Development',
         description: 'Pelajari teknik advanced React untuk pengembangan aplikasi modern dengan instruktur berpengalaman. Workshop ini akan membahas hooks, context, performance optimization, dan best practices terbaru.',
         fullDescription: `
-      <h3>Tentang Workshop</h3>
-      <p>Workshop intensif 2 hari ini dirancang khusus untuk developer yang ingin menguasai React dengan level advanced. Anda akan belajar langsung dari praktisi berpengalaman dengan studi kasus real-world.</p>
-      
-      <h3>Yang Akan Anda Pelajari</h3>
-      <ul>
-        <li>Advanced React Hooks (useCallback, useMemo, useReducer)</li>
-        <li>Context API dan State Management</li>
-        <li>Performance Optimization Techniques</li>
-        <li>Testing React Applications</li>
-        <li>Server-side Rendering dengan Next.js</li>
-        <li>Deployment Best Practices</li>
-      </ul>
+            <h3>Tentang Workshop</h3>
+            <p>Workshop intensif 2 hari ini dirancang khusus untuk developer yang ingin menguasai React dengan level advanced. Anda akan belajar langsung dari praktisi berpengalaman dengan studi kasus real-world.</p>
+            
+            <h3>Yang Akan Anda Pelajari</h3>
+            ul>
+                <li>Advanced React Hooks (useCallback, useMemo, useReducer)</li>
+                <li>Context API dan State Management</li>
+                <li>Performance Optimization Techniques</li>
+                <li>Testing React Applications</li>
+                <li>Server-side Rendering dengan Next.js</li>
+                <li>Deployment Best Practices</li>
+            </ul>
 
-      <h3>Prerequisites</h3>
-      <p>Peserta diharapkan sudah memiliki pengalaman dasar dengan React dan JavaScript ES6+.</p>
-    `,
+            <h3>Prerequisites</h3>
+            <p>Peserta diharapkan sudah memiliki pengalaman dasar dengan React dan JavaScript ES6+.</p>`,
         date: '2025-01-15',
         endDate: '2025-01-16',
         time: '09:00',
@@ -232,7 +231,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
             y: 0,
             transition: {
                 duration: 0.6,
-                ease: "easeOut"
+                ease: "easeOut" as const
             }
         }
     };

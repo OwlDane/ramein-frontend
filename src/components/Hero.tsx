@@ -47,7 +47,7 @@ export function Hero({ onViewEvents }: HeroProps) {
             y: 0,
             transition: {
                 duration: 0.6,
-                ease: "easeOut"
+                ease: "easeOut" as const
             }
         }
     }
@@ -59,7 +59,7 @@ export function Hero({ onViewEvents }: HeroProps) {
             transition: {
                 duration: 6,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut" as const
             }
         }
     }
@@ -88,7 +88,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                     scale: [1, 1.2, 1],
                     opacity: [0.3, 0.6, 0.3]
                 }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const }}
             />
 
             <motion.div
@@ -104,7 +104,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                 transition={{
                     duration: 5,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: "easeInOut" as const,
                     delay: 1
                 }}
             />
@@ -160,7 +160,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                                     <motion.div
                                         className="absolute -top-3 -right-3"
                                         animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
-                                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" as const }}
                                         style={{
                                             x: mousePosition.x * 0.5,
                                             y: mousePosition.y * -0.5
@@ -306,7 +306,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                                 <div className="text-center relative z-10">
                                     <motion.div
                                         animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const }}
                                         style={{
                                             x: mousePosition.x * -0.2,
                                             y: mousePosition.y * -0.3
@@ -325,7 +325,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                         {/* Floating Icons */}
                         <motion.div className="absolute -top-6 -right-6 bg-primary rounded-2xl p-6 shadow-lg border border-border"
                             animate={{ y: [-10, 10, -10], rotate: [-10, 10, -10], scale: [1, 1.05, 1] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const }}
                             whileHover={{ scale: 1.15 }}
                             style={{ x: mousePosition.x * 0.4, y: mousePosition.y * 0.3 }}
                         >
@@ -334,7 +334,7 @@ export function Hero({ onViewEvents }: HeroProps) {
 
                         <motion.div className="absolute -bottom-6 -left-6 bg-accent rounded-2xl p-6 shadow-lg border border-border"
                             animate={{ y: [10, -10, 10], rotate: [10, -10, 10], scale: [1, 1.05, 1] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const, delay: 2 }}
                             whileHover={{ scale: 1.15 }}
                             style={{ x: mousePosition.x * -0.4, y: mousePosition.y * -0.3 }}
                         >
@@ -343,13 +343,13 @@ export function Hero({ onViewEvents }: HeroProps) {
 
                         <motion.div className="absolute top-1/4 -left-4 w-4 h-4 bg-primary rounded-full"
                             animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" as const }}
                             style={{ x: mousePosition.x * 0.6, y: mousePosition.y * 0.4 }}
                         />
 
                         <motion.div className="absolute bottom-1/4 -right-4 w-6 h-6 bg-accent rounded-full"
                             animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
-                            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" as const, delay: 1 }}
                             style={{ x: mousePosition.x * -0.6, y: mousePosition.y * -0.4 }}
                         />
                     </motion.div>

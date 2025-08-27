@@ -1,10 +1,9 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-    Users, Award, Target, Sparkles, ArrowRight,
-    CheckCircle, Globe, Clock, Shield, Heart
+    Users, Award, Target, Sparkles, ArrowRight, Globe, Clock, Shield, Heart
 } from 'lucide-react';
 
 export function AboutSection() {
@@ -51,7 +50,7 @@ export function AboutSection() {
             y: 0,
             transition: {
                 duration: 0.6,
-                ease: "easeOut"
+                ease: "easeOut" as const
             }
         }
     };

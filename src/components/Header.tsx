@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'motion/react';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Menu, Calendar, User, LogOut, Home, X, ArrowRight, Sparkles, Mail } from 'lucide-react';
+import { Calendar, User, LogOut, Home, ArrowRight, Sparkles, Mail } from 'lucide-react';
+
+interface UserInfo {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+}
 
 interface HeaderProps {
     isLoggedIn: boolean;
-    user: any;
+    user: UserInfo | null;
     onLogin: () => void;
     onLogout: () => void;
     onViewChange: (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact') => void;
@@ -73,14 +80,14 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
             opacity: 0,
             transition: {
                 duration: 0.3,
-                ease: "easeInOut"
+                ease: "easeInOut" as const
             }
         },
         open: {
             opacity: 1,
             transition: {
                 duration: 0.3,
-                ease: "easeInOut"
+                ease: "easeInOut" as const
             }
         }
     };
@@ -97,7 +104,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
             transition: {
                 delay: i * 0.1 + 0.2,
                 duration: 0.4,
-                ease: "easeOut"
+                ease: "easeOut" as const
             }
         })
     };
@@ -108,7 +115,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                 className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border"
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 0.6, ease: "easeOut" as const }}
             >
                 <div className="container mx-auto px-3 sm:px-4">
                     <div className="flex items-center justify-between h-14 sm:h-16">
@@ -173,7 +180,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                                 >
                                                     <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
                                                         <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                                                            <AvatarImage src={user?.avatar} alt={user?.name} />
+                                                            <AvatarImage src={user?.avatar ?? undefined} alt={user?.name ?? 'User avatar'} />
                                                             <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
                                                                 {user?.name?.charAt(0) || 'U'}
                                                             </AvatarFallback>
@@ -376,7 +383,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                         >
                                             <div className="flex items-center gap-3 lg:gap-4 mb-4">
                                                 <Avatar className="h-10 w-10 lg:h-12 lg:w-12">
-                                                    <AvatarImage src={user?.avatar} alt={user?.name} />
+                                                    <AvatarImage src={user?.avatar ?? undefined} alt={user?.name ?? 'User avatar'} />
                                                     <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground">
                                                         {user?.name?.charAt(0) || 'U'}
                                                     </AvatarFallback>

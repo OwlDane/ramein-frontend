@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-    Calendar, Clock, MapPin, Download, Search, Filter,
+    Calendar, Clock, MapPin, Download, Search,
     Award, CheckCircle, XCircle, AlertCircle, User,
     Mail, Phone, MapPin as MapPinIcon, GraduationCap
 } from 'lucide-react';
@@ -17,7 +17,7 @@ interface UserDashboardProps {
         id: string;
         name: string;
         email: string;
-        avatar?: string;
+        avatar?: string | null;
     };
 }
 

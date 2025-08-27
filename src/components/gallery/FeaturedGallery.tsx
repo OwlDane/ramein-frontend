@@ -1,22 +1,35 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { X, Play, Calendar, Users, MapPin, ArrowRight } from 'lucide-react';
-import { ImageWithFallback } from './ui/ImageWithFallback';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
+
+interface GalleryItem {
+    id: number;
+    type: 'event' | 'highlight' | 'community';
+    title: string;
+    description: string;
+    image: string;
+    category?: string;
+    date?: string;
+    participants?: number;
+    location?: string;
+    isVideo: boolean;
+}
 
 interface FeaturedGalleryProps {
     onViewEvents: () => void;
 }
 
 export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
-    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
-    const galleryItems = [
+    const galleryItems: GalleryItem[] = [
         {
             id: 1,
-            type: 'event',
+            type: 'event' as const,
             title: 'Tech Conference 2025',
             description: 'Konferensi teknologi terbesar tahun ini',
             image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
@@ -28,7 +41,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
         },
         {
             id: 2,
-            type: 'highlight',
+            type: 'highlight' as const,
             title: 'Event Highlights 2024',
             description: 'Momen terbaik dari event-event tahun lalu',
             image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
@@ -36,7 +49,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
         },
         {
             id: 3,
-            type: 'event',
+            type: 'event' as const,
             title: 'Design Workshop',
             description: 'Workshop intensif untuk designer',
             image: 'https://images.unsplash.com/photo-1558403194-611308249627?w=800',
@@ -48,7 +61,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
         },
         {
             id: 4,
-            type: 'event',
+            type: 'event' as const,
             title: 'Startup Pitch Day',
             description: 'Kompetisi pitch startup terbaik',
             image: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800',
@@ -60,7 +73,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
         },
         {
             id: 5,
-            type: 'community',
+            type: 'community' as const,
             title: 'Community Meetup',
             description: 'Gathering komunitas developer',
             image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800',
@@ -68,7 +81,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
         },
         {
             id: 6,
-            type: 'event',
+            type: 'event' as const,
             title: 'Marketing Summit',
             description: 'Summit digital marketing terdepan',
             image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800',
@@ -98,7 +111,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
             y: 0,
             transition: {
                 duration: 0.6,
-                ease: "easeOut"
+                ease: "easeOut" as const
             }
         }
     };
@@ -110,7 +123,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
             scale: 1,
             transition: {
                 duration: 0.3,
-                ease: "easeOut"
+                ease: "easeOut" as const
             }
         },
         exit: {
@@ -232,7 +245,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                                                 <div className="space-y-1 text-xs lg:text-sm text-white/80">
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="w-4 h-4" />
-                                                        <span>{new Date(item.date).toLocaleDateString('id-ID')}</span>
+                                                        <span>{item.date ? new Date(item.date).toLocaleDateString('id-ID') : 'TBD'}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Users className="w-4 h-4" />
@@ -295,14 +308,14 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                         exit="exit"
                         onClick={() => setSelectedItem(null)}
                     >
-                        <motion.div
-                            className="relative max-w-4xl w-full max-h-[90vh] bg-card rounded-lg overflow-hidden"
-                            onClick={(e) => e.stopPropagation()}
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                        >
+                                                    <motion.div
+                                className="relative max-w-4xl w-full max-h-[90vh] bg-card rounded-lg overflow-hidden"
+                                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.8, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                            >
                             {/* Close Button */}
                             <button
                                 onClick={() => setSelectedItem(null)}
@@ -342,7 +355,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                                     <div className="grid md:grid-cols-3 gap-4 mt-6">
                                         <div className="flex items-center gap-2 text-muted-foreground">
                                             <Calendar className="w-5 h-5 text-primary" />
-                                            <span>{new Date(selectedItem.date).toLocaleDateString('id-ID')}</span>
+                                            <span>{selectedItem.date ? new Date(selectedItem.date).toLocaleDateString('id-ID') : 'TBD'}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-muted-foreground">
                                             <Users className="w-5 h-5 text-primary" />
