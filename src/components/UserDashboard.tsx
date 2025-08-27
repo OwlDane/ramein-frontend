@@ -159,7 +159,7 @@ export function UserDashboard({ user }: UserDashboardProps) {
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl text-white p-8 mb-8">
                 <div className="flex flex-col md:flex-row items-center gap-6">
                     <Avatar className="w-24 h-24 border-4 border-white">
-                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarImage src={user.avatar ?? undefined} alt={user.name} />
                         <AvatarFallback className="bg-white text-purple-600 text-2xl">
                             {user.name.charAt(0)}
                         </AvatarFallback>
