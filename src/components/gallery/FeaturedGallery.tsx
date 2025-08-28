@@ -145,10 +145,10 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
-                    <h2 className="text-5xl lg:text-6xl mb-6 text-foreground font-bold tracking-tight">
+                    <h2 className="text-3xl lg:text-4xl mb-6 text-foreground font-bold tracking-tight">
                         Featured <span className="text-primary">Gallery</span>
                     </h2>
-                    <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                         Jelajahi momen-momen terbaik dari event-event yang telah diselenggarakan
                         dan temukan event menarik yang akan datang.
                     </p>

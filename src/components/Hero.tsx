@@ -134,7 +134,7 @@ export function Hero({ onViewEvents }: HeroProps) {
 
                         <motion.div variants={itemVariants}>
                             <motion.h1
-                                className="text-6xl lg:text-8xl mb-8 leading-tight text-foreground font-bold tracking-tight"
+                                className="text-4xl lg:text-6xl mb-8 leading-tight text-foreground font-bold tracking-tight"
                                 style={{
                                     y: mousePosition.y * -0.5,
                                     x: mousePosition.x * 0.3
@@ -192,7 +192,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                         </motion.div>
 
                         <motion.p
-                            className="text-2xl text-muted-foreground mb-10 max-w-2xl leading-relaxed"
+                            className="text-lg text-muted-foreground mb-10 max-w-2xl leading-relaxed"
                             variants={itemVariants}
                             style={{
                                 y: mousePosition.y * -0.3,
@@ -215,7 +215,7 @@ export function Hero({ onViewEvents }: HeroProps) {
 
                         <motion.div className="flex flex-col sm:flex-row gap-6 mb-16" variants={itemVariants} style={{ x: mousePosition.x * 0.15 }}>
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button onClick={onViewEvents} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl hover:shadow-2xl transition-all duration-200 group text-lg px-8 py-6">
+                                <Button onClick={onViewEvents} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl hover:shadow-2xl transition-all duration-200 group text-base px-8 py-6">
                                     Jelajahi Event
                                     <motion.div
                                         className="ml-3"
@@ -228,7 +228,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                             </motion.div>
 
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button variant="outline" size="lg" className="border-2 border-border bg-background/50 text-foreground hover:bg-accent hover:border-primary backdrop-blur-sm transition-all duration-200 text-lg px-8 py-6">
+                                <Button variant="outline" size="lg" className="border-2 border-border bg-background/50 text-foreground hover:bg-accent hover:border-primary backdrop-blur-sm transition-all duration-200 text-base px-8 py-6">
                                     Pelajari Lebih Lanjut
                                 </Button>
                             </motion.div>
@@ -259,14 +259,14 @@ export function Hero({ onViewEvents }: HeroProps) {
                                         <stat.icon className="w-6 h-6 text-primary" />
                                     </motion.div>
                                     <motion.div
-                                        className="text-3xl text-primary mb-2 font-bold"
+                                        className="text-2xl text-primary mb-2 font-bold"
                                         initial={{ opacity: 0, scale: 0 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         transition={{ delay: 1 + index * 0.2, duration: 0.5 }}
                                     >
                                         {stat.number}
                                     </motion.div>
-                                    <div className="text-base text-muted-foreground font-medium">{stat.label}</div>
+                                    <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
                                 </motion.div>
                             ))}
                         </motion.div>
@@ -276,7 +276,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                     <motion.div className="relative" variants={itemVariants} style={{ y: heroY }}>
                         {/* Visual Box */}
                         <motion.div
-                            className="relative z-10 bg-card/80 backdrop-blur-lg rounded-3xl p-10 shadow-2xl border border-border"
+                            className="relative z-10 bg-card/80 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-border"
                             whileHover={{ scale: 1.02, rotateY: 5 }}
                             transition={{ duration: 0.3 }}
                             style={{
@@ -285,13 +285,13 @@ export function Hero({ onViewEvents }: HeroProps) {
                             }}
                         >
                             <motion.div
-                                className="aspect-square bg-gradient-to-br from-accent/50 to-muted/30 rounded-2xl flex items-center justify-center border border-border relative overflow-hidden"
+                                className="aspect-square bg-gradient-to-br from-accent/50 to-muted/30 rounded-xl flex items-center justify-center border border-border relative overflow-hidden"
                                 variants={floatingVariants}
                                 animate="animate"
                             >
                                 <div className="absolute inset-0 opacity-20">
-                                    <div className="grid grid-cols-6 h-full">
-                                        {Array.from({ length: 36 }).map((_, i) => (
+                                    <div className="grid grid-cols-4 h-full">
+                                        {Array.from({ length: 16 }).map((_, i) => (
                                             <motion.div
                                                 key={i}
                                                 className="border border-primary/20"
@@ -312,10 +312,10 @@ export function Hero({ onViewEvents }: HeroProps) {
                                             y: mousePosition.y * -0.3
                                         }}
                                     >
-                                        <Sparkles className="w-28 h-28 text-primary mx-auto mb-6" />
+                                        <Sparkles className="w-16 h-16 text-primary mx-auto mb-4" />
                                     </motion.div>
-                                    <h3 className="text-2xl mb-3 text-foreground font-bold">Event Mendatang</h3>
-                                    <p className="text-muted-foreground text-lg leading-relaxed">
+                                    <h3 className="text-lg mb-2 text-foreground font-bold">Event Mendatang</h3>
+                                    <p className="text-muted-foreground text-sm leading-relaxed">
                                         Daftar sekarang dan dapatkan early bird discount!
                                     </p>
                                 </div>

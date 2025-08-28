@@ -135,10 +135,10 @@ export default function TestimonialSection() {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+                    <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-4">
                         Apa Kata <span className="text-primary">Mereka</span>
                     </h2>
-                    <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                    <p className="text-base text-muted-foreground max-w-3xl mx-auto">
                         Testimoni dari berbagai organisasi yang telah menggunakan platform Ramein untuk mengelola event mereka
                     </p>
                 </motion.div>

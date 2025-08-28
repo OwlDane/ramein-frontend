@@ -163,11 +163,11 @@ export function ContactSection() {
                             whileHover={{ scale: 1.05 }}
                         >
                             <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-foreground font-bold tracking-tight mobile-text-2xl">
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl text-foreground font-bold tracking-tight mobile-text-2xl">
                                 Get In <span className="text-primary">Touch</span>
                             </h1>
                         </motion.div>
-                        <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mobile-text-base">
+                        <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mobile-text-base">
                             Punya pertanyaan tentang event? Ingin berkolaborasi?
                             Tim kami siap membantu mewujudkan acara impian Anda.
                         </p>
@@ -198,7 +198,7 @@ export function ContactSection() {
                                             <stat.icon className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
                                         </motion.div>
                                         <motion.div
-                                            className="text-2xl lg:text-3xl font-bold text-foreground mb-1 lg:mb-2 mobile-text-xl"
+                                            className="text-xl lg:text-2xl font-bold text-foreground mb-1 lg:mb-2 mobile-text-xl"
                                             initial={{ opacity: 0, scale: 0 }}
                                             whileInView={{ opacity: 1, scale: 1 }}
                                             viewport={{ once: true }}
@@ -225,10 +225,10 @@ export function ContactSection() {
                             <Card className="p-6 lg:p-8 bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
                                 <CardContent className="p-0">
                                     <div className="mb-6 lg:mb-8">
-                                        <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-3 lg:mb-4 mobile-text-xl">
+                                        <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-3 lg:mb-4 mobile-text-xl">
                                             Send us a Message
                                         </h2>
-                                        <p className="text-muted-foreground text-base lg:text-lg mobile-text-sm">
+                                        <p className="text-muted-foreground text-sm lg:text-base mobile-text-sm">
                                             Isi form di bawah dan kami akan merespons secepat mungkin
                                         </p>
                                     </div>

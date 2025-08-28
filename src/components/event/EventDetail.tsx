@@ -10,10 +10,12 @@ import { Progress } from '@/components/ui/progress';
 import {
     Calendar, MapPin, Users, Star, Share2, Heart,
     ArrowLeft, Check, Target, BookOpen, Sparkles,
-    ChevronRight, Mail, Phone, Globe
+    ChevronRight, Mail, Phone, Globe, Clipboard
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { toast } from 'react-hot-toast';
+import { EventRegistrationModal } from './EventRegistrationModal';
+import { AttendanceModal } from './AttendanceModal';
 
 interface EventDetailProps {
     eventId: string | null;
@@ -22,13 +24,92 @@ interface EventDetailProps {
     onBack: () => void;
 }
 
+interface Instructor {
+    name: string;
+    title: string;
+    company: string;
+    avatar: string;
+    bio: string;
+    expertise: string[];
+}
+
+interface Review {
+    name: string;
+    rating: number;
+    comment: string;
+    date: string;
+    avatar: string;
+}
+
+interface Session {
+    time: string;
+    title: string;
+    type: string;
+}
+
+interface ScheduleDay {
+    day: string;
+    date: string;
+    sessions: Session[];
+}
+
+interface Organizer {
+    name: string;
+    logo: string;
+    description: string;
+    rating: number;
+    totalEvents: number;
+    followers: number;
+    website: string;
+    email: string;
+    phone: string;
+    social: {
+        instagram: string;
+        twitter: string;
+        linkedin: string;
+    };
+}
+
+interface Event {
+    id: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    fullDescription: string;
+    date: string;
+    endDate: string;
+    time: string;
+    endTime: string;
+    location: string;
+    fullAddress: string;
+    category: string;
+    price: number;
+    originalPrice: number;
+    maxParticipants: number;
+    currentParticipants: number;
+    image: string;
+    gallery: string[];
+    organizer: Organizer;
+    instructors: Instructor[];
+    tags: string[];
+    highlights: string[];
+    schedule: ScheduleDay[];
+    reviews: Review[];
+    requirements: string[];
+    benefits: string[];
+}
+
 export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: EventDetailProps) {
     const [isRegistered, setIsRegistered] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [event, setEvent] = useState<any>({
+    const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+    const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+    const [userToken, setUserToken] = useState<string>('');
+    const [registrationToken, setRegistrationToken] = useState<string>('');
+    const [event, setEvent] = useState<Event>({
         id: eventId || '1',
         title: 'Memuat...',
         subtitle: 'Master Modern React Development',
@@ -173,7 +254,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
             setError('');
             try {
                 const data = await apiFetch<any>(`/events/${eventId}`);
-                setEvent((prev: any) => ({
+                setEvent((prev: Event) => ({
                     ...prev,
                     id: data.id,
                     title: data.title,
@@ -194,14 +275,70 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
         run();
     }, [eventId]);
 
+    // Get user token from localStorage
+    useEffect(() => {
+        if (isLoggedIn) {
+            const token = localStorage.getItem('userToken');
+            if (token) {
+                setUserToken(token);
+                // Check if user is already registered for this event
+                checkRegistrationStatus(token);
+            }
+        }
+    }, [isLoggedIn, eventId]);
+
+    const checkRegistrationStatus = async (token: string) => {
+        try {
+            const response = await apiFetch<any>('/participants/my-events', {
+                token: token
+            });
+            
+            const isUserRegistered = response.some((participant: any) => 
+                participant.eventId === eventId && participant.hasAttended !== undefined
+            );
+            
+            setIsRegistered(isUserRegistered);
+            
+            // Get registration token if user is registered
+            if (isUserRegistered) {
+                const participant = response.find((p: any) => p.eventId === eventId);
+                if (participant?.tokenNumber) {
+                    setRegistrationToken(participant.tokenNumber);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to check registration status:', error);
+        }
+    };
+
     const handleRegister = () => {
         if (!isLoggedIn) {
             onAuthRequired();
             return;
         }
 
+        setShowRegistrationModal(true);
+    };
+
+    const handleRegistrationSuccess = (token: string) => {
         setIsRegistered(true);
-        toast.success('Pendaftaran berhasil! Token akan dikirim ke email Anda.');
+        setRegistrationToken(token);
+        setShowRegistrationModal(false);
+    };
+
+    const handleAttendance = () => {
+        if (!isLoggedIn) {
+            onAuthRequired();
+            return;
+        }
+
+        setShowAttendanceModal(true);
+    };
+
+    const handleAttendanceSuccess = () => {
+        // Update local state to reflect attendance
+        setIsRegistered(true);
+        setShowAttendanceModal(false);
     };
 
     const handleShare = async () => {
@@ -341,7 +478,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                     {/* Title Overlay */}
                                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                                         <motion.h1
-                                            className="text-4xl lg:text-5xl mb-2 font-bold tracking-tight"
+                                            className="text-3xl lg:text-4xl mb-2 font-bold tracking-tight"
                                             initial={{ y: 20, opacity: 0 }}
                                             animate={{ y: 0, opacity: 1 }}
                                             transition={{ delay: 0.3 }}
@@ -419,7 +556,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                                         Highlights
                                                     </h4>
                                                     <ul className="space-y-2">
-                                                        {event.highlights.map((highlight, index) => (
+                                                        {event.highlights.map((highlight: string, index: number) => (
                                                             <motion.li
                                                                 key={index}
                                                                 className="flex items-center gap-2 text-base text-foreground"
@@ -440,7 +577,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                                         Requirements
                                                     </h4>
                                                     <ul className="space-y-2">
-                                                        {event.requirements.map((req, index) => (
+                                                        {event.requirements.map((req: string, index: number) => (
                                                             <motion.li
                                                                 key={index}
                                                                 className="flex items-start gap-2 text-base text-muted-foreground"
@@ -461,7 +598,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
 
                                 <TabsContent value="schedule" className="mt-6">
                                     <div className="space-y-6">
-                                        {event.schedule.map((day, dayIndex) => (
+                                        {event.schedule.map((day: ScheduleDay, dayIndex: number) => (
                                             <motion.div
                                                 key={day.day}
                                                 initial={{ opacity: 0, y: 20 }}
@@ -482,7 +619,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                                     </CardHeader>
                                                     <CardContent>
                                                         <div className="space-y-4">
-                                                            {day.sessions.map((session, sessionIndex) => (
+                                                            {day.sessions.map((session: Session, sessionIndex: number) => (
                                                                 <motion.div
                                                                     key={sessionIndex}
                                                                     className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg"
@@ -510,7 +647,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
 
                                 <TabsContent value="instructor" className="mt-6">
                                     <div className="grid gap-6">
-                                        {event.instructors.map((instructor, index) => (
+                                        {event.instructors.map((instructor: Instructor, index: number) => (
                                             <motion.div
                                                 key={index}
                                                 initial={{ opacity: 0, y: 20 }}
@@ -530,7 +667,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                                                 <p className="text-base text-muted-foreground mb-3">{instructor.company}</p>
                                                                 <p className="text-base text-foreground mb-4">{instructor.bio}</p>
                                                                 <div className="flex flex-wrap gap-2">
-                                                                    {instructor.expertise.map((skill, skillIndex) => (
+                                                                    {instructor.expertise.map((skill: string, skillIndex: number) => (
                                                                         <Badge key={skillIndex} variant="secondary">
                                                                             {skill}
                                                                         </Badge>
@@ -547,7 +684,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
 
                                 <TabsContent value="reviews" className="mt-6">
                                     <div className="space-y-6">
-                                        {event.reviews.map((review, index) => (
+                                        {event.reviews.map((review: Review, index: number) => (
                                             <motion.div
                                                 key={index}
                                                 initial={{ opacity: 0, y: 20 }}
@@ -640,10 +777,62 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                         </Button>
                                     </motion.div>
 
+                                    {/* Attendance Button - Show only if registered */}
+                                    {isRegistered && (
+                                        <motion.div
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 }}
+                                        >
+                                            <Button
+                                                onClick={handleAttendance}
+                                                variant="outline"
+                                                className="w-full h-12 border-primary text-primary hover:bg-primary/10 shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <Clipboard className="w-5 h-5" />
+                                                    Isi Daftar Hadir
+                                                </div>
+                                            </Button>
+                                        </motion.div>
+                                    )}
+
+                                    {/* Registration Token Display */}
+                                    {isRegistered && registrationToken && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.4 }}
+                                            className="p-4 bg-muted/30 rounded-lg border border-primary/20"
+                                        >
+                                            <p className="text-sm text-muted-foreground mb-2 text-center">
+                                                Token Kehadiran Anda
+                                            </p>
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <code className="text-lg font-mono font-bold text-primary tracking-wider">
+                                                    {registrationToken}
+                                                </code>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => navigator.clipboard.writeText(registrationToken)}
+                                                    className="shrink-0"
+                                                >
+                                                    Salin
+                                                </Button>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground text-center mt-2">
+                                                Simpan token ini untuk mengisi daftar hadir
+                                            </p>
+                                        </motion.div>
+                                    )}
+
                                     {/* Benefits */}
                                     <div className="space-y-2 pt-4 border-t border-border">
                                         <h4 className="text-lg font-medium text-foreground">Yang Anda Dapatkan:</h4>
-                                        {event.benefits.map((benefit, index) => (
+                                        {event.benefits.map((benefit: string, index: number) => (
                                             <motion.div
                                                 key={index}
                                                 className="flex items-center gap-2 text-base text-muted-foreground"
@@ -720,7 +909,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex flex-wrap gap-2">
-                                        {event.tags.map((tag, index) => (
+                                        {event.tags.map((tag: string, index: number) => (
                                             <motion.div
                                                 key={tag}
                                                 initial={{ opacity: 0, scale: 0.8 }}
@@ -740,6 +929,39 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                     </div>
                 </motion.div>
             </div>
+
+            {/* Event Registration Modal */}
+            <EventRegistrationModal
+                isOpen={showRegistrationModal}
+                onClose={() => setShowRegistrationModal(false)}
+                event={{
+                    id: event.id,
+                    title: event.title,
+                    date: event.date,
+                    time: event.time,
+                    location: event.location,
+                    maxParticipants: event.maxParticipants,
+                    currentParticipants: event.currentParticipants,
+                    price: event.price
+                }}
+                userToken={userToken}
+                onRegistrationSuccess={handleRegistrationSuccess}
+            />
+
+            {/* Attendance Modal */}
+            <AttendanceModal
+                isOpen={showAttendanceModal}
+                onClose={() => setShowAttendanceModal(false)}
+                event={{
+                    id: event.id,
+                    title: event.title,
+                    date: event.date,
+                    time: event.time,
+                    location: event.location
+                }}
+                userToken={userToken}
+                onAttendanceSuccess={handleAttendanceSuccess}
+            />
         </div>
     );
 }

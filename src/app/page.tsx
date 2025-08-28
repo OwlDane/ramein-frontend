@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useAuth } from '../contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 
 import { Header } from '@/components/Header'
 import { Hero } from '@/components/Hero'
 import { AboutSection } from '@/components/AboutSection'
 import { EventCatalog } from '@/components/event/EventCatalog'
-import { AuthModal } from '@/components/AuthModal'
 import { UserDashboard } from '@/components/UserDashboard'
 import { EventDetail } from '@/components/event/EventDetail'
 import { Footer } from '@/components/Footer'
@@ -20,17 +21,9 @@ type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact'
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<ViewType>('home')
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string | null;
-}
-
-  const [user, setUser] = useState<User | null>(null)
+  const { user, isLoggedIn } = useAuth()
+  const router = useRouter()
 
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view)
@@ -47,18 +40,7 @@ interface User {
     }, 100)
   }
 
-  const handleLogin = (userData: User) => {
-    setIsLoggedIn(true)
-    setUser(userData)
-    setIsAuthModalOpen(false)
-  }
 
-  const handleLogout = () => {
-    setIsLoggedIn(false)
-    setUser(null)
-    setCurrentView('home')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
 
   const pageVariants = {
     initial: { opacity: 0, y: 20, scale: 0.98 },
@@ -130,7 +112,7 @@ interface User {
             <EventDetail
               eventId={selectedEventId}
               isLoggedIn={isLoggedIn}
-              onAuthRequired={() => setIsAuthModalOpen(true)}
+              onAuthRequired={() => router.push('/login')}
               onBack={() => handleViewChange('events')}
             />
           </motion.div>
@@ -174,10 +156,6 @@ interface User {
   return (
     <div className="min-h-screen bg-background">
       <Header
-        isLoggedIn={isLoggedIn}
-        user={user}
-        onLogin={() => setIsAuthModalOpen(true)}
-        onLogout={handleLogout}
         onViewChange={handleViewChange}
         currentView={currentView}
       />
@@ -187,12 +165,6 @@ interface User {
       </main>
 
       {currentView !== 'contact' && <Footer />}
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onLogin={handleLogin}
-      />
     </div>
   )
 }

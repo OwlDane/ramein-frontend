@@ -4,44 +4,45 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Calendar, User, LogOut, Home, ArrowRight, Sparkles, Mail } from 'lucide-react';
-
-interface UserInfo {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string | null;
-}
+import { useAuth } from '../contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
-    isLoggedIn: boolean;
-    user: UserInfo | null;
-    onLogin: () => void;
-    onLogout: () => void;
     onViewChange: (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact') => void;
     currentView: string;
 }
 
-export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, currentView }: HeaderProps) {
+export function Header({ onViewChange, currentView }: HeaderProps) {
+    const { user, logout } = useAuth();
+    const router = useRouter();
+    const isLoggedIn = !!user;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-    // Smooth mouse tracking
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-    const smoothMouseX = useSpring(mouseX, { damping: 30, stiffness: 200 });
-    const smoothMouseY = useSpring(mouseY, { damping: 30, stiffness: 200 });
+    // Mouse trail effect - multiple elements with different speeds for 3D depth
+    const [trailElements, setTrailElements] = useState([
+        { x: 0, y: 0, speed: 0.1, size: 8, opacity: 0.8 },    // Fastest, largest
+        { x: 0, y: 0, speed: 0.2, size: 6, opacity: 0.6 },    // Medium speed, medium size
+        { x: 0, y: 0, speed: 0.3, size: 4, opacity: 0.4 },    // Slower, smaller
+        { x: 0, y: 0, speed: 0.4, size: 3, opacity: 0.3 },    // Slowest, smallest
+    ]);
 
-    // Mouse tracking effect
+    // Mouse tracking effect for trail
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (isMenuOpen) {
                 const rect = document.body.getBoundingClientRect();
-                const x = (e.clientX - rect.width / 2) / 50;
-                const y = (e.clientY - rect.height / 2) / 50;
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
 
-                mouseX.set(x);
-                mouseY.set(y);
                 setMousePosition({ x, y });
+                
+                // Update trail elements with different speeds for 3D depth effect
+                setTrailElements(prev => prev.map((element, index) => ({
+                    ...element,
+                    x: x * element.speed + (1 - element.speed) * element.x,
+                    y: y * element.speed + (1 - element.speed) * element.y,
+                })));
             }
         };
 
@@ -50,7 +51,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
         }
 
         return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [isMenuOpen, mouseX, mouseY]);
+    }, [isMenuOpen]);
 
     const navigation = useMemo(() => [
         { name: 'Beranda', view: 'home' as const, icon: Home, description: 'Halaman utama dan informasi terbaru' },
@@ -70,10 +71,10 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
             setIsMenuOpen(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            onLogin();
+            router.push('/login');
             setIsMenuOpen(false);
         }
-    }, [isLoggedIn, onLogin, onViewChange]);
+    }, [isLoggedIn, router, onViewChange]);
 
     const menuVariants = useMemo(() => ({
         closed: {
@@ -134,7 +135,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                 <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-primary-foreground" />
                             </motion.div>
                             <motion.span
-                                className="text-lg sm:text-2xl text-primary tracking-tight mobile-text-lg"
+                                className="text-sm sm:text-lg text-primary tracking-tight mobile-text-sm"
                                 whileHover={{ x: 5 }}
                                 transition={{ duration: 0.2 }}
                                 style={{ fontWeight: 'var(--font-weight-bold)' }}
@@ -153,7 +154,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                     transition={{ duration: 0.3 }}
                                     className="hidden md:block absolute left-1/2 transform -translate-x-1/2"
                                 >
-                                    <span className="text-sm lg:text-lg text-muted-foreground tracking-wide uppercase font-medium">
+                                    <span className="text-xs lg:text-sm text-muted-foreground tracking-wide uppercase font-medium">
                                         Find Your Perfect Event
                                     </span>
                                 </motion.div>
@@ -179,8 +180,8 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                                     whileTap={{ scale: 0.95 }}
                                                 >
                                                     <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
-                                                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                                                            <AvatarImage src={user?.avatar ?? undefined} alt={user?.name ?? 'User avatar'} />
+                                                        <Avatar className="h-8 w-8 sm:h-10 sm:h-10">
+                                                            <AvatarImage src={undefined} alt={user?.name ?? 'User avatar'} />
                                                             <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
                                                                 {user?.name?.charAt(0) || 'U'}
                                                             </AvatarFallback>
@@ -193,7 +194,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                                     <User className="w-4 h-4 mr-2" />
                                                     Dashboard
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={onLogout}>
+                                                <DropdownMenuItem onClick={logout}>
                                                     <LogOut className="w-4 h-4 mr-2" />
                                                     Logout
                                                 </DropdownMenuItem>
@@ -258,14 +259,9 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                     >
                         <div className="container mx-auto px-4 h-full flex flex-col justify-center">
                             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center h-full py-16 lg:py-20">
-
-                                {/* Navigation Menu with Mouse Tracking */}
+                                {/* Navigation Menu */}
                                 <motion.div
                                     className="space-y-6 lg:space-y-8"
-                                    style={{
-                                        x: smoothMouseX,
-                                        y: smoothMouseY
-                                    }}
                                 >
                                     <motion.div
                                         variants={menuItemVariants}
@@ -275,7 +271,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                         exit="closed"
                                         className="mb-8 lg:mb-12"
                                     >
-                                        <h2 className="text-2xl sm:text-3xl text-primary-foreground/80 mb-2 font-bold mobile-text-xl">Navigasi</h2>
+                                        <h2 className="text-lg sm:text-xl text-primary-foreground/80 mb-2 font-bold mobile-text-lg">Navigasi</h2>
                                         <div className="w-16 lg:w-20 h-1 bg-primary-foreground/40"></div>
                                     </motion.div>
 
@@ -293,10 +289,7 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                                 exit="closed"
                                                 whileHover={{ x: 10 }}
                                                 transition={{ duration: 0.2 }}
-                                                style={{
-                                                    x: mousePosition.x * (index % 2 === 0 ? 0.5 : -0.3),
-                                                    y: mousePosition.y * (index % 2 === 0 ? -0.2 : 0.3)
-                                                }}
+
                                             >
                                                 <div className="flex items-center gap-3 lg:gap-4">
                                                     <motion.div
@@ -306,13 +299,13 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                                             }`}
                                                         whileHover={{ scale: 1.1, rotate: 5 }}
                                                     >
-                                                        <item.icon className="w-5 h-5 lg:w-6 lg:h-6" />
+                                                        <item.icon className="w-4 h-4 lg:w-5 lg:h-5" />
                                                     </motion.div>
                                                     <div>
-                                                        <div className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl mb-1 font-bold mobile-text-xl">
+                                                        <div className="text-base sm:text-lg lg:text-xl xl:text-2xl mb-1 font-bold mobile-text-base">
                                                             {item.name}
                                                         </div>
-                                                        <div className="text-sm sm:text-base lg:text-lg text-primary-foreground/60 mobile-text-sm">
+                                                        <div className="text-xs sm:text-xs lg:text-sm text-primary-foreground/60 mobile-text-xs">
                                                             {item.description}
                                                         </div>
                                                     </div>
@@ -321,141 +314,149 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                                     className="opacity-0 group-hover:opacity-100 transition-opacity"
                                                     whileHover={{ x: 5 }}
                                                 >
-                                                    <ArrowRight className="w-6 h-6 lg:w-8 lg:h-8" />
+                                                    <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6" />
                                                 </motion.div>
                                             </motion.button>
                                         ))}
-
-                                        {/* Dashboard/Login with Mouse Tracking */}
-                                        <motion.button
-                                            onClick={handleDashboard}
-                                            className={`group flex items-center justify-between w-full text-left transition-all duration-300 hover:translate-x-2 lg:hover:translate-x-4 ${currentView === 'dashboard' ? 'text-primary-foreground' : 'text-primary-foreground/80 hover:text-primary-foreground'
-                                                }`}
-                                            variants={menuItemVariants}
-                                            custom={navigation.length + 1}
-                                            initial="closed"
-                                            animate="open"
-                                            exit="closed"
-                                            whileHover={{ x: 10 }}
-                                            transition={{ duration: 0.2 }}
-                                            style={{
-                                                x: mousePosition.x * 0.4,
-                                                y: mousePosition.y * -0.4
-                                            }}
-                                        >
-                                            <div className="flex items-center gap-3 lg:gap-4">
-                                                <motion.div
-                                                    className={`p-2 lg:p-3 rounded-lg transition-all duration-300 ${currentView === 'dashboard'
-                                                            ? 'bg-primary-foreground/20'
-                                                            : 'bg-primary-foreground/10 group-hover:bg-primary-foreground/20'
-                                                        }`}
-                                                    whileHover={{ scale: 1.1, rotate: 5 }}
-                                                >
-                                                    <User className="w-5 h-5 lg:w-6 lg:h-6" />
-                                                </motion.div>
-                                                <div>
-                                                    <div className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl mb-1 font-bold mobile-text-xl">
-                                                        {isLoggedIn ? 'Dashboard' : 'Masuk'}
-                                                    </div>
-                                                    <div className="text-sm sm:text-base lg:text-lg text-primary-foreground/60 mobile-text-sm">
-                                                        {isLoggedIn ? 'Kelola akun dan riwayat event' : 'Login atau daftar akun baru'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <motion.div
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                                whileHover={{ x: 5 }}
-                                            >
-                                                <ArrowRight className="w-6 h-6 lg:w-8 lg:h-8" />
-                                            </motion.div>
-                                        </motion.button>
                                     </nav>
 
-                                    {/* User Info if logged in - Mobile optimized */}
-                                    {isLoggedIn && (
-                                        <motion.div
-                                            variants={menuItemVariants}
-                                            custom={navigation.length + 2}
-                                            initial="closed"
-                                            animate="open"
-                                            exit="closed"
-                                            className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-primary-foreground/20"
-                                        >
-                                            <div className="flex items-center gap-3 lg:gap-4 mb-4">
-                                                <Avatar className="h-10 w-10 lg:h-12 lg:w-12">
-                                                    <AvatarImage src={user?.avatar ?? undefined} alt={user?.name ?? 'User avatar'} />
-                                                    <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground">
-                                                        {user?.name?.charAt(0) || 'U'}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <div className="text-lg lg:text-xl text-primary-foreground font-medium mobile-text-base">
-                                                        {user?.name || 'User'}
-                                                    </div>
-                                                    <div className="text-sm lg:text-base text-primary-foreground/60 mobile-text-sm">
-                                                        {user?.email}
-                                                    </div>
+                                    {/* Dashboard/Login */}
+                                    <motion.button
+                                        onClick={handleDashboard}
+                                        className={`group flex items-center justify-between w-full text-left transition-all duration-300 hover:translate-x-2 lg:hover:translate-x-4 ${currentView === 'dashboard' ? 'text-primary-foreground' : 'text-primary-foreground/80 hover:text-primary-foreground'
+                                            }`}
+                                        variants={menuItemVariants}
+                                        custom={navigation.length + 1}
+                                        initial="closed"
+                                        animate="open"
+                                        exit="closed"
+                                        whileHover={{ x: 10 }}
+                                        transition={{ duration: 0.2 }}
+
+                                    >
+                                        <div className="flex items-center gap-3 lg:gap-4">
+                                            <motion.div
+                                                className={`p-2 lg:p-3 rounded-lg transition-all duration-300 ${currentView === 'dashboard'
+                                                        ? 'bg-primary-foreground/20'
+                                                        : 'bg-primary-foreground/10 group-hover:bg-primary-foreground/20'
+                                                    }`}
+                                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                            >
+                                                <User className="w-4 h-4 lg:w-5 lg:h-5" />
+                                            </motion.div>
+                                            <div>
+                                                <div className="text-base sm:text-lg lg:text-xl xl:text-2xl mb-1 font-bold mobile-text-base">
+                                                    {isLoggedIn ? 'Dashboard' : 'Masuk'}
+                                                </div>
+                                                <div className="text-xs sm:text-xs lg:text-sm text-primary-foreground/60 mobile-text-xs">
+                                                    {isLoggedIn ? 'Kelola akun dan riwayat event' : 'Login atau daftar akun baru'}
                                                 </div>
                                             </div>
-                                            <motion.button
-                                                onClick={() => {
-                                                    onLogout();
-                                                    setIsMenuOpen(false);
-                                                }}
-                                                className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
-                                                whileHover={{ x: 5 }}
-                                            >
-                                                <LogOut className="w-4 h-4 lg:w-5 lg:h-5" />
-                                                <span className="text-base lg:text-lg mobile-text-sm">Logout</span>
-                                            </motion.button>
+                                        </div>
+                                        <motion.div
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                            whileHover={{ x: 5 }}
+                                        >
+                                            <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6" />
                                         </motion.div>
-                                    )}
+                                    </motion.button>
                                 </motion.div>
 
-                                {/* Visual Element with Mouse Tracking */}
+                                {/* User Info if logged in - Mobile optimized */}
+                                {isLoggedIn && (
+                                    <motion.div
+                                        variants={menuItemVariants}
+                                        custom={navigation.length + 2}
+                                        initial="closed"
+                                        animate="open"
+                                        exit="closed"
+                                        className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-primary-foreground/20"
+                                    >
+                                        <div className="flex items-center gap-3 lg:gap-4 mb-4">
+                                            <Avatar className="h-10 w-10 lg:h-12 lg:w-12">
+                                                <AvatarImage src={undefined} alt={user?.name ?? 'User avatar'} />
+                                                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground">
+                                                    {user?.name?.charAt(0) || 'U'}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <div className="text-base lg:text-lg text-primary-foreground font-medium mobile-text-sm">
+                                                    {user?.name || 'User'}
+                                                </div>
+                                                <div className="text-sm lg:text-base text-primary-foreground/60 mobile-text-sm">
+                                                    {user?.email}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <motion.button
+                                            onClick={() => {
+                                                logout();
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                                            whileHover={{ x: 5 }}
+                                        >
+                                            <LogOut className="w-4 h-4 lg:w-5 lg:w-5" />
+                                            <span className="text-sm lg:text-base mobile-text-xs">Logout</span>
+                                        </motion.button>
+                                    </motion.div>
+                                )}
+
+                                {/* Mouse Trail Effect for 3D Depth */}
                                 <motion.div
-                                    className="hidden lg:flex items-center justify-center"
+                                    className="hidden lg:block fixed inset-0 pointer-events-none z-10"
                                     variants={menuItemVariants}
                                     custom={navigation.length + 3}
                                     initial="closed"
                                     animate="open"
                                     exit="closed"
-                                    style={{
-                                        x: smoothMouseX.get() * -0.5,
-                                        y: smoothMouseY.get() * -0.3
-                                    }}
                                 >
+                                    {/* Trail Elements with different speeds for 3D depth */}
+                                    {trailElements.map((element, index) => (
+                                        <motion.div
+                                            key={index}
+                                            className="absolute rounded-full bg-primary-foreground/20 backdrop-blur-sm"
+                                            style={{
+                                                width: element.size,
+                                                height: element.size,
+                                                x: element.x - element.size / 2,
+                                                y: element.y - element.size / 2,
+                                                opacity: element.opacity,
+                                            }}
+                                            animate={{
+                                                scale: [1, 1.2, 1],
+                                            }}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Infinity,
+                                                ease: "easeInOut",
+                                                delay: index * 0.1,
+                                            }}
+                                        />
+                                    ))}
+                                    
+                                    {/* Main cursor follower */}
                                     <motion.div
-                                        className="relative"
+                                        className="absolute w-4 h-4 rounded-full bg-primary-foreground/40 backdrop-blur-sm border border-primary-foreground/60"
+                                        style={{
+                                            x: mousePosition.x - 8,
+                                            y: mousePosition.y - 8,
+                                        }}
                                         animate={{
-                                            rotate: [0, 360],
-                                            scale: [1, 1.1, 1]
+                                            scale: [1, 1.5, 1],
                                         }}
                                         transition={{
-                                            duration: 20,
+                                            duration: 1.5,
                                             repeat: Infinity,
-                                            ease: "linear"
+                                            ease: "easeInOut",
                                         }}
-                                    >
-                                        <div className="w-64 h-64 lg:w-80 lg:h-80 rounded-full border border-primary-foreground/20 flex items-center justify-center">
-                                            <div className="w-48 h-48 lg:w-60 lg:h-60 rounded-full border border-primary-foreground/30 flex items-center justify-center">
-                                                <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-primary-foreground/10 flex items-center justify-center">
-                                                    <motion.div
-                                                        animate={{ rotate: [360, 0] }}
-                                                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                                    >
-                                                        <Sparkles className="w-16 h-16 lg:w-20 lg:h-20 text-primary-foreground/60" />
-                                                    </motion.div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
+                                    />
                                 </motion.div>
                             </div>
 
                             {/* Bottom Info - Mobile optimized */}
                             <motion.div
-                                className="absolute bottom-4 lg:bottom-8 left-4 right-4 flex flex-col md:flex-row justify-between items-center gap-3 lg:gap-4 text-sm lg:text-lg text-primary-foreground/60 mobile-text-sm"
+                                className="absolute bottom-4 lg:bottom-8 left-4 right-4 flex flex-col md:flex-row justify-between items-center gap-3 lg:gap-4 text-xs lg:text-base text-primary-foreground/60 mobile-text-xs"
                                 variants={menuItemVariants}
                                 custom={navigation.length + 4}
                                 initial="closed"
@@ -463,13 +464,75 @@ export function Header({ isLoggedIn, user, onLogin, onLogout, onViewChange, curr
                                 exit="closed"
                             >
                                 <div className="flex gap-4 lg:gap-8">
-                                    <span>Tentang Kami</span>
-                                    <span>Hubungi</span>
-                                    <span>FAQ</span>
+                                    {[
+                                        { text: 'Tentang Kami', icon: '🏢', href: '/about' },
+                                        { text: 'Hubungi', icon: '📞', href: '/contact' },
+                                        { text: 'FAQ', icon: '❓', href: '/faq' }
+                                    ].map((item, index) => (
+                                        <motion.a
+                                            key={item.text}
+                                            href={item.href}
+                                            className="group flex items-center gap-2 hover:text-primary-foreground transition-colors duration-300"
+                                            whileHover={{ 
+                                                y: -2,
+                                                scale: 1.05,
+                                                transition: { duration: 0.2 }
+                                            }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <motion.span
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                                initial={{ opacity: 0, x: -10 }}
+                                                whileHover={{ opacity: 1, x: 0 }}
+                                            >
+                                                {item.icon}
+                                            </motion.span>
+                                            <span className="relative">
+                                                {item.text}
+                                                <motion.div
+                                                    className="absolute -bottom-1 left-0 h-0.5 bg-primary-foreground/40 rounded-full"
+                                                    initial={{ width: 0 }}
+                                                    whileHover={{ width: '100%' }}
+                                                    transition={{ duration: 0.3 }}
+                                                />
+                                            </span>
+                                        </motion.a>
+                                    ))}
                                 </div>
                                 <div className="flex gap-3 lg:gap-6">
-                                    <span>Privacy</span>
-                                    <span>Terms</span>
+                                    {[
+                                        { text: 'Privacy', icon: '🔒', href: '/privacy' },
+                                        { text: 'Terms', icon: '📋', href: '/terms' }
+                                    ].map((item, index) => (
+                                        <motion.a
+                                            key={item.text}
+                                            href={item.href}
+                                            className="group flex items-center gap-2 hover:text-primary-foreground transition-colors duration-300"
+                                            whileHover={{ 
+                                                y: -2,
+                                                scale: 1.05,
+                                                transition: { duration: 0.2 }
+                                            }}
+                                            whileTap={{ scale: 0.95 }}
+                                        >
+                                            <motion.span
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                                initial={{ opacity: 0, x: -10 }}
+                                                whileHover={{ opacity: 1, x: 0 }}
+                                            >
+                                                {item.icon}
+                                            </motion.span>
+                                            <span className="relative">
+                                                {item.text}
+                                                <motion.div
+                                                    className="absolute -bottom-1 left-0 h-0.5 bg-primary-foreground/40 rounded-full"
+                                                    initial={{ width: 0 }}
+                                                    whileHover={{ width: '100%' }}
+                                                    transition={{ duration: 0.3 }}
+                                                />
+                                            </span>
+                                        </motion.a>
+                                    ))}
                                 </div>
                             </motion.div>
                         </div>

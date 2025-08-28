@@ -90,14 +90,14 @@ export function AboutSection() {
                         whileHover={{ scale: 1.05 }}
                     >
                         <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
-                        <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-foreground font-bold tracking-tight mobile-text-2xl">
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl text-foreground font-bold tracking-tight mobile-text-2xl">
                             Tentang <span className="text-primary">Ramein</span>
                         </h2>
                     </motion.div>
 
-                    <motion.p
-                        variants={itemVariants}
-                        className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mobile-text-base"
+                                            <motion.p
+                            variants={itemVariants}
+                            className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed mobile-text-base"
                     >
                         Platform event terdepan yang menghubungkan peserta dengan pengalaman berkualitas tinggi.
                         Kami berkomitmen membangun komunitas pembelajar yang kuat dan memberdayakan setiap individu

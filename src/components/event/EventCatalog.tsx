@@ -221,12 +221,12 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                     whileHover={{ scale: 1.05 }}
                 >
                     <Sparkles className="w-8 h-8 text-primary" />
-                    <h2 className="text-5xl lg:text-6xl text-foreground font-bold tracking-tight">
+                    <h2 className="text-3xl lg:text-4xl text-foreground font-bold tracking-tight">
                         {limit ? 'Event ' : 'Katalog '}
                         <span className="text-primary">{limit ? 'Terpopuler' : 'Event'}</span>
                     </h2>
                 </motion.div>
-                <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                <p className="text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                     Temukan event yang sesuai dengan minat dan kebutuhan Anda
                 </p>
             </motion.div>
