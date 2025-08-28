@@ -13,6 +13,8 @@ import { EventDetail } from '@/components/event/EventDetail'
 import { Footer } from '@/components/Footer'
 import { FeaturedGallery } from '@/components/gallery/FeaturedGallery'
 import { ContactSection } from '@/components/ContactSection'
+import EventCarousel from '@/components/event/EventCarousel'
+import TestimonialSection from '@/components/TestimonialSection'
 
 type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact'
 
@@ -161,8 +163,9 @@ interface User {
             <AboutSection />
             <FeaturedGallery onViewEvents={() => handleViewChange('events')} />
             <div className="py-12 lg:py-16">
-              <EventCatalog onEventSelect={handleEventSelect} limit={6} />
+              <EventCarousel onEventSelect={handleEventSelect} />
             </div>
+            <TestimonialSection />
           </motion.div>
         )
     }

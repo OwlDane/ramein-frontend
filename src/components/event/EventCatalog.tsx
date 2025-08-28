@@ -36,6 +36,8 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('date-asc');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const pageSize = 10;
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [serverEvents, setServerEvents] = useState<BackendEvent[] | null>(null);
@@ -171,6 +173,21 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
         }
     }), []);
 
+    // Category color mapping for badges (keeps in-theme with Tailwind palette)
+    const categoryClassMap = useMemo<Record<string, string>>(() => ({
+        technology: 'bg-blue-500 text-white',
+        marketing: 'bg-pink-500 text-white',
+        business: 'bg-amber-500 text-black',
+        design: 'bg-violet-500 text-white',
+        creative: 'bg-emerald-500 text-white',
+        general: 'bg-primary/90 text-primary-foreground'
+    }), []);
+
+    const getCategoryBadgeClass = useCallback((category: string | undefined) => {
+        const key = (category || 'general').toLowerCase();
+        return categoryClassMap[key] || categoryClassMap.general;
+    }, [categoryClassMap]);
+
     const clearFilters = useCallback(() => {
         setSearchQuery('');
         setSelectedCategory('all');
@@ -178,6 +195,18 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
     }, []);
 
     const hasActiveFilters = searchQuery !== '' || selectedCategory !== 'all' || sortBy !== 'date-asc';
+
+    // Reset page when filters or data change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, selectedCategory, sortBy, mappedServerEvents.length]);
+
+    // Pagination calculations
+    const totalItems = events.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const pageStartIdx = (currentPage - 1) * pageSize;
+    const pageEndIdx = Math.min(pageStartIdx + pageSize, totalItems);
+    const pagedEvents = useMemo(() => events.slice(pageStartIdx, pageEndIdx), [events, pageStartIdx, pageEndIdx]);
 
     return (
         <section className="container mx-auto px-4 py-12">
@@ -381,7 +410,7 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                 initial="hidden"
                 animate="visible"
             >
-                {filteredAndSortedEvents.map((event, index) => {
+                {pagedEvents.map((event, index) => {
                     const availability = getAvailabilityStatus(event.currentParticipants, event.maxParticipants);
 
                     return (
@@ -423,9 +452,7 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                                             animate={{ scale: 1 }}
                                             transition={{ delay: index * 0.1 + 0.4 }}
                                         >
-                                            <Badge variant="secondary" className="bg-card/90 text-card-foreground">
-                                                {event.category}
-                                            </Badge>
+                                            <Badge className={`${getCategoryBadgeClass(event.category)} shadow-md`}>{event.category}</Badge>
                                         </motion.div>
                                     </div>
                                 </div>
@@ -577,6 +604,47 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                             Lihat Semua Event
                         </Button>
                     </motion.div>
+                </motion.div>
+            )}
+
+            {!limit && totalItems > 0 && (
+                <motion.div
+                    className="flex items-center justify-between mt-10"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                >
+                    <div className="text-sm text-muted-foreground">
+                        Menampilkan {pageStartIdx + 1}-{pageEndIdx} dari {totalItems} event
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Sebelumnya
+                        </Button>
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                            <Button
+                                key={i}
+                                variant={currentPage === i + 1 ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setCurrentPage(i + 1)}
+                            >
+                                {i + 1}
+                            </Button>
+                        ))}
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Selanjutnya
+                        </Button>
+                    </div>
                 </motion.div>
             )}
         </section>
