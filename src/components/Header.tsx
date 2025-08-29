@@ -379,36 +379,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                         custom={navigation.length + 2}
                                         initial="closed"
                                         animate="open"
-                                        exit="closed"
-                                        className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-border"
-                                    >
-                                        <div className="flex items-center gap-3 lg:gap-4 mb-4">
-                                            <Avatar className="h-10 w-10 lg:h-12 lg:w-12">
-                                                <AvatarImage src={undefined} alt={user?.name ?? 'User avatar'} />
-                                                <AvatarFallback className="bg-primary/20 text-primary">
-                                                    {user?.name?.charAt(0) || 'U'}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <div className="text-base lg:text-lg text-foreground font-medium mobile-text-sm">
-                                                    {user?.name || 'User'}
-                                                </div>
-                                                <div className="text-sm lg:text-base text-muted-foreground mobile-text-sm">
-                                                    {user?.email}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <motion.button
-                                            onClick={() => {
-                                                logout();
-                                                setIsMenuOpen(false);
-                                            }}
-                                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                                            whileHover={{ x: 5 }}
-                                        >
-                                            <LogOut className="w-4 h-4 lg:w-5 lg:h-5" />
-                                            <span className="text-sm lg:text-base mobile-text-xs">Logout</span>
-                                        </motion.button>
+                                        exit="closed"                                    >
                                     </motion.div>
                                 )}
 
