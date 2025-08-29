@@ -1,22 +1,26 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, Play, Calendar, Users, MapPin, ArrowRight } from 'lucide-react';
+import { X, Play, Calendar, Users, MapPin, ArrowRight, Loader2 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
+import { apiFetch, buildQuery } from '@/lib/api';
+import type { BackendEvent } from '@/types/event';
 
 interface GalleryItem {
-    id: number;
+    id: string;
     type: 'event' | 'highlight' | 'community';
     title: string;
     description: string;
     image: string;
     category?: string;
     date?: string;
+    time?: string;
     participants?: number;
     location?: string;
     isVideo: boolean;
+    flyer?: string;
 }
 
 interface FeaturedGalleryProps {
@@ -25,73 +29,71 @@ interface FeaturedGalleryProps {
 
 export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
     const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string>('');
 
-    const galleryItems: GalleryItem[] = useMemo(() => [
-        {
-            id: 1,
+    // Default fallback image provider
+    const defaultFlyerFor = useCallback((seed: string) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/450`, []);
+
+    // Transform backend events to gallery items
+    const transformEventsToGalleryItems = useCallback((events: BackendEvent[]): GalleryItem[] => {
+        return events.slice(0, 6).map((event, index) => ({
+            id: event.id,
             type: 'event' as const,
-            title: 'Tech Conference 2025',
-            description: 'Konferensi teknologi terbesar tahun ini',
-            image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-            category: 'Technology',
-            date: '2025-03-15',
-            participants: 500,
-            location: 'Jakarta Convention Center',
-            isVideo: false
-        },
-        {
-            id: 2,
-            type: 'highlight' as const,
-            title: 'Event Highlights 2024',
-            description: 'Momen terbaik dari event-event tahun lalu',
-            image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
-            isVideo: true
-        },
-        {
-            id: 3,
-            type: 'event' as const,
-            title: 'Design Workshop',
-            description: 'Workshop intensif untuk designer',
-            image: 'https://images.unsplash.com/photo-1558403194-611308249627?w=800',
-            category: 'Design',
-            date: '2025-02-20',
-            participants: 80,
-            location: 'Bandung Creative Hub',
-            isVideo: false
-        },
-        {
-            id: 4,
-            type: 'event' as const,
-            title: 'Startup Pitch Day',
-            description: 'Kompetisi pitch startup terbaik',
-            image: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800',
-            category: 'Business',
-            date: '2025-01-30',
-            participants: 200,
-            location: 'Innovation Hub',
-            isVideo: false
-        },
-        {
-            id: 5,
-            type: 'community' as const,
-            title: 'Community Meetup',
-            description: 'Gathering komunitas developer',
-            image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800',
-            isVideo: false
-        },
-        {
-            id: 6,
-            type: 'event' as const,
-            title: 'Marketing Summit',
-            description: 'Summit digital marketing terdepan',
-            image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800',
-            category: 'Marketing',
-            date: '2025-04-10',
-            participants: 300,
-            location: 'Surabaya Convention Hall',
-            isVideo: false
+            title: event.title,
+            description: event.description,
+            image: event.flyer && event.flyer.startsWith('http') ? event.flyer : defaultFlyerFor(event.id),
+            category: 'Event', // You can add category field to BackendEvent if needed
+            date: event.date,
+            time: event.time,
+            participants: Math.floor(Math.random() * 200) + 50, // Random participants for demo
+            location: event.location,
+            isVideo: false,
+            flyer: event.flyer
+        }));
+    }, [defaultFlyerFor]);
+
+    // Fetch featured events from database
+    const fetchFeaturedEvents = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+            // Fetch events with featured/sort parameters
+            const query = buildQuery({
+                sort: 'nearest',
+                limit: 6
+            });
+            const events = await apiFetch<BackendEvent[]>(`/events${query}`);
+            
+            // Transform events to gallery items
+            const transformedItems = transformEventsToGalleryItems(events);
+            setGalleryItems(transformedItems);
+        } catch (err: any) {
+            setError(err?.message || 'Gagal memuat gallery');
+            // Fallback to some default items if API fails
+            setGalleryItems([
+                {
+                    id: 'fallback-1',
+                    type: 'event' as const,
+                    title: 'Event Terbaru',
+                    description: 'Event menarik akan segera hadir',
+                    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+                    category: 'Coming Soon',
+                    date: '2025-01-01',
+                    participants: 100,
+                    location: 'TBD',
+                    isVideo: false
+                }
+            ]);
+        } finally {
+            setLoading(false);
         }
-    ], []);
+    }, [transformEventsToGalleryItems]);
+
+    useEffect(() => {
+        fetchFeaturedEvents();
+    }, [fetchFeaturedEvents]);
 
     const containerVariants = useMemo(() => ({
         hidden: { opacity: 0 },
@@ -154,15 +156,49 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                     </p>
                 </motion.div>
 
+                {/* Loading State */}
+                {loading && (
+                    <motion.div
+                        className="col-span-full flex items-center justify-center py-20"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        <div className="text-center">
+                            <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+                            <p className="text-muted-foreground">Memuat gallery...</p>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Error State */}
+                {error && !loading && (
+                    <motion.div
+                        className="col-span-full flex items-center justify-center py-20"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        <div className="text-center">
+                            <p className="text-destructive mb-4">{error}</p>
+                            <Button 
+                                onClick={fetchFeaturedEvents} 
+                                variant="outline"
+                            >
+                                Coba Lagi
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* Justified Grid Gallery */}
-                <motion.div
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                >
-                    {galleryItems.map((item, index) => {
+                {!loading && !error && (
+                    <motion.div
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
+                        variants={containerVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                    >
+                        {galleryItems.map((item, index) => {
                         // Different aspect ratios for justified layout
                         const getAspectClass = () => {
                             switch (index % 6) {
@@ -271,7 +307,8 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                             </motion.div>
                         );
                     })}
-                </motion.div>
+                    </motion.div>
+                )}
 
                 {/* CTA Section */}
                 <motion.div

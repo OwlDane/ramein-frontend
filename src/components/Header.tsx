@@ -224,31 +224,31 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                             >
                                 <motion.div
                                     animate={isMenuOpen ? "open" : "closed"}
-                                    className="w-5 h-5 sm:w-6 sm:h-6 flex flex-col justify-center items-center"
+                                    className="w-6 h-6 sm:w-7 sm:h-7 flex flex-col justify-center items-center gap-1"
                                 >
                                     <motion.span
                                         variants={{
                                             closed: { rotate: 0, y: 0, opacity: 1 },
-                                            open: { rotate: 45, y: 6, opacity: 1 }
+                                            open: { rotate: 45, y: 8, opacity: 1 }
                                         }}
                                         transition={{ duration: 0.3 }}
-                                        className="w-5 h-0.5 sm:w-6 sm:h-0.5 bg-foreground block absolute"
+                                        className="w-5 h-1 sm:w-6 sm:h-1 bg-foreground block rounded-full shadow-sm"
                                     />
                                     <motion.span
                                         variants={{
-                                            closed: { opacity: 1 },
-                                            open: { opacity: 0 }
+                                            closed: { opacity: 1, x: 0 },
+                                            open: { opacity: 0, x: -10 }
                                         }}
                                         transition={{ duration: 0.3 }}
-                                        className="w-5 h-0.5 sm:w-6 sm:h-0.5 bg-foreground block absolute"
+                                        className="w-5 h-1 sm:w-6 sm:h-1 bg-foreground block rounded-full shadow-sm"
                                     />
                                     <motion.span
                                         variants={{
                                             closed: { rotate: 0, y: 0, opacity: 1 },
-                                            open: { rotate: -45, y: -6, opacity: 1 }
+                                            open: { rotate: -45, y: -8, opacity: 1 }
                                         }}
                                         transition={{ duration: 0.3 }}
-                                        className="w-5 h-0.5 sm:w-6 sm:h-0.5 bg-foreground block absolute"
+                                        className="w-5 h-1 sm:w-6 sm:h-1 bg-foreground block rounded-full shadow-sm"
                                     />
                                 </motion.div>
                             </motion.button>

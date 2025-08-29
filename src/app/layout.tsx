@@ -3,6 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { AuthProvider } from '../contexts/AuthContext'
 
+
 export const metadata: Metadata = {
   title: 'Ramein',
   description: 'Sistem Informasi Manajemen Kegiatan',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
         <AuthProvider>
           {children}
         </AuthProvider>

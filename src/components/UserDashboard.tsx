@@ -27,8 +27,8 @@ export function UserDashboard({ user }: UserDashboardProps) {
     const [activeTab, setActiveTab] = useState('overview');
 
     useEffect(() => {
-        // Get user token from localStorage
-        const token = localStorage.getItem('userToken');
+        // Get user token from localStorage (aligned with AuthContext key)
+        const token = localStorage.getItem('ramein_token');
         if (token) {
             setUserToken(token);
         }

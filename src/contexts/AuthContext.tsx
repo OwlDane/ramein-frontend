@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { User } from '../types/user';
+import type { User, LoginResponse, RegisterResponse, RegisterRequest } from '../types/user';
 import { authAPI } from '../lib/auth';
 
 interface AuthContextType {
@@ -10,9 +10,10 @@ interface AuthContextType {
     isLoading: boolean;
     isLoggedIn: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (userData: any) => Promise<void>;
+    register: (userData: RegisterRequest) => Promise<RegisterResponse>;
     logout: () => void;
-    verifyEmail: (token: string) => Promise<void>;
+    requestOTP: (email: string) => Promise<void>;
+    verifyOTP: (email: string, otp: string, purpose: 'email_verification' | 'login_completion') => Promise<any>;
     requestPasswordReset: (email: string) => Promise<void>;
     resetPassword: (token: string, newPassword: string) => Promise<void>;
 }
@@ -60,21 +61,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (email: string, password: string) => {
         try {
-            const response = await authAPI.login({ email, password });
-            setUser(response.user as User);
-            setToken(response.token);
-            localStorage.setItem('ramein_token', response.token);
+            const response: LoginResponse = await authAPI.login({ email, password });
+            // Direct login: expect token + user
+            if (response.token && response.user) {
+                const userData: User = {
+                    id: response.user.id,
+                    email: response.user.email,
+                    name: response.user.name,
+                    phone: '', // These fields are not returned by login, will be filled by profile fetch
+                    address: '',
+                    education: '',
+                    isVerified: true, // If login succeeds, user is verified
+                    isEmailVerified: true,
+                    isOtpVerified: true,
+                    role: response.user.role as 'USER' | 'ADMIN',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                setUser(userData);
+                setToken(response.token);
+                localStorage.setItem('ramein_token', response.token);
+                
+                // Fetch complete user profile
+                await fetchUserProfile(response.token);
+                return;
+            }
+            
+            throw new Error('Invalid login response');
         } catch (error) {
             throw error;
         }
     };
 
-    const register = async (userData: any) => {
+    const register = async (userData: RegisterRequest) => {
         try {
-            const response = await authAPI.register(userData);
-            setUser(response.user as User);
-            setToken(response.token);
-            localStorage.setItem('ramein_token', response.token);
+            const response: RegisterResponse = await authAPI.register(userData);
+            // Registration successful, return the message for proper handling
+            return response;
         } catch (error) {
             throw error;
         }
@@ -90,13 +114,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('ramein_token');
     };
 
-    const verifyEmail = async (verificationToken: string) => {
+    const requestOTP = async (email: string) => {
         try {
-            await authAPI.verifyEmail({ token: verificationToken });
-            // Update user verification status
-            if (user) {
-                setUser({ ...user, isVerified: true });
+            await authAPI.requestOTP(email);
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    const verifyOTP = async (email: string, otp: string, purpose: 'email_verification' | 'login_completion') => {
+        try {
+            const response = await authAPI.verifyOTP(email, otp, purpose);
+            
+            if (purpose === 'email_verification') {
+                // Update user verification status for email verification
+                if (user) {
+                    setUser({ ...user, isVerified: true, isEmailVerified: true });
+                }
             }
+            
+            return response;
         } catch (error) {
             throw error;
         }
@@ -126,7 +163,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
-        verifyEmail,
+        requestOTP,
+        verifyOTP,
         requestPasswordReset,
         resetPassword,
     };

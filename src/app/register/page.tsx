@@ -37,13 +37,10 @@ export default function RegisterPage() {
 			return false;
 		}
 
-		if (formData.password.length < 8) {
-			setError('Password must be at least 8 characters long');
-			return false;
-		}
-
-		if (!/\d/.test(formData.password) || !/[a-z]/.test(formData.password)) {
-			setError('Password must contain at least one number and one lowercase letter');
+		// Match backend password validation exactly - support more special characters
+		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&'#*+=\-])[A-Za-z\d@$!%?&'#*+=\-]{8,}$/;
+		if (!passwordRegex.test(formData.password)) {
+			setError('Password harus minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan karakter spesial');
 			return false;
 		}
 
@@ -60,8 +57,10 @@ export default function RegisterPage() {
 
 		try {
 			const { confirmPassword, ...registerData } = formData;
-			await register(registerData);
-			router.push('/dashboard');
+			const response = await register(registerData);
+			// Registration successful, redirect to verify-email with email parameter
+			setError(''); // Clear any previous errors
+			router.push(`/verify-email?email=${encodeURIComponent(formData.email)}&fromRegister=true`);
 		} catch (err: any) {
 			setError(err.message || 'Registration failed. Please try again.');
 		} finally {
@@ -236,7 +235,7 @@ export default function RegisterPage() {
 								</button>
 							</div>
 							<p className="text-xs text-muted-foreground mt-1">
-								Password should be at least 8 characters including a number and a lowercase letter.
+								Password harus minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%?&'#*+=-).
 							</p>
 						</div>
 
@@ -387,18 +386,18 @@ export default function RegisterPage() {
 						</p>
 					</div>
 
-					{/* Sign In Link */}
-					<div className="mt-6 text-center">
-						<p className="text-sm text-muted-foreground">
-							Already have an account?{' '}
-							<Link
-								href="/login"
-								className="text-primary hover:text-primary/80 font-medium transition-colors"
-							>
-								Sign in →
-							</Link>
-						</p>
-					</div>
+					                    {/* Sign In Link */}
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-muted-foreground">
+                            Already have an account?{' '}
+                            <Link
+                                href="/login"
+                                className="text-primary hover:text-primary/80 font-medium transition-colors"
+                            >
+                                Sign in →
+                            </Link>
+                        </p>
+                    </div>
 				</div>
 			</div>
 		</div>
