@@ -129,7 +129,7 @@ export function ContactSection() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-accent/30 to-muted/50">
+        <div className="min-h-screen bg-gradient-dark">
             {/* Hero Section */}
             <section className="relative overflow-hidden py-16 lg:py-24">
                 <div className="absolute inset-0 opacity-5">
@@ -144,7 +144,7 @@ export function ContactSection() {
                             repeatType: 'reverse'
                         }}
                         style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300ED64' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                             backgroundSize: '60px 60px'
                         }}
                     />
@@ -164,7 +164,7 @@ export function ContactSection() {
                         >
                             <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
                             <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl text-foreground font-bold tracking-tight mobile-text-2xl">
-                                Get In <span className="text-primary">Touch</span>
+                                Get In <span className="text-gradient-primary">Touch</span>
                             </h1>
                         </motion.div>
                         <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mobile-text-base">
@@ -188,7 +188,7 @@ export function ContactSection() {
                                 whileHover={{ scale: 1.05 }}
                                 className="text-center"
                             >
-                                <Card className="p-4 lg:p-6 bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300">
+                                <Card className="p-4 lg:p-6 bg-card/50 backdrop-blur-sm border-border/50 hover:shadow-glow transition-all duration-300">
                                     <CardContent className="p-0">
                                         <motion.div
                                             className="w-10 h-10 lg:w-12 lg:h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3 lg:mb-4"
@@ -222,7 +222,7 @@ export function ContactSection() {
                             whileInView="visible"
                             viewport={{ once: true }}
                         >
-                            <Card className="p-6 lg:p-8 bg-card/80 backdrop-blur-sm border-border/50 shadow-xl">
+                            <Card className="p-6 lg:p-8 bg-card/80 backdrop-blur-sm border-border/50 shadow-glow">
                                 <CardContent className="p-0">
                                     <div className="mb-6 lg:mb-8">
                                         <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-3 lg:mb-4 mobile-text-xl">

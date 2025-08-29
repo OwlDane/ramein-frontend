@@ -6,7 +6,12 @@ import {
     Users, Award, Target, Sparkles, ArrowRight, Globe, Clock, Shield, Heart
 } from 'lucide-react';
 
-export function AboutSection() {
+interface AboutSectionProps {
+    onViewContact?: () => void;
+    onViewEvents?: () => void;
+}
+
+export function AboutSection({ onViewContact, onViewEvents }: AboutSectionProps) {
     const stats = useMemo(() => [
         { icon: Users, value: '50K+', label: 'Active Users', description: 'Pengguna aktif bergabung setiap bulan' },
         { icon: Award, value: '1000+', label: 'Events Hosted', description: 'Event berkualitas telah diselenggarakan' },
@@ -56,7 +61,7 @@ export function AboutSection() {
     }), []);
 
     return (
-        <section className="py-16 lg:py-24 bg-gradient-to-br from-muted/30 to-accent/20 relative overflow-hidden">
+        <section id="about-section" className="py-16 lg:py-24 bg-gradient-dark relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
                 <motion.div
@@ -70,7 +75,7 @@ export function AboutSection() {
                         repeatType: 'reverse'
                     }}
                     style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300ED64' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                         backgroundSize: '60px 60px'
                     }}
                 />
@@ -91,13 +96,13 @@ export function AboutSection() {
                     >
                         <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
                         <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl text-foreground font-bold tracking-tight mobile-text-2xl">
-                            Tentang <span className="text-primary">Ramein</span>
+                            Tentang <span className="text-gradient-primary">Ramein</span>
                         </h2>
                     </motion.div>
 
-                                            <motion.p
-                            variants={itemVariants}
-                            className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed mobile-text-base"
+                    <motion.p
+                        variants={itemVariants}
+                        className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed mobile-text-base"
                     >
                         Platform event terdepan yang menghubungkan peserta dengan pengalaman berkualitas tinggi.
                         Kami berkomitmen membangun komunitas pembelajar yang kuat dan memberdayakan setiap individu
@@ -120,10 +125,10 @@ export function AboutSection() {
                             whileHover={{ scale: 1.05, y: -5 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-lg transition-all duration-300">
+                            <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-glow transition-all duration-300">
                                 <CardContent className="p-4 lg:p-6 text-center">
                                     <motion.div
-                                        className="w-10 h-10 lg:w-12 lg:h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3 lg:mb-4"
+                                        className="w-10 h-10 lg:w-12 lg:h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3 lg:mb-4 border border-border/50"
                                         whileHover={{ rotate: 360 }}
                                         transition={{ duration: 0.6 }}
                                     >
@@ -131,7 +136,7 @@ export function AboutSection() {
                                     </motion.div>
 
                                     <motion.div
-                                        className="text-2xl lg:text-3xl font-bold text-foreground mb-1 lg:mb-2 mobile-text-xl"
+                                        className="text-2xl lg:text-3xl font-bold text-primary mb-1 lg:mb-2 mobile-text-xl"
                                         initial={{ opacity: 0, scale: 0 }}
                                         whileInView={{ opacity: 1, scale: 1 }}
                                         viewport={{ once: true }}
@@ -170,7 +175,7 @@ export function AboutSection() {
 
                             <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-4 lg:mb-6 leading-tight mobile-text-xl">
                                 Platform Event Terpercaya untuk
-                                <span className="text-primary"> Masa Depan Anda</span>
+                                <span className="text-gradient-primary"> Masa Depan Anda</span>
                             </h3>
 
                             <p className="text-base lg:text-lg text-muted-foreground leading-relaxed mb-6 lg:mb-8 mobile-text-sm">
@@ -190,7 +195,7 @@ export function AboutSection() {
                                     transition={{ duration: 0.2 }}
                                 >
                                     <motion.div
-                                        className="w-10 h-10 lg:w-12 lg:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors"
+                                        className="w-10 h-10 lg:w-12 lg:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors border border-border/50"
                                         whileHover={{ rotate: 360, scale: 1.1 }}
                                         transition={{ duration: 0.6 }}
                                     >
@@ -214,10 +219,11 @@ export function AboutSection() {
                             variants={itemVariants}
                             className="pt-4 lg:pt-6"
                         >
-                            <motion.div
-                                className="inline-flex items-center gap-2 text-primary font-medium cursor-pointer group"
+                            <motion.button
+                                className="inline-flex items-center gap-2 text-primary font-medium cursor-pointer group hover:text-primary/80 transition-colors"
                                 whileHover={{ x: 5 }}
                                 transition={{ duration: 0.2 }}
+                                onClick={onViewContact || onViewEvents}
                             >
                                 <span className="text-base lg:text-lg mobile-text-sm">Pelajari lebih lanjut tentang kami</span>
                                 <motion.div
@@ -226,7 +232,7 @@ export function AboutSection() {
                                 >
                                     <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-1 transition-transform" />
                                 </motion.div>
-                            </motion.div>
+                            </motion.button>
                         </motion.div>
                     </motion.div>
 
@@ -238,7 +244,7 @@ export function AboutSection() {
                         viewport={{ once: true }}
                         className="relative"
                     >
-                        <Card className="bg-gradient-to-br from-primary/5 to-accent/10 border-primary/20 p-6 lg:p-8 overflow-hidden">
+                        <Card className="bg-gradient-to-br from-primary/5 to-accent/10 border-primary/20 p-6 lg:p-8 overflow-hidden shadow-glow">
                             <CardContent className="p-0 relative">
                                 {/* Background Pattern */}
                                 <div className="absolute inset-0 opacity-10">
@@ -258,7 +264,7 @@ export function AboutSection() {
                                 {/* Central Icon */}
                                 <div className="relative z-10 text-center">
                                     <motion.div
-                                        className="w-20 h-20 lg:w-24 lg:h-24 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 lg:mb-8"
+                                        className="w-20 h-20 lg:w-24 lg:h-24 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 lg:mb-8 border border-primary/20"
                                         animate={{
                                             scale: [1, 1.1, 1],
                                             rotate: [0, 5, -5, 0]

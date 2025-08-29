@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, Lock, Eye, EyeOff, User, Phone, MapPin, GraduationCap, Github } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, Phone, MapPin, GraduationCap, Github, ArrowLeft } from 'lucide-react';
 
 export default function RegisterPage() {
 	const [formData, setFormData] = useState({
@@ -76,6 +76,19 @@ export default function RegisterPage() {
 
 	return (
 		<div className="min-h-screen bg-background flex">
+			{/* Back to Home Button */}
+			<div className="absolute top-6 left-6 z-50">
+				<Link href="/">
+					<Button
+						variant="ghost"
+						className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+					>
+						<ArrowLeft className="w-4 h-4" />
+						Back to Home
+					</Button>
+				</Link>
+			</div>
+
 			{/* Left Side - Dark Theme with Illustration */}
 			<div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
 				<div

@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Calendar, User, LogOut, Home, ArrowRight, Sparkles, Mail } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { PopupContent } from './PopupContent';
 
 interface HeaderProps {
     onViewChange: (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact') => void;
@@ -18,6 +19,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
     const isLoggedIn = !!user;
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [popupType, setPopupType] = useState<'about' | 'contact' | 'faq' | 'privacy' | 'terms' | null>(null);
 
     // Mouse trail effect - multiple elements with different speeds for 3D depth
     const [trailElements, setTrailElements] = useState([
@@ -76,6 +78,14 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
         }
     }, [isLoggedIn, router, onViewChange]);
 
+    const handlePopupOpen = useCallback((type: 'about' | 'contact' | 'faq' | 'privacy' | 'terms') => {
+        setPopupType(type);
+    }, []);
+
+    const handlePopupClose = useCallback(() => {
+        setPopupType(null);
+    }, []);
+
     const menuVariants = useMemo(() => ({
         closed: {
             opacity: 0,
@@ -113,7 +123,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
     return (
         <>
             <motion.header
-                className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border"
+                className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border"
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" as const }}
@@ -128,7 +138,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                             whileTap={{ scale: 0.95 }}
                         >
                             <motion.div
-                                className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-200"
+                                className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center shadow-glow group-hover:shadow-glow-hover transition-all duration-200"
                                 whileHover={{ rotate: 360 }}
                                 transition={{ duration: 0.8, ease: "easeInOut" }}
                             >
@@ -179,8 +189,8 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                                     whileHover={{ scale: 1.1 }}
                                                     whileTap={{ scale: 0.95 }}
                                                 >
-                                                    <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
-                                                        <Avatar className="h-8 w-8 sm:h-10 sm:h-10">
+                                                    <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-accent">
+                                                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                                                             <AvatarImage src={undefined} alt={user?.name ?? 'User avatar'} />
                                                             <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
                                                                 {user?.name?.charAt(0) || 'U'}
@@ -189,12 +199,12 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                                     </Button>
                                                 </motion.div>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-56" align="end">
-                                                <DropdownMenuItem onClick={() => handleNavigation('dashboard')}>
+                                            <DropdownMenuContent className="w-56 bg-card border-border" align="end">
+                                                <DropdownMenuItem onClick={() => handleNavigation('dashboard')} className="hover:bg-accent">
                                                     <User className="w-4 h-4 mr-2" />
                                                     Dashboard
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={logout}>
+                                                <DropdownMenuItem onClick={logout} className="hover:bg-accent">
                                                     <LogOut className="w-4 h-4 mr-2" />
                                                     Logout
                                                 </DropdownMenuItem>
@@ -251,7 +261,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
             <AnimatePresence>
                 {isMenuOpen && (
                     <motion.div
-                        className="fixed inset-0 z-40 bg-primary text-primary-foreground"
+                        className="fixed inset-0 z-40 bg-background text-foreground"
                         variants={menuVariants}
                         initial="closed"
                         animate="open"
@@ -271,8 +281,8 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                         exit="closed"
                                         className="mb-8 lg:mb-12"
                                     >
-                                        <h2 className="text-lg sm:text-xl text-primary-foreground/80 mb-2 font-bold mobile-text-lg">Navigasi</h2>
-                                        <div className="w-16 lg:w-20 h-1 bg-primary-foreground/40"></div>
+                                        <h2 className="text-lg sm:text-xl text-foreground/80 mb-2 font-bold mobile-text-lg">Navigasi</h2>
+                                        <div className="w-16 lg:w-20 h-1 bg-primary/40"></div>
                                     </motion.div>
 
                                     <nav className="space-y-4 lg:space-y-8">
@@ -280,7 +290,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                             <motion.button
                                                 key={item.name}
                                                 onClick={() => handleNavigation(item.view)}
-                                                className={`group flex items-center justify-between w-full text-left transition-all duration-300 hover:translate-x-2 lg:hover:translate-x-4 ${currentView === item.view ? 'text-primary-foreground' : 'text-primary-foreground/80 hover:text-primary-foreground'
+                                                className={`group flex items-center justify-between w-full text-left transition-all duration-300 hover:translate-x-2 lg:hover:translate-x-4 ${currentView === item.view ? 'text-foreground' : 'text-foreground/80 hover:text-foreground'
                                                     }`}
                                                 variants={menuItemVariants}
                                                 custom={index + 1}
@@ -294,8 +304,8 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                                 <div className="flex items-center gap-3 lg:gap-4">
                                                     <motion.div
                                                         className={`p-2 lg:p-3 rounded-lg transition-all duration-300 ${currentView === item.view
-                                                                ? 'bg-primary-foreground/20'
-                                                                : 'bg-primary-foreground/10 group-hover:bg-primary-foreground/20'
+                                                                ? 'bg-primary/20'
+                                                                : 'bg-accent/50 group-hover:bg-primary/20'
                                                             }`}
                                                         whileHover={{ scale: 1.1, rotate: 5 }}
                                                     >
@@ -305,7 +315,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                                         <div className="text-base sm:text-lg lg:text-xl xl:text-2xl mb-1 font-bold mobile-text-base">
                                                             {item.name}
                                                         </div>
-                                                        <div className="text-xs sm:text-xs lg:text-sm text-primary-foreground/60 mobile-text-xs">
+                                                        <div className="text-xs sm:text-xs lg:text-sm text-muted-foreground mobile-text-xs">
                                                             {item.description}
                                                         </div>
                                                     </div>
@@ -323,7 +333,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                     {/* Dashboard/Login */}
                                     <motion.button
                                         onClick={handleDashboard}
-                                        className={`group flex items-center justify-between w-full text-left transition-all duration-300 hover:translate-x-2 lg:hover:translate-x-4 ${currentView === 'dashboard' ? 'text-primary-foreground' : 'text-primary-foreground/80 hover:text-primary-foreground'
+                                        className={`group flex items-center justify-between w-full text-left transition-all duration-300 hover:translate-x-2 lg:hover:translate-x-4 ${currentView === 'dashboard' ? 'text-foreground' : 'text-foreground/80 hover:text-foreground'
                                             }`}
                                         variants={menuItemVariants}
                                         custom={navigation.length + 1}
@@ -337,8 +347,8 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                         <div className="flex items-center gap-3 lg:gap-4">
                                             <motion.div
                                                 className={`p-2 lg:p-3 rounded-lg transition-all duration-300 ${currentView === 'dashboard'
-                                                        ? 'bg-primary-foreground/20'
-                                                        : 'bg-primary-foreground/10 group-hover:bg-primary-foreground/20'
+                                                        ? 'bg-primary/20'
+                                                        : 'bg-accent/50 group-hover:bg-primary/20'
                                                     }`}
                                                 whileHover={{ scale: 1.1, rotate: 5 }}
                                             >
@@ -348,7 +358,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                                 <div className="text-base sm:text-lg lg:text-xl xl:text-2xl mb-1 font-bold mobile-text-base">
                                                     {isLoggedIn ? 'Dashboard' : 'Masuk'}
                                                 </div>
-                                                <div className="text-xs sm:text-xs lg:text-sm text-primary-foreground/60 mobile-text-xs">
+                                                <div className="text-xs sm:text-xs lg:text-sm text-muted-foreground mobile-text-xs">
                                                     {isLoggedIn ? 'Kelola akun dan riwayat event' : 'Login atau daftar akun baru'}
                                                 </div>
                                             </div>
@@ -370,20 +380,20 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                         initial="closed"
                                         animate="open"
                                         exit="closed"
-                                        className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-primary-foreground/20"
+                                        className="mt-8 lg:mt-12 pt-6 lg:pt-8 border-t border-border"
                                     >
                                         <div className="flex items-center gap-3 lg:gap-4 mb-4">
                                             <Avatar className="h-10 w-10 lg:h-12 lg:w-12">
                                                 <AvatarImage src={undefined} alt={user?.name ?? 'User avatar'} />
-                                                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground">
+                                                <AvatarFallback className="bg-primary/20 text-primary">
                                                     {user?.name?.charAt(0) || 'U'}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div>
-                                                <div className="text-base lg:text-lg text-primary-foreground font-medium mobile-text-sm">
+                                                <div className="text-base lg:text-lg text-foreground font-medium mobile-text-sm">
                                                     {user?.name || 'User'}
                                                 </div>
-                                                <div className="text-sm lg:text-base text-primary-foreground/60 mobile-text-sm">
+                                                <div className="text-sm lg:text-base text-muted-foreground mobile-text-sm">
                                                     {user?.email}
                                                 </div>
                                             </div>
@@ -393,10 +403,10 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                                 logout();
                                                 setIsMenuOpen(false);
                                             }}
-                                            className="flex items-center gap-2 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                                             whileHover={{ x: 5 }}
                                         >
-                                            <LogOut className="w-4 h-4 lg:w-5 lg:w-5" />
+                                            <LogOut className="w-4 h-4 lg:w-5 lg:h-5" />
                                             <span className="text-sm lg:text-base mobile-text-xs">Logout</span>
                                         </motion.button>
                                     </motion.div>
@@ -415,7 +425,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                     {trailElements.map((element, index) => (
                                         <motion.div
                                             key={index}
-                                            className="absolute rounded-full bg-primary-foreground/20 backdrop-blur-sm"
+                                            className="absolute rounded-full bg-primary/20 backdrop-blur-sm"
                                             style={{
                                                 width: element.size,
                                                 height: element.size,
@@ -437,7 +447,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                     
                                     {/* Main cursor follower */}
                                     <motion.div
-                                        className="absolute w-4 h-4 rounded-full bg-primary-foreground/40 backdrop-blur-sm border border-primary-foreground/60"
+                                        className="absolute w-4 h-4 rounded-full bg-primary/40 backdrop-blur-sm border border-primary/60"
                                         style={{
                                             x: mousePosition.x - 8,
                                             y: mousePosition.y - 8,
@@ -456,7 +466,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
 
                             {/* Bottom Info - Mobile optimized */}
                             <motion.div
-                                className="absolute bottom-4 lg:bottom-8 left-4 right-4 flex flex-col md:flex-row justify-between items-center gap-3 lg:gap-4 text-xs lg:text-base text-primary-foreground/60 mobile-text-xs"
+                                className="absolute bottom-4 lg:bottom-8 left-4 right-4 flex flex-col md:flex-row justify-between items-center gap-3 lg:gap-4 text-xs lg:text-base text-muted-foreground mobile-text-xs"
                                 variants={menuItemVariants}
                                 custom={navigation.length + 4}
                                 initial="closed"
@@ -465,14 +475,14 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                             >
                                 <div className="flex gap-4 lg:gap-8">
                                     {[
-                                        { text: 'Tentang Kami', icon: '🏢', href: '/about' },
-                                        { text: 'Hubungi', icon: '📞', href: '/contact' },
-                                        { text: 'FAQ', icon: '❓', href: '/faq' }
+                                        { text: 'Tentang Kami', icon: '🏢', type: 'about' as const },
+                                        { text: 'Hubungi', icon: '📞', type: 'contact' as const },
+                                        { text: 'FAQ', icon: '❓', type: 'faq' as const }
                                     ].map((item, index) => (
-                                        <motion.a
+                                        <motion.button
                                             key={item.text}
-                                            href={item.href}
-                                            className="group flex items-center gap-2 hover:text-primary-foreground transition-colors duration-300"
+                                            onClick={() => handlePopupOpen(item.type)}
+                                            className="group flex items-center gap-2 hover:text-foreground transition-colors duration-300"
                                             whileHover={{ 
                                                 y: -2,
                                                 scale: 1.05,
@@ -490,24 +500,24 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                             <span className="relative">
                                                 {item.text}
                                                 <motion.div
-                                                    className="absolute -bottom-1 left-0 h-0.5 bg-primary-foreground/40 rounded-full"
+                                                    className="absolute -bottom-1 left-0 h-0.5 bg-primary/40 rounded-full"
                                                     initial={{ width: 0 }}
                                                     whileHover={{ width: '100%' }}
                                                     transition={{ duration: 0.3 }}
                                                 />
                                             </span>
-                                        </motion.a>
+                                        </motion.button>
                                     ))}
                                 </div>
                                 <div className="flex gap-3 lg:gap-6">
                                     {[
-                                        { text: 'Privacy', icon: '🔒', href: '/privacy' },
-                                        { text: 'Terms', icon: '📋', href: '/terms' }
+                                        { text: 'Privacy', icon: '🔒', type: 'privacy' as const },
+                                        { text: 'Terms', icon: '📋', type: 'terms' as const }
                                     ].map((item, index) => (
-                                        <motion.a
+                                        <motion.button
                                             key={item.text}
-                                            href={item.href}
-                                            className="group flex items-center gap-2 hover:text-primary-foreground transition-colors duration-300"
+                                            onClick={() => handlePopupOpen(item.type)}
+                                            className="group flex items-center gap-2 hover:text-foreground transition-colors duration-300"
                                             whileHover={{ 
                                                 y: -2,
                                                 scale: 1.05,
@@ -525,13 +535,13 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                             <span className="relative">
                                                 {item.text}
                                                 <motion.div
-                                                    className="absolute -bottom-1 left-0 h-0.5 bg-primary-foreground/40 rounded-full"
+                                                    className="absolute -bottom-1 left-0 h-0.5 bg-primary/40 rounded-full"
                                                     initial={{ width: 0 }}
                                                     whileHover={{ width: '100%' }}
                                                     transition={{ duration: 0.3 }}
                                                 />
                                             </span>
-                                        </motion.a>
+                                        </motion.button>
                                     ))}
                                 </div>
                             </motion.div>
@@ -539,6 +549,15 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Popup Content */}
+            {popupType && (
+                <PopupContent
+                    type={popupType}
+                    isOpen={!!popupType}
+                    onClose={handlePopupClose}
+                />
+            )}
         </>
     );
 }

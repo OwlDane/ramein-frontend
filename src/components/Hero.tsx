@@ -7,9 +7,10 @@ import { Calendar, Users, Star, ArrowRight, Sparkles, Zap } from 'lucide-react'
 
 interface HeroProps {
     onViewEvents: () => void;
+    onViewAbout?: () => void;
 }
 
-export function Hero({ onViewEvents }: HeroProps) {
+export function Hero({ onViewEvents, onViewAbout }: HeroProps) {
     const { scrollY } = useScroll()
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
@@ -65,21 +66,23 @@ export function Hero({ onViewEvents }: HeroProps) {
     }
 
     return (
-        <section className="relative overflow-hidden bg-gradient-to-br from-background via-muted/30 to-accent/50 text-foreground min-h-[100vh] flex items-center">
+        <section className="relative overflow-hidden bg-gradient-dark text-foreground min-h-[100vh] flex items-center">
+            {/* Subtle background pattern */}
             <motion.div className="absolute inset-0" style={{ y: backgroundY }}>
                 <motion.div
-                    className="absolute inset-0 opacity-10"
+                    className="absolute inset-0 opacity-5"
                     animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
                     transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
                     style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Ccircle cx='5' cy='5' r='2'/%3E%3Ccircle cx='55' cy='55' r='2'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300ED64' fill-opacity='0.1'%3E%3Ccircle cx='5' cy='5' r='2'/%3E%3Ccircle cx='55' cy='55' r='2'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
                         backgroundSize: '60px 60px'
                     }}
                 />
             </motion.div>
 
+            {/* Floating background elements */}
             <motion.div
-                className="absolute top-20 left-10 w-32 h-32 bg-primary/5 rounded-full blur-xl"
+                className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-xl"
                 style={{
                     x: mousePosition.x * 0.5,
                     y: mousePosition.y * 0.3,
@@ -92,7 +95,7 @@ export function Hero({ onViewEvents }: HeroProps) {
             />
 
             <motion.div
-                className="absolute bottom-20 right-10 w-40 h-40 bg-accent/20 rounded-full blur-xl"
+                className="absolute bottom-20 right-10 w-40 h-40 bg-primary/5 rounded-full blur-xl"
                 style={{
                     x: mousePosition.x * -0.3,
                     y: mousePosition.y * 0.5,
@@ -115,11 +118,11 @@ export function Hero({ onViewEvents }: HeroProps) {
                     {/* TEXT SECTION */}
                     <motion.div className="text-center lg:text-left" style={{ y: textY }}>
                         <motion.div
-                            className="inline-flex items-center gap-3 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-border"
+                            className="inline-flex items-center gap-3 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-border/50"
                             variants={itemVariants}
                             whileHover={{ scale: 1.05 }}
                             style={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                backgroundColor: 'rgba(0, 237, 100, 0.1)',
                                 x: mousePosition.x * 0.2
                             }}
                         >
@@ -154,7 +157,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                                         y: mousePosition.y * -0.8
                                     }}
                                 >
-                                    <span className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent">
+                                    <span className="text-gradient-primary">
                                         Event
                                     </span>
                                     <motion.div
@@ -215,7 +218,11 @@ export function Hero({ onViewEvents }: HeroProps) {
 
                         <motion.div className="flex flex-col sm:flex-row gap-6 mb-16" variants={itemVariants} style={{ x: mousePosition.x * 0.15 }}>
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button onClick={onViewEvents} size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl hover:shadow-2xl transition-all duration-200 group text-base px-8 py-6">
+                                <Button 
+                                    onClick={onViewEvents} 
+                                    size="lg" 
+                                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow hover:shadow-glow-hover transition-all duration-200 group text-base px-8 py-6 border-0"
+                                >
                                     Jelajahi Event
                                     <motion.div
                                         className="ml-3"
@@ -228,7 +235,12 @@ export function Hero({ onViewEvents }: HeroProps) {
                             </motion.div>
 
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button variant="outline" size="lg" className="border-2 border-border bg-background/50 text-foreground hover:bg-accent hover:border-primary backdrop-blur-sm transition-all duration-200 text-base px-8 py-6">
+                                <Button 
+                                    variant="outline" 
+                                    size="lg" 
+                                    className="border-2 border-border bg-card/50 text-foreground hover:bg-accent hover:border-primary backdrop-blur-sm transition-all duration-200 text-base px-8 py-6"
+                                    onClick={onViewAbout || onViewEvents}
+                                >
                                     Pelajari Lebih Lanjut
                                 </Button>
                             </motion.div>
@@ -252,7 +264,7 @@ export function Hero({ onViewEvents }: HeroProps) {
                                     }}
                                 >
                                     <motion.div
-                                        className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors backdrop-blur-sm"
+                                        className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors backdrop-blur-sm border border-border/50"
                                         whileHover={{ rotate: 360 }}
                                         transition={{ duration: 0.6 }}
                                     >

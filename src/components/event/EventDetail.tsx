@@ -403,7 +403,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gradient-dark">
             {/* Header with Back Button */}
             <motion.div
                 className="bg-card border-b border-border sticky top-16 z-10"
@@ -435,7 +435,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                     <div className="lg:col-span-2 space-y-8">
                         {/* Hero Section */}
                         <motion.div variants={itemVariants}>
-                            <Card className="overflow-hidden border-border shadow-xl">
+                            <Card className="overflow-hidden border-border shadow-glow">
                                 <div className="relative h-96">
                                     <ImageWithFallback
                                         src={event.image}

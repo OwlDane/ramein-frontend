@@ -141,8 +141,23 @@ export default function HomePage() {
             variants={pageVariants}
             transition={pageTransition}
           >
-            <Hero onViewEvents={() => handleViewChange('events')} />
-            <AboutSection />
+            <Hero 
+                onViewEvents={() => handleViewChange('events')} 
+                onViewAbout={() => {
+                    // Scroll to About section (which is the next section)
+                    const aboutSection = document.querySelector('#about-section');
+                    if (aboutSection) {
+                        aboutSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        // Fallback to events if about section is not found
+                        handleViewChange('events');
+                    }
+                }}
+            />
+            <AboutSection 
+                onViewContact={() => handleViewChange('contact')}
+                onViewEvents={() => handleViewChange('events')}
+            />
             <FeaturedGallery onViewEvents={() => handleViewChange('events')} />
             <div className="py-12 lg:py-16">
               <EventCarousel onEventSelect={handleEventSelect} />

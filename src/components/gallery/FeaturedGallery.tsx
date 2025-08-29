@@ -146,7 +146,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                     transition={{ duration: 0.6 }}
                 >
                     <h2 className="text-3xl lg:text-4xl mb-6 text-foreground font-bold tracking-tight">
-                        Featured <span className="text-primary">Gallery</span>
+                        Featured <span className="text-gradient-primary">Gallery</span>
                     </h2>
                     <p className="text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                         Jelajahi momen-momen terbaik dari event-event yang telah diselenggarakan
@@ -185,7 +185,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => setSelectedItem(item)}
                             >
-                                <Card className="relative h-full min-h-[250px] overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500">
+                                <Card className="relative h-full min-h-[250px] overflow-hidden border-0 shadow-glow hover:shadow-glow-hover transition-all duration-500">
                                     <div className="relative h-full">
                                         <motion.div
                                             className="absolute inset-0"

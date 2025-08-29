@@ -223,7 +223,7 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                     <Sparkles className="w-8 h-8 text-primary" />
                     <h2 className="text-3xl lg:text-4xl text-foreground font-bold tracking-tight">
                         {limit ? 'Event ' : 'Katalog '}
-                        <span className="text-primary">{limit ? 'Terpopuler' : 'Event'}</span>
+                        <span className="text-gradient-primary">{limit ? 'Terpopuler' : 'Event'}</span>
                     </h2>
                 </motion.div>
                 <p className="text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -240,7 +240,7 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                     className="mb-12"
                 >
                     {/* Main Search Bar */}
-                    <Card className="mb-6 border-border shadow-xl hover:shadow-2xl transition-all duration-300 bg-card/80 backdrop-blur-sm">
+                    <Card className="mb-6 border-border shadow-glow hover:shadow-glow-hover transition-all duration-300 bg-card/80 backdrop-blur-sm">
                         <CardContent className="p-8">
                             <div className="relative">
                                 <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 w-6 h-6 text-muted-foreground" />
@@ -269,19 +269,19 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                                 >
                                     <span className="text-sm text-muted-foreground">Aktif:</span>
                                     {searchQuery && (
-                                        <Badge variant="secondary" className="gap-2">
+                                        <Badge variant="secondary" className="gap-2 bg-accent/50 text-foreground">
                                             Search: {searchQuery}
                                             <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchQuery('')} />
                                         </Badge>
                                     )}
                                     {selectedCategory !== 'all' && (
-                                        <Badge variant="secondary" className="gap-2">
+                                        <Badge variant="secondary" className="gap-2 bg-accent/50 text-foreground">
                                             Kategori: {selectedCategory}
                                             <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedCategory('all')} />
                                         </Badge>
                                     )}
                                     {sortBy !== 'date-asc' && (
-                                        <Badge variant="secondary" className="gap-2">
+                                        <Badge variant="secondary" className="gap-2 bg-accent/50 text-foreground">
                                             Sort: {sortBy === 'date-desc' ? 'Tanggal Terjauh' :
                                                 sortBy === 'price-asc' ? 'Harga Terendah' :
                                                     sortBy === 'price-desc' ? 'Harga Tertinggi' : sortBy}
@@ -423,7 +423,7 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                             }}
                             whileTap={{ scale: 0.98 }}
                         >
-                            <Card className="group hover:shadow-2xl transition-all duration-300 border-border shadow-lg overflow-hidden bg-card h-full flex flex-col">
+                            <Card className="group hover:shadow-glow-hover transition-all duration-300 border-border shadow-glow overflow-hidden bg-card h-full flex flex-col">
                                 <div className="relative overflow-hidden">
                                     <motion.div
                                         whileHover={{ scale: 1.1 }}

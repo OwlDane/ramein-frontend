@@ -89,7 +89,7 @@ export default function EventCarousel({ onEventSelect }: Props) {
         <section className="container mx-auto px-4 py-12">
             <div className="text-center mb-8">
                 <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
-                    Event <span className="text-primary">Terpopuler</span>
+                    Event <span className="text-gradient-primary">Terpopuler</span>
                 </h2>
             </div>
             <div className="relative max-w-6xl mx-auto">

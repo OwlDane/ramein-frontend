@@ -71,7 +71,7 @@ export function UserDashboard({ user }: UserDashboardProps) {
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gradient-dark">
             <div className="container mx-auto px-4 py-8">
                 <motion.div
                     variants={containerVariants}

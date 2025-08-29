@@ -127,7 +127,7 @@ export default function TestimonialSection() {
     }
 
     return (
-        <section ref={containerRef} className="py-20 bg-gradient-to-br from-background via-muted/20 to-background overflow-hidden">
+        <section ref={containerRef} className="py-20 bg-gradient-dark overflow-hidden">
             <div className="container mx-auto px-4">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -136,7 +136,7 @@ export default function TestimonialSection() {
                     className="text-center mb-16"
                 >
                     <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-4">
-                        Apa Kata <span className="text-primary">Mereka</span>
+                        Apa Kata <span className="text-gradient-primary">Mereka</span>
                     </h2>
                     <p className="text-base text-muted-foreground max-w-3xl mx-auto">
                         Testimoni dari berbagai organisasi yang telah menggunakan platform Ramein untuk mengelola event mereka
@@ -161,7 +161,7 @@ export default function TestimonialSection() {
                                 }}
                                 className="min-w-[400px] lg:min-w-[450px]"
                             >
-                                <Card className="h-full border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-card/80 backdrop-blur-sm">
+                                <Card className="h-full border-border/50 shadow-glow hover:shadow-glow-hover transition-all duration-300 bg-card/80 backdrop-blur-sm">
                                     <CardContent className="p-6">
                                         <div className="flex items-center gap-3 mb-4">
                                             <Avatar className="w-12 h-12">
