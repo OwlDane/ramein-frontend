@@ -1,21 +1,5 @@
 # 🎨 Ramein Frontend
 
-![Build](https://img.shields.io/github/actions/workflow/status/OwlDane/ramein-frontend/ci.yml?branch=main&logo=github&style=for-the-badge)  
-![License](https://img.shields.io/github/license/OwlDane/ramein-frontend?style=for-the-badge&logo=opensourceinitiative&logoColor=white)  
-![Issues](https://img.shields.io/github/issues/OwlDane/ramein-frontend?style=for-the-badge&logo=github)  
-![Stars](https://img.shields.io/github/stars/OwlDane/ramein-frontend?style=for-the-badge&logo=github&color=yellow)  
-![Contributors](https://img.shields.io/github/contributors/OwlDane/ramein-frontend?style=for-the-badge&logo=github)  
-
----
-
-## 🖼️ Preview
-
-<p align="center">
-  <img src="docs/screenshots/homepage.png" width="600" alt="Homepage Preview">
-</p>
-
----
-
 ## 🛠️ Tech Stack
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=next.js&logoColor=white)  
