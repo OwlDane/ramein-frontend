@@ -1,4 +1,20 @@
-# 🎨 Ramein - Event Management System Frontend
+# 🎨 Ramein Frontend
+
+![Build](https://img.shields.io/github/actions/workflow/status/OwlDane/ramein-frontend/ci.yml?branch=main&logo=github&style=for-the-badge)  
+![License](https://img.shields.io/github/license/OwlDane/ramein-frontend?style=for-the-badge&logo=opensourceinitiative&logoColor=white)  
+![Issues](https://img.shields.io/github/issues/OwlDane/ramein-frontend?style=for-the-badge&logo=github)  
+![Stars](https://img.shields.io/github/stars/OwlDane/ramein-frontend?style=for-the-badge&logo=github&color=yellow)  
+![Contributors](https://img.shields.io/github/contributors/OwlDane/ramein-frontend?style=for-the-badge&logo=github)  
+
+---
+
+## 🖼️ Preview
+
+<p align="center">
+  <img src="docs/screenshots/homepage.png" width="600" alt="Homepage Preview">
+</p>
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -15,151 +31,165 @@
 
 ## 📋 Deskripsi
 
-Frontend aplikasi sistem manajemen kegiatan/event **Ramein** yang dibangun dengan Next.js 15, React 19, dan Tailwind CSS.  
-Ramein Frontend adalah antarmuka pengguna modern dan responsif untuk sistem manajemen kegiatan. Aplikasi ini menyediakan pengalaman pengguna yang intuitif dengan fitur **PWA (Progressive Web App)**, animasi menarik, dan desain yang user-friendly.
+**Ramein Frontend** adalah aplikasi web berbasis **Next.js 15** yang menjadi antarmuka utama pengguna untuk sistem manajemen kegiatan/event.  
+Didesain dengan pendekatan **modern UI/UX** menggunakan TailwindCSS, Framer Motion, dan Radix UI sehingga responsif, interaktif, dan nyaman dipakai di semua perangkat.  
 
 ---
 
 ## ✨ Fitur Utama
 
-- 🌟 **Modern Landing Page** - Hero section dengan animasi interaktif dan call-to-action  
-- 🔐 **Authentication System** - Login, register, email verification, dan password reset  
-- 📱 **Responsive Design** - Mobile-first approach dengan Tailwind CSS  
-- 📊 **User Dashboard** - Dashboard personal dengan statistik dan riwayat kegiatan  
-- 📅 **Event Management** - Discovery, registration, dan tracking event  
-- 🏆 **Certificate System** - View dan download sertifikat kegiatan  
-- 🎭 **Interactive UI** - Framer Motion animations dan micro-interactions  
-- 📲 **PWA Features** - Offline support dan installable app  
-- 🔍 **Search & Filter** - Advanced filtering untuk event dan konten  
-- ⚙️ **Admin Interface** - Dashboard admin untuk manajemen sistem  
+- 🏠 **Landing Page Modern** dengan animasi & CTA  
+- 🔐 **Auth System**: login, register, verifikasi email, reset password  
+- 📊 **User Dashboard** dengan statistik & histori event  
+- 📅 **Event Management**: daftar event, detail event, registrasi  
+- 🏆 **Certificate System**: lihat & download sertifikat  
+- 🎭 **UI Interaktif**: animasi micro-interaction (Framer Motion)  
+- 📲 **PWA Support**: installable + offline mode  
+- 🔍 **Search & Filter** untuk event & konten  
+- ⚙️ **Admin Panel** untuk pengelolaan event (role-based access)  
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Installation & Setup
 
-### 1. Clone Repository
+### 1️⃣ Clone Repository
 ```bash
 git clone https://github.com/OwlDane/ramein-frontend.git
 cd ramein-frontend
 ````
 
-### 2. Install Dependencies
+### 2️⃣ Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Environment Setup
+### 3️⃣ Konfigurasi Environment
 
-Buat file `.env.local` dengan konfigurasi backend:
+Buat file `.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_APP_NAME=Ramein
 ```
 
-### 4. Run Development Server
+### 4️⃣ Jalankan Development Server
 
 ```bash
 npm run dev
 ```
 
-Aplikasi akan berjalan di `http://localhost:3000`
+Aplikasi akan jalan di `http://localhost:3000`
+
+### 5️⃣ Production Build
+
+```bash
+npm run build
+npm start
+```
 
 ---
 
-## 📂 Struktur Project
+## 📂 Struktur Proyek
 
 ```
 src/
-├── app/                    
-│   ├── (auth)/             # Authentication pages
-│   ├── dashboard/          # User dashboard
-│   ├── about/              # About page
-│   ├── contact/            # Contact page
-│   ├── faq/                # FAQ page
-│   ├── terms/              # Terms & conditions
-│   ├── privacy/            # Privacy policy
-│   ├── layout.tsx          # Root layout
-│   └── page.tsx            # Homepage
-├── components/             
-│   ├── ui/                 # Base UI components
-│   ├── event/              # Event-related components
-│   ├── gallery/            # Gallery components
-│   └── layout/             # Layout components
-├── contexts/               
-├── lib/                    
-├── types/                  
-└── styles/                 
+├── app/
+│   ├── (auth)/         # Halaman auth (login/register)
+│   ├── dashboard/      # User dashboard
+│   ├── events/         # Event pages
+│   ├── about/          # Tentang aplikasi
+│   ├── terms/          # Syarat & ketentuan
+│   └── layout.tsx      # Root layout
+├── components/
+│   ├── ui/             # UI components (button, modal, dsb)
+│   ├── event/          # Komponen event
+│   ├── layout/         # Navbar, Footer, Sidebar
+│   └── shared/         # Komponen umum
+├── lib/                # Utils & helper functions
+├── contexts/           # Context API (auth, theme, dsb)
+├── types/              # TypeScript types
+└── styles/             # Global styles
 ```
+
+---
+
+## 📱 User Experience
+
+* ✅ **Mobile-first design**
+* 🚀 **Fast performance** (Next.js App Router + SSR/ISR)
+* ♿ **Aksesibilitas terjaga** (Radix UI + ARIA)
+* 🎨 **Customizable themes**
 
 ---
 
 ## 🔐 Authentication Flow
 
-(Registrasi, Login, Password Reset dijelaskan seperti di draft awal…)
-
----
-
-## 📱 User Experience Features
-
-(Responsive Design, Performance, Accessibility — tetap sama, hanya lebih rapi.)
-
----
-
-## 🚀 Deployment
-
-(Production build, Vercel deployment, environment variables — sama seperti draft awal.)
+1. Register → email verification
+2. Login → token disimpan di local storage
+3. Protected routes dengan middleware Next.js
+4. Reset password via email
 
 ---
 
 ## 🧪 Testing
 
-(Development testing, linting, type-checking, browser testing.)
+```bash
+npm run lint     # Linting
+npm run typecheck # Type checking
+npm run test     # Unit tests
+```
 
 ---
 
-## 📱 PWA Features
+## 📱 PWA Support
 
-(Service worker, manifest, install prompt — tetap sama.)
+* ✅ Installable (Add to Home Screen)
+* ✅ Offline caching
+* ✅ Web app manifest
 
 ---
 
-## 🔍 SEO & Performance
+## 🌍 Deployment
 
-(SEO optimization, Core Web Vitals, Lighthouse metrics.)
+* **Vercel** (direkomendasikan)
+* **Docker**:
+
+  ```bash
+  docker build -t ramein-frontend .
+  docker run -p 3000:3000 ramein-frontend
+  ```
 
 ---
 
 ## 🤝 Contributing
 
-(Workflow, code standards.)
+1. Fork repository ini
+2. Buat branch baru (`feature/namafitur`)
+3. Commit perubahan
+4. Push ke branch
+5. Buka **Pull Request**
 
 ---
 
 ## 📄 License
 
-ISC License
+Ramein Frontend dirilis di bawah lisensi **ISC License**
 
 ---
 
-## 👥 Team
+## 👥 Tim
 
-**Ramein Team** - Event Management System Development
+* [@OwlDane](https://github.com/OwlDane) - Developer
 
 ---
 
 ## 🌟 Special Thanks
 
-* Next.js team
-* Tailwind CSS
+* Next.js Team
+* Tailwind Labs
 * Framer Motion
 * Radix UI
+* Open Source Contributors
 
 ---
-
-**Ramein** - Membuat setiap kegiatan menjadi lebih bermakna! 🎉
-
-> Frontend yang modern, responsif, dan user-friendly untuk sistem manajemen event terbaik
-
-```
