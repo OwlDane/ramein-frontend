@@ -62,7 +62,8 @@ export function EventHistory({ userToken }: EventHistoryProps) {
             setParticipants(response);
         } catch (error: any) {
             console.error('Failed to fetch event history:', error);
-            setError(error?.message || 'Gagal memuat riwayat event');
+            const msg = error?.message || 'Gagal memuat riwayat event';
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -155,11 +156,18 @@ export function EventHistory({ userToken }: EventHistoryProps) {
 
     if (error) {
         return (
-            <div className="text-center py-8">
-                <p className="text-destructive mb-4">{error}</p>
-                <Button onClick={fetchEventHistory} variant="outline">
-                    Coba Lagi
-                </Button>
+            <div className="py-16">
+                <div className="max-w-xl mx-auto text-center">
+                    <div className="w-16 h-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
+                        <XCircle className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Waduh, gagal ngambil data</h3>
+                    <p className="text-muted-foreground mb-6">Kayaknya lagi ada kendala. Coba lagi ya, atau balik ke beranda dulu.</p>
+                    <div className="flex items-center justify-center gap-3">
+                        <Button onClick={fetchEventHistory}>Coba Lagi</Button>
+                        <Button variant="outline" onClick={() => window.location.assign('/')}>Ke Beranda</Button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -223,14 +231,18 @@ export function EventHistory({ userToken }: EventHistoryProps) {
 
                 <TabsContent value={activeTab} className="mt-6">
                     {filteredParticipants.length === 0 ? (
-                        <div className="text-center py-12">
-                            <p className="text-muted-foreground">
-                                {activeTab === 'all' ? 'Belum ada event yang diikuti' :
-                                 activeTab === 'upcoming' ? 'Tidak ada event yang akan datang' :
-                                 activeTab === 'completed' ? 'Belum ada event yang selesai' :
-                                 activeTab === 'attended' ? 'Belum ada event yang dihadiri' :
-                                 'Tidak ada event yang terlewat'}
-                            </p>
+                        <div className="py-16">
+                            <div className="max-w-xl mx-auto text-center">
+                                <div className="w-16 h-16 rounded-full bg-muted/30 text-primary flex items-center justify-center mx-auto mb-4">
+                                    <Calendar className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2">Belum ada riwayat event</h3>
+                                <p className="text-muted-foreground">Ngga ada riwayat event nih. Yuk daftar event biar timeline kamu rame!</p>
+                                <div className="flex items-center justify-center gap-3 mt-6">
+                                    <Button onClick={fetchEventHistory}>Coba Lagi</Button>
+                                    <Button variant="outline" onClick={() => window.location.assign('/')}>Lihat Event</Button>
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <div className="grid gap-4">

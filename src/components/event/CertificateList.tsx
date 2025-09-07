@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
     Calendar, Download, Search, Filter, Award, 
-    CheckCircle, ExternalLink, Copy, Eye
+    CheckCircle, ExternalLink, Copy, Eye,
+    XCircle
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { apiFetch } from '@/lib/api';
@@ -157,11 +158,18 @@ export function CertificateList({ userToken }: CertificateListProps) {
 
     if (error) {
         return (
-            <div className="text-center py-8">
-                <p className="text-destructive mb-4">{error}</p>
-                <Button onClick={fetchCertificates} variant="outline">
-                    Coba Lagi
-                </Button>
+            <div className="py-16">
+                <div className="max-w-xl mx-auto text-center">
+                    <div className="w-16 h-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
+                        <XCircle className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Lagi error nih pas ambil sertifikat</h3>
+                    <p className="text-muted-foreground mb-6">Coba refresh datanya ya. Kalo masih gagal, balik dulu ke beranda.</p>
+                    <div className="flex items-center justify-center gap-3">
+                        <Button onClick={fetchCertificates}>Coba Lagi</Button>
+                        <Button variant="outline" onClick={() => window.location.assign('/')}>Ke Beranda</Button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -226,23 +234,21 @@ export function CertificateList({ userToken }: CertificateListProps) {
 
             {/* Certificates List */}
             {filteredCertificates.length === 0 ? (
-                <div className="text-center py-12">
-                    <Award className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">
-                        {searchQuery || activeFilter !== 'all' 
-                            ? 'Tidak ada sertifikat yang sesuai dengan pencarian'
-                            : 'Belum ada sertifikat yang tersedia'
-                        }
-                    </p>
-                    {searchQuery || activeFilter !== 'all' && (
-                        <Button 
-                            onClick={() => { setSearchQuery(''); setActiveFilter('all'); }}
-                            variant="outline"
-                            className="mt-4"
-                        >
-                            Reset Filter
-                        </Button>
-                    )}
+                <div className="py-16">
+                    <div className="max-w-xl mx-auto text-center">
+                        <div className="w-16 h-16 rounded-full bg-muted/30 text-primary flex items-center justify-center mx-auto mb-4">
+                            <Award className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2">Belum ada sertifikat</h3>
+                        <p className="text-muted-foreground">Ikut event dulu ya, nanti sertifikatmu bakal nongol di sini.</p>
+                        <div className="flex items-center justify-center gap-3 mt-6">
+                            { (searchQuery || activeFilter !== 'all') ? (
+                                <Button onClick={() => { setSearchQuery(''); setActiveFilter('all'); }} variant="outline">Reset Filter</Button>
+                            ) : (
+                                <Button variant="outline" onClick={() => window.location.assign('/')}>Lihat Event</Button>
+                            ) }
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <div className="grid gap-4">

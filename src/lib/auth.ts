@@ -78,10 +78,19 @@ export const authAPI = {
     },
 
     // Get current user profile
-    getProfile: async (token: string): Promise<Omit<AuthResponse['user'], 'password'>> => {
-        return apiFetch<Omit<AuthResponse['user'], 'password'>>('/auth/profile', {
+    getProfile: async (token: string): Promise<any> => {
+        return apiFetch<any>('/auth/profile', {
             method: 'GET',
             token
+        });
+    },
+
+    // Update current user profile
+    updateProfile: async (token: string, data: { name?: string; phone?: string; address?: string; education?: string }): Promise<any> => {
+        return apiFetch<any>('/auth/profile', {
+            method: 'PATCH',
+            token,
+            body: data
         });
     },
 

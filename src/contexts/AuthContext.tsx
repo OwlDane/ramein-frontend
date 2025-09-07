@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchUserProfile = async (userToken: string) => {
         try {
             const userProfile = await authAPI.getProfile(userToken);
+            // Backend returns a flat user object
             setUser(userProfile as User);
         } catch (error) {
             console.error('Failed to fetch user profile:', error);
