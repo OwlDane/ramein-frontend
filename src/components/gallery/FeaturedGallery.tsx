@@ -7,6 +7,7 @@ import { X, Play, Calendar, Users, MapPin, ArrowRight, Loader2 } from 'lucide-re
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { apiFetch, buildQuery } from '@/lib/api';
 import type { BackendEvent } from '@/types/event';
+import { getFallbackImageUrl } from '@/lib/unsplash';
 
 interface GalleryItem {
     id: string;
@@ -38,7 +39,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
 
     // Transform backend events to gallery items
     const transformEventsToGalleryItems = useCallback((events: BackendEvent[]): GalleryItem[] => {
-        return events.slice(0, 6).map((event, index) => ({
+        return events.slice(0, 6).map((event) => ({
             id: event.id,
             type: 'event' as const,
             title: event.title,
@@ -69,8 +70,8 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
             // Transform events to gallery items
             const transformedItems = transformEventsToGalleryItems(events);
             setGalleryItems(transformedItems);
-        } catch (err: any) {
-            setError(err?.message || 'Gagal memuat gallery');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Gagal memuat gallery');
             // Fallback to some default items if API fails
             setGalleryItems([
                 {
@@ -78,7 +79,7 @@ export function FeaturedGallery({ onViewEvents }: FeaturedGalleryProps) {
                     type: 'event' as const,
                     title: 'Event Terbaru',
                     description: 'Event menarik akan segera hadir',
-                    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+                    image: getFallbackImageUrl('community-highlight', 800, 450),
                     category: 'Coming Soon',
                     date: '2025-01-01',
                     participants: 100,

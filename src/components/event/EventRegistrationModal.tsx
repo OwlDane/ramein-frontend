@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
@@ -25,10 +24,6 @@ interface EventRegistrationModalProps {
     onRegistrationSuccess: (token: string) => void;
 }
 
-interface RegistrationData {
-    eventId: string;
-    userId: string;
-}
 
 export function EventRegistrationModal({ 
     isOpen, 
@@ -66,7 +61,7 @@ export function EventRegistrationModal({
 
         setIsLoading(true);
         try {
-            const response = await apiFetch<any>('/participants/register', {
+            const response = await apiFetch<{ participant?: { tokenNumber?: string } }>('/participants/register', {
                 method: 'POST',
                 body: {
                     eventId: event.id
@@ -82,9 +77,10 @@ export function EventRegistrationModal({
             } else {
                 toast.error('Gagal mendapatkan token kehadiran');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Registration error:', error);
-            toast.error(error?.message || 'Terjadi kesalahan saat mendaftar event');
+            const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat mendaftar event';
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -162,7 +158,7 @@ export function EventRegistrationModal({
                                         <h3 className="text-xl font-semibold text-foreground mb-2">
                                             {event.title}
                                         </h3>
-                                        <Badge variant={eventStatus.color as any} className="text-sm">
+                                        <Badge variant={eventStatus.color as "default" | "secondary" | "destructive" | "outline"} className="text-sm">
                                             {eventStatus.text}
                                         </Badge>
                                     </div>

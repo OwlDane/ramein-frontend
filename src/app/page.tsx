@@ -1,40 +1,64 @@
 'use client'
 
-import { useState } from 'react'
+import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
+import { useViewPersistence } from '@/hooks/useViewPersistence'
 
-import { Header } from '@/components/Header'
-import { Hero } from '@/components/Hero'
-import { AboutSection } from '@/components/AboutSection'
+import { Header } from '@/components/layout/Header'
+import { Hero } from '@/components/common/Hero'
+import { AboutSection } from '@/components/common/AboutSection'
 import { EventCatalog } from '@/components/event/EventCatalog'
 import { UserDashboard } from '@/components/UserDashboard'
 import { EventDetail } from '@/components/event/EventDetail'
-import { Footer } from '@/components/Footer'
+import { Footer } from '@/components/layout/Footer'
 import { FeaturedGallery } from '@/components/gallery/FeaturedGallery'
-import { ContactSection } from '@/components/ContactSection'
+import { ContactSection } from '@/components/common/ContactSection'
 import EventCarousel from '@/components/event/EventCarousel'
-import TestimonialSection from '@/components/TestimonialSection'
+import TestimonialSection from '@/components/common/TestimonialSection'
 
 type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact'
 
 export default function HomePage() {
-  const [currentView, setCurrentView] = useState<ViewType>('home')
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+  const { 
+    currentView, 
+    selectedEventId, 
+    isLoaded, 
+    updateView, 
+    updateViewAndEvent,
+    clearState,
+    saveScrollPosition
+  } = useViewPersistence()
   const { user, isLoggedIn } = useAuth()
   const router = useRouter()
 
+  // Clear view state when user logs out
+  React.useEffect(() => {
+    if (!isLoggedIn && currentView === 'dashboard') {
+      clearState()
+    }
+  }, [isLoggedIn, currentView, clearState])
+
+  // Save scroll position on scroll
+  React.useEffect(() => {
+    const handleScroll = () => {
+      saveScrollPosition()
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [saveScrollPosition])
+
   const handleViewChange = (view: ViewType) => {
-    setCurrentView(view)
+    updateView(view)
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }, 100)
   }
 
   const handleEventSelect = (eventId: string) => {
-    setSelectedEventId(eventId)
-    setCurrentView('event-detail')
+    updateViewAndEvent('event-detail', eventId)
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }, 100)
@@ -166,6 +190,18 @@ export default function HomePage() {
           </motion.div>
         )
     }
+  }
+
+  // Show loading state while restoring view
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Memuat...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

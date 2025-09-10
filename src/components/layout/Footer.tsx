@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Mail, Phone, MapPin, Sparkles } from 'lucide-react';
-import { PopupContent } from './PopupContent';
+import { PopupContent } from '@/components/PopupContent';
 
 export function Footer() {
     const [popupType, setPopupType] = useState<'privacy' | 'terms' | null>(null);

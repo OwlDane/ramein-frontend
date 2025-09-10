@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Calendar, User, LogOut, Home, ArrowRight, Sparkles, Mail } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { PopupContent } from './PopupContent';
+import { PopupContent } from '@/components/PopupContent';
 
 interface HeaderProps {
     onViewChange: (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact') => void;
@@ -40,7 +40,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                 setMousePosition({ x, y });
                 
                 // Update trail elements with different speeds for 3D depth effect
-                setTrailElements(prev => prev.map((element, index) => ({
+                setTrailElements(prev => prev.map((element) => ({
                     ...element,
                     x: x * element.speed + (1 - element.speed) * element.x,
                     y: y * element.speed + (1 - element.speed) * element.y,
@@ -449,7 +449,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                         { text: 'Tentang Kami', icon: '🏢', type: 'about' as const },
                                         { text: 'Hubungi', icon: '📞', type: 'contact' as const },
                                         { text: 'FAQ', icon: '❓', type: 'faq' as const }
-                                    ].map((item, index) => (
+                                    ].map((item) => (
                                         <motion.button
                                             key={item.text}
                                             onClick={() => handlePopupOpen(item.type)}
@@ -484,7 +484,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                     {[
                                         { text: 'Privacy', icon: '🔒', type: 'privacy' as const },
                                         { text: 'Terms', icon: '📋', type: 'terms' as const }
-                                    ].map((item, index) => (
+                                    ].map((item) => (
                                         <motion.button
                                             key={item.text}
                                             onClick={() => handlePopupOpen(item.type)}

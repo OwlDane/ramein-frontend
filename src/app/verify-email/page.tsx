@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -22,24 +22,10 @@ export default function VerifyEmailPage() {
     const searchParams = useSearchParams();
 
     // Auto-request OTP when coming from registration
-    useEffect(() => {
-        const emailParam = searchParams.get('email');
-        const fromRegister = searchParams.get('fromRegister');
-        
-        if (emailParam && fromRegister === 'true') {
-            setEmail(emailParam);
-            // Auto-request OTP after a short delay
-            setTimeout(() => {
-                handleAutoRequestOTP(emailParam);
-            }, 1000);
-        }
-    }, [searchParams]);
-
-    const handleAutoRequestOTP = async (emailAddress: string) => {
+    const handleAutoRequestOTP = useCallback(async (emailAddress: string) => {
         setIsAutoRequesting(true);
         setError('');
         setSuccess('');
-
         try {
             await requestOTP(emailAddress);
             setOtpSent(true);
@@ -50,7 +36,21 @@ export default function VerifyEmailPage() {
         } finally {
             setIsAutoRequesting(false);
         }
-    };
+    }, [requestOTP]); // Add requestOTP as dependency if it comes from props/context
+    
+    // Then use it in useEffect
+    useEffect(() => {
+        const emailParam = searchParams.get('email');
+        const fromRegister = searchParams.get('fromRegister');
+
+        if (emailParam && fromRegister === 'true') {
+            setEmail(emailParam);
+            // Auto-request OTP after a short delay
+            setTimeout(() => {
+                handleAutoRequestOTP(emailParam);
+            }, 1000);
+        }
+    }, [searchParams, handleAutoRequestOTP]);
 
     const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -250,5 +250,20 @@ export default function VerifyEmailPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex items-center justify-center px-6">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+                    <p className="text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        }>
+            <VerifyEmailContent />
+        </Suspense>
     );
 }

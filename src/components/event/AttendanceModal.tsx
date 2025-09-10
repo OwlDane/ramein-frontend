@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, CheckCircle, XCircle, AlertCircle, Clipboard, Clock3 } from 'lucide-react';
+import { Calendar, Clock, MapPin, CheckCircle, AlertCircle, Clipboard, Clock3 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiFetch } from '@/lib/api';
 
@@ -63,7 +63,7 @@ export function AttendanceModal({
 
         setIsLoading(true);
         try {
-            const response = await apiFetch<any>('/participants/attendance', {
+            const response = await apiFetch<{ participant?: { id: string; eventId: string; userId: string; attendanceToken: string; attendedAt: string } }>('/participants/attendance', {
                 method: 'POST',
                 body: {
                     eventId: event.id,
@@ -79,9 +79,10 @@ export function AttendanceModal({
             } else {
                 toast.error('Gagal mengisi daftar hadir');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Attendance error:', error);
-            toast.error(error?.message || 'Terjadi kesalahan saat mengisi daftar hadir');
+            const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan saat mengisi daftar hadir';
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -158,7 +159,7 @@ export function AttendanceModal({
                                         <h3 className="text-xl font-semibold text-foreground mb-2">
                                             {event.title}
                                         </h3>
-                                        <Badge variant={attendanceStatus.color as any} className="text-sm">
+                                        <Badge variant={attendanceStatus.color as "default" | "secondary" | "destructive" | "outline"} className="text-sm">
                                             {attendanceStatus.text}
                                         </Badge>
                                         <p className="text-sm text-muted-foreground mt-2">

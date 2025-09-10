@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Star } from 'lucide-react'
+import { getAvatarFallbackUrl } from '@/lib/unsplash'
 
 interface Testimonial {
     id: number
@@ -22,7 +23,7 @@ const testimonials: Testimonial[] = [
         name: "Sarah Johnson",
         role: "Marketing Manager",
         company: "TechCorp Indonesia",
-        avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("Sarah Johnson", 150),
         rating: 5,
         content: "Event yang luar biasa! Organisasinya sangat profesional dan peserta sangat antusias. Platform Ramein memudahkan kami dalam mengelola event dengan efisien."
     },
@@ -31,7 +32,7 @@ const testimonials: Testimonial[] = [
         name: "Ahmad Rahman",
         role: "Event Coordinator",
         company: "Creative Solutions",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("Ahmad Rahman", 150),
         rating: 5,
         content: "Sistem registrasi yang smooth dan dashboard yang user-friendly. Tim support sangat responsif dan membantu. Highly recommended!"
     },
@@ -40,7 +41,7 @@ const testimonials: Testimonial[] = [
         name: "Diana Putri",
         role: "HR Director",
         company: "InnovateLab",
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("Diana Putri", 150),
         rating: 5,
         content: "Kami sudah menggunakan Ramein untuk 3 event berturut-turut. Hasilnya selalu memuaskan. Fitur sertifikat otomatis sangat membantu."
     },
@@ -49,7 +50,7 @@ const testimonials: Testimonial[] = [
         name: "Budi Santoso",
         role: "CEO",
         company: "StartupHub Jakarta",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("Budi Santoso", 150),
         rating: 5,
         content: "Platform yang sangat powerful untuk event management. Analytics yang detail membantu kami memahami engagement peserta dengan baik."
     },
@@ -58,7 +59,7 @@ const testimonials: Testimonial[] = [
         name: "Maya Sari",
         role: "Community Manager",
         company: "Digital Nomads ID",
-        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("Maya Sari", 150),
         rating: 5,
         content: "Interface yang modern dan intuitif. Fitur attendance tracking dengan token sangat inovatif. Peserta kami sangat menyukai sistemnya."
     },
@@ -67,7 +68,7 @@ const testimonials: Testimonial[] = [
         name: "Rizki Pratama",
         role: "Product Manager",
         company: "Innovation Labs",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("Rizki Pratama", 150),
         rating: 5,
         content: "Sistem yang sangat reliable dan scalable. Dari event kecil hingga besar, Ramein selalu memberikan performa yang konsisten."
     },
@@ -76,7 +77,7 @@ const testimonials: Testimonial[] = [
         name: "Nina Kartika",
         role: "Event Director",
         company: "Creative Events",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("Nina Kartika", 150),
         rating: 5,
         content: "Fitur yang lengkap dan support yang excellent. Tim Ramein selalu siap membantu kapanpun kami butuhkan. Terima kasih!"
     },
@@ -85,7 +86,7 @@ const testimonials: Testimonial[] = [
         name: "David Wijaya",
         role: "Tech Lead",
         company: "Digital Solutions",
-        avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face",
+        avatar: getAvatarFallbackUrl("David Wijaya", 150),
         rating: 5,
         content: "Integrasi yang seamless dengan sistem kami. API yang well-documented dan performa yang outstanding. Sangat puas!"
     }
@@ -182,7 +183,7 @@ export default function TestimonialSection() {
                                         </div>
                                         
                                         <blockquote className="text-muted-foreground leading-relaxed italic">
-                                            "{testimonial.content}"
+                                            &ldquo;{testimonial.content}&rdquo;
                                         </blockquote>
                                     </CardContent>
                                 </Card>
@@ -228,7 +229,7 @@ export default function TestimonialSection() {
                                         </div>
                                         
                                         <blockquote className="text-muted-foreground leading-relaxed italic">
-                                            "{testimonial.content}"
+                                            &ldquo;{testimonial.content}&rdquo;
                                         </blockquote>
                                     </CardContent>
                                 </Card>

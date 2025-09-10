@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { apiFetch } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { toast } from 'react-hot-toast';
 import { EventRegistrationModal } from './EventRegistrationModal';
 import { AttendanceModal } from './AttendanceModal';
+import { getEventImages, getAvatarFallbackUrl } from '@/lib/unsplash';
 
 interface EventDetailProps {
     eventId: string | null;
@@ -103,8 +104,6 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
     const [isRegistered, setIsRegistered] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
     const [showRegistrationModal, setShowRegistrationModal] = useState(false);
     const [showAttendanceModal, setShowAttendanceModal] = useState(false);
     const [userToken, setUserToken] = useState<string>('');
@@ -142,15 +141,10 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
         maxParticipants: 100,
         currentParticipants: 75,
         image: 'https://picsum.photos/seed/placeholder/800/450',
-        gallery: [
-            'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800',
-            'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800',
-            'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800',
-            'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800'
-        ],
+        gallery: [],
         organizer: {
             name: 'Tech Indonesia',
-            logo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100',
+            logo: getAvatarFallbackUrl('Tech Indonesia', 100),
             description: 'Leading technology education provider in Indonesia',
             rating: 4.8,
             totalEvents: 150,
@@ -169,7 +163,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                 name: 'John Doe',
                 title: 'Senior React Developer',
                 company: 'Google',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+                avatar: getAvatarFallbackUrl('John Doe', 100),
                 bio: '8+ years experience in React development',
                 expertise: ['React', 'Next.js', 'TypeScript']
             },
@@ -177,7 +171,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                 name: 'Jane Smith',
                 title: 'Frontend Architect',
                 company: 'Meta',
-                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c5b4?w=100',
+                avatar: getAvatarFallbackUrl('Jane Smith', 100),
                 bio: 'Expert in performance optimization and scalable architectures',
                 expertise: ['Performance', 'Architecture', 'Testing']
             }
@@ -221,14 +215,14 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                 rating: 5,
                 comment: 'Workshop yang sangat comprehensive! Instruktur sangat berpengalaman dan materinya up-to-date.',
                 date: '2024-12-10',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50'
+                avatar: getAvatarFallbackUrl('Ahmad Rizki', 50)
             },
             {
                 name: 'Sari Dewi',
                 rating: 5,
                 comment: 'Best investment untuk skill development. Sekarang saya lebih confident dengan React.',
                 date: '2024-12-08',
-                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c5b4?w=50'
+                avatar: getAvatarFallbackUrl('Sari Dewi', 50)
             }
         ],
         requirements: [
@@ -250,10 +244,18 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
     useEffect(() => {
         const run = async () => {
             if (!eventId) return;
-            setLoading(true);
-            setError('');
             try {
-                const data = await apiFetch<any>(`/events/${eventId}`);
+                const data = await apiFetch<{
+                    id: string;
+                    title: string;
+                    description: string;
+                    date: string;
+                    time: string;
+                    location: string;
+                    category?: string;
+                    price?: number;
+                    flyer?: string;
+                }>(`/events/${eventId}`);
                 setEvent((prev: Event) => ({
                     ...prev,
                     id: data.id,
@@ -262,17 +264,56 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                     date: data.date,
                     time: data.time,
                     location: data.location,
-                    category: (data as any).category || 'General',
-                    price: Number((data as any).price ?? 0),
+                    category: data.category || 'General',
+                    price: Number(data.price ?? 0),
                     image: (data.flyer && data.flyer.startsWith('http')) ? data.flyer : `https://picsum.photos/seed/${data.id}/800/450`
                 }));
-            } catch (e: any) {
-                setError(e?.message || 'Gagal memuat detail event');
-            } finally {
-                setLoading(false);
+
+                // Load gallery images dynamically
+                try {
+                    const galleryImages = await getEventImages(data.title || 'event', 4);
+                    setEvent((prev: Event) => ({
+                        ...prev,
+                        gallery: galleryImages
+                    }));
+                } catch (galleryError) {
+                    console.warn('Failed to load gallery images:', galleryError);
+                    // Keep empty gallery array as fallback
+                }
+            } catch (e: unknown) {
+                const errorMessage = e instanceof Error ? e.message : 'Gagal memuat detail event';
+                console.error('Error loading event:', errorMessage);
             }
         };
         run();
+    }, [eventId]);
+
+    const checkRegistrationStatus = useCallback(async (token: string) => {
+        try {
+            const response = await apiFetch<Array<{
+                eventId: string;
+                hasAttended?: boolean;
+                tokenNumber?: string;
+            }>>('/participants/my-events', {
+                token: token
+            });
+            
+            const isUserRegistered = response.some((participant) => 
+                participant.eventId === eventId && participant.hasAttended !== undefined
+            );
+            
+            setIsRegistered(isUserRegistered);
+            
+            // Get registration token if user is registered
+            if (isUserRegistered) {
+                const participant = response.find((p) => p.eventId === eventId);
+                if (participant?.tokenNumber) {
+                    setRegistrationToken(participant.tokenNumber);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to check registration status:', error);
+        }
     }, [eventId]);
 
     // Get user token from localStorage
@@ -285,31 +326,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                 checkRegistrationStatus(token);
             }
         }
-    }, [isLoggedIn, eventId]);
-
-    const checkRegistrationStatus = async (token: string) => {
-        try {
-            const response = await apiFetch<any>('/participants/my-events', {
-                token: token
-            });
-            
-            const isUserRegistered = response.some((participant: any) => 
-                participant.eventId === eventId && participant.hasAttended !== undefined
-            );
-            
-            setIsRegistered(isUserRegistered);
-            
-            // Get registration token if user is registered
-            if (isUserRegistered) {
-                const participant = response.find((p: any) => p.eventId === eventId);
-                if (participant?.tokenNumber) {
-                    setRegistrationToken(participant.tokenNumber);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to check registration status:', error);
-        }
-    };
+    }, [isLoggedIn, eventId, checkRegistrationStatus]);
 
     const handleRegister = () => {
         if (!isLoggedIn) {

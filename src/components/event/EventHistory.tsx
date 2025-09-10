@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
     Calendar, Clock, MapPin, Users, CheckCircle, XCircle, 
-    Clock3, Download, Search, Filter, Eye
+    Clock3, Download, Search, Filter
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { apiFetch } from '@/lib/api';
@@ -49,25 +49,25 @@ export function EventHistory({ userToken }: EventHistoryProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
 
-    useEffect(() => {
-        fetchEventHistory();
-    }, [userToken]);
-
-    const fetchEventHistory = async () => {
+    const fetchEventHistory = useCallback(async () => {
         try {
             setLoading(true);
             const response = await apiFetch<Participant[]>('/participants/my-events', {
                 token: userToken
             });
             setParticipants(response);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to fetch event history:', error);
-            const msg = error?.message || 'Gagal memuat riwayat event';
+            const msg = error instanceof Error ? error.message : 'Gagal memuat riwayat event';
             setError(msg);
         } finally {
             setLoading(false);
         }
-    };
+    }, [userToken]);
+
+    useEffect(() => {
+        fetchEventHistory();
+    }, [fetchEventHistory]);
 
     const filteredParticipants = participants.filter(participant => {
         const matchesSearch = participant.event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -125,7 +125,7 @@ export function EventHistory({ userToken }: EventHistoryProps) {
             // For now, we'll just show a success message
             toast.success(`Download sertifikat untuk event "${eventTitle}"`);
             console.log('Downloading certificate from:', certificateUrl);
-        } catch (error) {
+        } catch {
             toast.error('Gagal mengunduh sertifikat');
         }
     };
@@ -280,7 +280,7 @@ export function EventHistory({ userToken }: EventHistoryProps) {
                                                                     {participant.event.description}
                                                                 </p>
                                                             </div>
-                                                            <Badge variant={status.color as any} className="shrink-0">
+                                                            <Badge variant={status.color as "default" | "secondary" | "destructive" | "outline"} className="shrink-0">
                                                                 <StatusIcon className="w-3 h-3 mr-1" />
                                                                 {status.text}
                                                             </Badge>
@@ -322,23 +322,23 @@ export function EventHistory({ userToken }: EventHistoryProps) {
                                                                 </Button>
                                                             )}
                                                             
-                                            {participant.event.category && (
-                                                <Badge variant="outline" className="text-xs">
-                                                    {participant.event.category}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                );
-            })}
+                                                            {participant.event.category && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    {participant.event.category}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </TabsContent>
+            </Tabs>
         </div>
-    )}
-</TabsContent>
-</Tabs>
-</div>
-);
+    );
 }

@@ -7,7 +7,7 @@ export default function FAQPage() {
                 <div className="space-y-6">
                     <div className="border border-border rounded-lg p-6">
                         <h3 className="text-lg font-semibold text-foreground mb-2">How do I register for an event?</h3>
-                        <p className="text-muted-foreground">To register for an event, you need to create an account first, then browse available events and click the "Register" button on any event you're interested in.</p>
+                        <p className="text-muted-foreground">To register for an event, you need to create an account first, then browse available events and click the &ldquo;Register&rdquo; button on any event you&apos;re interested in.</p>
                     </div>
 
                     <div className="border border-border rounded-lg p-6">
@@ -22,12 +22,12 @@ export default function FAQPage() {
 
                     <div className="border border-border rounded-lg p-6">
                         <h3 className="text-lg font-semibold text-foreground mb-2">What happens if I miss an event?</h3>
-                        <p className="text-muted-foreground">If you miss an event, you won't receive a certificate. However, you can still view the event details and any materials that were shared.</p>
+                        <p className="text-muted-foreground">If you miss an event, you won&apos;t receive a certificate. However, you can still view the event details and any materials that were shared.</p>
                     </div>
 
                     <div className="border border-border rounded-lg p-6">
                         <h3 className="text-lg font-semibold text-foreground mb-2">How do I reset my password?</h3>
-                        <p className="text-muted-foreground">You can reset your password by clicking the "Forgot Password" link on the login page. We'll send you an email with a reset link.</p>
+                        <p className="text-muted-foreground">You can reset your password by clicking the &ldquo;Forgot Password&rdquo; link on the login page. We&apos;ll send you an email with a reset link.</p>
                     </div>
 
                     <div className="border border-border rounded-lg p-6">

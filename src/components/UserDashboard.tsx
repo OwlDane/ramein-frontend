@@ -10,16 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Calendar,
     Clock,
-    MapPin,
-    Users,
     CheckCircle,
-    XCircle,
-    Download,
-    Search,
-    Filter,
-    User,
-    Award,
-    BookOpen
+    Award
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { EventHistory } from './event/EventHistory';
@@ -163,7 +155,7 @@ export function UserDashboard({ user }: UserDashboardProps) {
                                 { label: 'Event Selesai', value: stats.completedEvents, icon: CheckCircle, color: 'bg-green-500' },
                                 { label: 'Event Akan Datang', value: stats.upcomingEvents, icon: Clock, color: 'bg-yellow-500' },
                                 { label: 'Sertifikat', value: stats.certificates, icon: Award, color: 'bg-purple-500' }
-                            ].map((stat, index) => (
+                            ].map((stat) => (
                                 <motion.div
                                     key={stat.label}
                                     whileHover={{ scale: 1.02, y: -5 }}
@@ -204,7 +196,7 @@ export function UserDashboard({ user }: UserDashboardProps) {
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-muted-foreground text-sm">
-                                                Lihat event terbaru yang Anda ikuti di tab "Riwayat Event"
+                                                Lihat event terbaru yang Anda ikuti di tab &ldquo;Riwayat Event&rdquo;
                                             </p>
                                             <Button 
                                                 onClick={() => setActiveTab('events')}
@@ -226,7 +218,7 @@ export function UserDashboard({ user }: UserDashboardProps) {
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-muted-foreground text-sm">
-                                                Lihat sertifikat terbaru yang Anda dapatkan di tab "Sertifikat"
+                                                Lihat sertifikat terbaru yang Anda dapatkan di tab &ldquo;Sertifikat&rdquo;
                                             </p>
                                             <Button 
                                                 onClick={() => setActiveTab('certificates')}
@@ -284,7 +276,7 @@ export function UserDashboard({ user }: UserDashboardProps) {
                                     const { authAPI } = await import('@/lib/auth');
                                     await authAPI.updateProfile(userToken, { name, phone, address, education });
                                     setProfileOpen(false);
-                                } catch (e) {
+                                } catch {
                                     // noop; toast could be added if available
                                 } finally {
                                     setSaving(false);

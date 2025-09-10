@@ -54,8 +54,9 @@ export default function EventCarousel({ onEventSelect }: Props) {
             try {
                 const data = await apiFetch<BEEvent[]>(`/events?sort=nearest`)
                 setEvents(data.slice(0, 5))
-            } catch (e: any) {
-                setError(e?.message || "Gagal memuat event")
+            } catch (e: unknown) {
+                const errorMessage = e instanceof Error ? e.message : "Gagal memuat event";
+                setError(errorMessage)
             } finally {
                 setLoading(false)
             }

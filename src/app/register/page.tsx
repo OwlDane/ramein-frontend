@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, Lock, Eye, EyeOff, User, Phone, MapPin, GraduationCap, Github, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, User, GraduationCap, Github, ArrowLeft } from 'lucide-react';
 
 export default function RegisterPage() {
 	const [formData, setFormData] = useState({
@@ -56,13 +56,16 @@ export default function RegisterPage() {
 		setIsLoading(true);
 
 		try {
+			// Remove confirmPassword from the data sent to the API
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { confirmPassword, ...registerData } = formData;
-			const response = await register(registerData);
+			await register(registerData);
 			// Registration successful, redirect to verify-email with email parameter
 			setError(''); // Clear any previous errors
 			router.push(`/verify-email?email=${encodeURIComponent(formData.email)}&fromRegister=true`);
-		} catch (err: any) {
-			setError(err.message || 'Registration failed. Please try again.');
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+			setError(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
@@ -235,7 +238,7 @@ export default function RegisterPage() {
 								</button>
 							</div>
 							<p className="text-xs text-muted-foreground mt-1">
-								Password harus minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%?&'#*+=-).
+								Password harus minimal 8 karakter dan mengandung huruf besar, huruf kecil, angka, dan karakter spesial (@$!%?&apos;#*+=-).
 							</p>
 						</div>
 
@@ -378,11 +381,11 @@ export default function RegisterPage() {
 							<Link href="/terms" className="text-primary hover:text-primary/80">
 								Terms of Service
 							</Link>
-							. For more information about Ramein's privacy practices, see the{' '}
+							. For more information about Ramein&apos;s privacy practices, see the{' '}
 							<Link href="/privacy" className="text-primary hover:text-primary/80">
 								Privacy Statement
 							</Link>
-							. We'll occasionally send you account-related emails.
+							. We&apos;ll occasionally send you account-related emails.
 						</p>
 					</div>
 

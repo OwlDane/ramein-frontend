@@ -13,7 +13,7 @@ interface AuthContextType {
     register: (userData: RegisterRequest) => Promise<RegisterResponse>;
     logout: () => void;
     requestOTP: (email: string) => Promise<void>;
-    verifyOTP: (email: string, otp: string, purpose: 'email_verification' | 'login_completion') => Promise<any>;
+    verifyOTP: (email: string, otp: string, purpose: 'email_verification' | 'login_completion') => Promise<{ message: string; token?: string; user?: Omit<User, 'password'> }>;
     requestPasswordReset: (email: string) => Promise<void>;
     resetPassword: (token: string, newPassword: string) => Promise<void>;
 }

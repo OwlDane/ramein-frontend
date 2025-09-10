@@ -9,12 +9,18 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+// Type definition for PWA install prompt event
+interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 interface PWAFeaturesProps {
     onInstall?: () => void;
 }
 
 export function PWAFeatures({ onInstall }: PWAFeaturesProps) {
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [isInstalled, setIsInstalled] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [showInstallPrompt, setShowInstallPrompt] = useState(false);
@@ -27,8 +33,9 @@ export function PWAFeatures({ onInstall }: PWAFeaturesProps) {
 
         // Listen for beforeinstallprompt event
         const handleBeforeInstallPrompt = (e: Event) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
+            const installPromptEvent = e as BeforeInstallPromptEvent;
+            installPromptEvent.preventDefault();
+            setDeferredPrompt(installPromptEvent);
             setShowInstallPrompt(true);
         };
 
@@ -44,7 +51,7 @@ export function PWAFeatures({ onInstall }: PWAFeaturesProps) {
         const handleOffline = () => setIsOnline(false);
 
         // Add event listeners
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
         window.addEventListener('appinstalled', handleAppInstalled);
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
@@ -53,7 +60,7 @@ export function PWAFeatures({ onInstall }: PWAFeaturesProps) {
         registerServiceWorker();
 
         return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
             window.removeEventListener('appinstalled', handleAppInstalled);
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
@@ -177,7 +184,7 @@ export function PWAFeatures({ onInstall }: PWAFeaturesProps) {
                     </Badge>
 
                     {/* PWA Status */}
-                    <Badge variant={pwaStatus.color as any} className="text-xs">
+                    <Badge variant={pwaStatus.color as "default" | "secondary" | "destructive" | "outline"} className="text-xs">
                         <pwaStatus.icon className="w-3 h-3 mr-1" />
                         PWA {pwaStatus.text}
                     </Badge>
@@ -221,7 +228,7 @@ export function PWAFeatures({ onInstall }: PWAFeaturesProps) {
                             <div className="space-y-2 text-sm">
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground">Install Status:</span>
-                                    <Badge variant={pwaStatus.color as any} className="text-xs">
+                                    <Badge variant={pwaStatus.color as "default" | "secondary" | "destructive" | "outline"} className="text-xs">
                                         {pwaStatus.text}
                                     </Badge>
                                 </div>

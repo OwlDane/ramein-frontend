@@ -8,7 +8,7 @@ export default function ContactPage() {
                     <div>
                         <h2 className="text-xl font-semibold text-foreground mb-4">Get in Touch</h2>
                         <p className="text-muted-foreground mb-6">
-                            Have questions about our platform or need support? We're here to help!
+                            Have questions about our platform or need support? We&apos;re here to help!
                         </p>
 
                         <div className="space-y-4">

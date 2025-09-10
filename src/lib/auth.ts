@@ -2,14 +2,12 @@ import { apiFetch } from './api';
 import type {
     LoginRequest,
     RegisterRequest,
-    AuthResponse,
     LoginResponse,
     RegisterResponse,
     VerificationRequest,
-    OTPVerificationRequest,
-    RequestOTPRequest,
     ResetPasswordRequest,
-    ResetPasswordConfirmRequest
+    ResetPasswordConfirmRequest,
+    User
 } from '../types/user';
 
 export const authAPI = {
@@ -46,8 +44,8 @@ export const authAPI = {
     },
 
     // Verify OTP for both email verification and login completion
-    verifyOTP: async (email: string, otp: string, purpose: 'email_verification' | 'login_completion'): Promise<any> => {
-        return apiFetch<any>('/auth/verify-otp', {
+    verifyOTP: async (email: string, otp: string, purpose: 'email_verification' | 'login_completion'): Promise<{ message: string; token?: string; user?: Omit<User, 'password'> }> => {
+        return apiFetch<{ message: string; token?: string; user?: Omit<User, 'password'> }>('/auth/verify-otp', {
             method: 'POST',
             body: { email, otp, purpose }
         });
@@ -78,16 +76,16 @@ export const authAPI = {
     },
 
     // Get current user profile
-    getProfile: async (token: string): Promise<any> => {
-        return apiFetch<any>('/auth/profile', {
+    getProfile: async (token: string): Promise<Omit<User, 'password'>> => {
+        return apiFetch<Omit<User, 'password'>>('/auth/profile', {
             method: 'GET',
             token
         });
     },
 
     // Update current user profile
-    updateProfile: async (token: string, data: { name?: string; phone?: string; address?: string; education?: string }): Promise<any> => {
-        return apiFetch<any>('/auth/profile', {
+    updateProfile: async (token: string, data: { name?: string; phone?: string; address?: string; education?: string }): Promise<Omit<User, 'password'>> => {
+        return apiFetch<Omit<User, 'password'>>('/auth/profile', {
             method: 'PATCH',
             token,
             body: data

@@ -57,8 +57,8 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
             date: ev.date,
             time: ev.time,
             location: ev.location,
-            category: (ev as any).category || 'General',
-            price: Number((ev as any).price ?? 0),
+            category: (ev as { category?: string }).category || 'General',
+            price: Number((ev as { price?: number }).price ?? 0),
             maxParticipants: 0,
             currentParticipants: 0,
             image: (ev.flyer && ev.flyer.startsWith('http')) ? ev.flyer : defaultFlyerFor(ev.id),
@@ -85,8 +85,9 @@ export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
                 });
                 const data = await apiFetch<BackendEvent[]>(`/events${q}`, { method: 'GET' });
                 setServerEvents(data);
-            } catch (e: any) {
-                setError(e?.message || 'Gagal memuat data event');
+            } catch (e: unknown) {
+                const errorMessage = e instanceof Error ? e.message : 'Gagal memuat data event';
+                setError(errorMessage);
             } finally {
                 setLoading(false);
             }

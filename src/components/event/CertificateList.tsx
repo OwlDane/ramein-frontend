@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
     Calendar, Download, Search, Filter, Award, 
-    CheckCircle, ExternalLink, Copy, Eye,
+    CheckCircle, ExternalLink, Copy,
     XCircle
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
@@ -45,42 +45,79 @@ export function CertificateList({ userToken }: CertificateListProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('all');
 
-    useEffect(() => {
-        fetchCertificates();
-    }, [userToken]);
-
-    const fetchCertificates = async () => {
+    const fetchCertificates = useCallback(async () => {
         try {
             setLoading(true);
             // First get all participants, then filter those with certificates
-            const participants = await apiFetch<any[]>('/participants/my-events', {
+            const participants = await apiFetch<Array<{ 
+                id: string; 
+                eventId: string; 
+                certificate?: { 
+                    id: string; 
+                    certificateNumber?: string; 
+                    certificateUrl?: string; 
+                    verificationCode?: string; 
+                    isVerified?: boolean; 
+                    issuedAt?: string 
+                }; 
+                event: { 
+                    id: string; 
+                    title: string; 
+                    description?: string;
+                    date: string; 
+                    time?: string;
+                    location: string;
+                    flyer?: string;
+                    category?: string;
+                }; 
+                attendedAt?: string 
+            }>>('/participants/my-events', {
                 token: userToken
             });
             
             // Filter participants who have certificates
             const participantsWithCertificates = participants.filter(p => p.certificate);
             
-            // Transform to certificate format
-            const certs = participantsWithCertificates.map(p => ({
-                id: p.certificate.id,
-                participantId: p.id,
-                eventId: p.eventId,
-                certificateNumber: p.certificate.certificateNumber || p.certificate.id,
-                certificateUrl: p.certificate.certificateUrl,
-                verificationCode: p.certificate.verificationCode || `CERT-${p.eventId.slice(0, 8).toUpperCase()}`,
-                isVerified: p.certificate.isVerified || true,
-                issuedAt: p.certificate.issuedAt || p.attendedAt || new Date(),
-                event: p.event
-            }));
+            // Transform to certificate format with proper null checks
+            const certs: Certificate[] = participantsWithCertificates.map(p => {
+                // Since we filtered above, we know p.certificate exists, but TypeScript doesn't
+                const cert = p.certificate!;
+                
+                return {
+                    id: cert.id,
+                    participantId: p.id,
+                    eventId: p.eventId,
+                    certificateNumber: cert.certificateNumber || cert.id,
+                    certificateUrl: cert.certificateUrl || '', // Provide fallback
+                    verificationCode: cert.verificationCode || `CERT-${p.eventId.slice(0, 8).toUpperCase()}`,
+                    isVerified: cert.isVerified ?? true,
+                    issuedAt: new Date(cert.issuedAt || p.attendedAt || new Date()),
+                    event: {
+                        id: p.event.id,
+                        title: p.event.title,
+                        description: p.event.description || '',
+                        date: p.event.date,
+                        time: p.event.time || '00:00',
+                        location: p.event.location,
+                        flyer: p.event.flyer,
+                        category: p.event.category
+                    }
+                };
+            });
             
             setCertificates(certs);
-        } catch (error: any) {
-            console.error('Failed to fetch certificates:', error);
-            setError(error?.message || 'Gagal memuat daftar sertifikat');
+        } catch (err: unknown) {
+            console.error('Failed to fetch certificates:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Gagal memuat daftar sertifikat';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
-    };
+    }, [userToken]);
+
+    useEffect(() => {
+        fetchCertificates();
+    }, [fetchCertificates]);
 
     const filteredCertificates = certificates.filter(certificate => {
         const matchesSearch = certificate.event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -120,7 +157,7 @@ export function CertificateList({ userToken }: CertificateListProps) {
             // In a real app, this would trigger actual download
             toast.success(`Download sertifikat untuk event "${eventTitle}"`);
             console.log('Downloading certificate from:', certificateUrl);
-        } catch (error) {
+        } catch {
             toast.error('Gagal mengunduh sertifikat');
         }
     };

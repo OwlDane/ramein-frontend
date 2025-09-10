@@ -2,7 +2,7 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-export async function apiFetch<T>(path: string, options: { method?: HttpMethod; headers?: Record<string, string>; body?: any; token?: string } = {}): Promise<T> {
+export async function apiFetch<T>(path: string, options: { method?: HttpMethod; headers?: Record<string, string>; body?: unknown; token?: string } = {}): Promise<T> {
 	const { method = 'GET', headers = {}, body, token } = options;
 	const res = await fetch(`${API_BASE_URL}${path}`, {
 		method,
