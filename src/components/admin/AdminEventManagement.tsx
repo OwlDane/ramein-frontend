@@ -82,7 +82,7 @@ export function AdminEventManagement() {
                 ...(selectedCategory && { categoryId: selectedCategory })
             });
 
-            const response = await fetch(`/api/admin/events?${params}`, {
+            const response = await fetch(`http://localhost:3001/api/admin/events?${params}`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }
@@ -110,7 +110,7 @@ export function AdminEventManagement() {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('/api/categories');
+            const response = await fetch('http://localhost:3001/api/categories');
             if (response.ok) {
                 const data = await response.json();
                 setCategories(data);
@@ -125,7 +125,7 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch('/api/admin/events', {
+            const response = await fetch('http://localhost:3001/api/admin/events', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`/api/admin/events/${eventId}`, {
+            const response = await fetch(`http://localhost:3001/api/admin/events/${eventId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
@@ -216,7 +216,7 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`/api/admin/events/${eventId}/participants/export?format=xlsx`, {
+            const response = await fetch(`http://localhost:3001/api/admin/events/${eventId}/participants/export?format=xlsx`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }

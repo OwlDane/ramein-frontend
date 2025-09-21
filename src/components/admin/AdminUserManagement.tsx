@@ -49,7 +49,7 @@ export function AdminUserManagement() {
                 ...(selectedRole && { role: selectedRole })
             });
 
-            const response = await fetch(`/api/admin/users?${params}`, {
+            const response = await fetch(`http://localhost:3001/api/admin/users?${params}`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }
@@ -79,7 +79,7 @@ export function AdminUserManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`/api/admin/users/${userId}/role`, {
+            const response = await fetch(`http://localhost:3001/api/admin/users/${userId}/role`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -69,7 +69,7 @@ export function AdminDashboard() {
             setIsLoading(true);
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch('/api/admin/dashboard/stats', {
+            const response = await fetch('http://localhost:3001/api/admin/dashboard/stats', {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }
@@ -93,7 +93,7 @@ export function AdminDashboard() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`/api/admin/dashboard/export?format=${format}`, {
+            const response = await fetch(`http://localhost:3001/api/admin/dashboard/export?format=${format}`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }

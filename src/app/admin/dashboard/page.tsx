@@ -40,7 +40,7 @@ export default function AdminDashboardPage() {
                 return;
             }
 
-            const response = await fetch('/api/admin/auth/verify', {
+            const response = await fetch('http://localhost:3001/api/admin/auth/verify', {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }
