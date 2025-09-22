@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, User, LogOut, Home, ArrowRight, Sparkles, Mail, Shield } from 'lucide-react';
+import { Calendar, User, LogOut, Home, ArrowRight, Sparkles, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { PopupContent } from '@/components/PopupContent';
@@ -371,48 +371,13 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                         </motion.div>
                                     </motion.button>
 
-                                    {/* Admin Panel */}
-                                    <motion.button
-                                        onClick={() => router.push('/admin')}
-                                        className="group flex items-center justify-between w-full text-left transition-all duration-300 hover:translate-x-2 lg:hover:translate-x-4 text-foreground/80 hover:text-foreground"
-                                        variants={menuItemVariants}
-                                        custom={navigation.length + 2}
-                                        initial="closed"
-                                        animate="open"
-                                        exit="closed"
-                                        whileHover={{ x: 10 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        <div className="flex items-center gap-3 lg:gap-4">
-                                            <motion.div
-                                                className="p-2 lg:p-3 rounded-lg transition-all duration-300 bg-accent/50 group-hover:bg-primary/20"
-                                                whileHover={{ scale: 1.1, rotate: 5 }}
-                                            >
-                                                <Shield className="w-4 h-4 lg:w-5 lg:h-5" />
-                                            </motion.div>
-                                            <div>
-                                                <div className="text-base sm:text-lg lg:text-xl xl:text-2xl mb-1 font-bold mobile-text-base">
-                                                    Admin Panel
-                                                </div>
-                                                <div className="text-xs sm:text-xs lg:text-sm text-muted-foreground mobile-text-xs">
-                                                    Panel administrasi sistem
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <motion.div
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                            whileHover={{ x: 5 }}
-                                        >
-                                            <ArrowRight className="w-5 h-5 lg:w-6 lg:h-6" />
-                                        </motion.div>
-                                    </motion.button>
                                 </motion.div>
 
                                 {/* User Info if logged in - Mobile optimized */}
                                 {isLoggedIn && (
                                     <motion.div
                                         variants={menuItemVariants}
-                                        custom={navigation.length + 3}
+                                        custom={navigation.length + 2}
                                         initial="closed"
                                         animate="open"
                                         exit="closed"                                    >
