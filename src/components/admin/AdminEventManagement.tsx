@@ -108,6 +108,15 @@ export function AdminEventManagement() {
         fetchCategories();
     }, [fetchEvents]);
 
+    // Open create dialog if URL has ?action=create
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const action = params.get('action');
+        if (action === 'create') {
+            setIsCreateDialogOpen(true);
+        }
+    }, []);
+
     const fetchCategories = async () => {
         try {
             const response = await fetch('http://localhost:3001/api/categories');

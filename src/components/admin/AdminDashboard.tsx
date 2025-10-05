@@ -1,31 +1,42 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-    Users,
     Calendar,
     Award,
     Download,
     AlertCircle,
     RefreshCw,
-    TrendingUp
+    TrendingUp,
+    CalendarPlus,
+    Users,
+    Settings,
+    ShieldCheck,
+    FileSpreadsheet,
+    Bell,
+    Shield,
+    CheckCircle,
+    XCircle
 } from 'lucide-react';
+import { MonthlyEventsChart } from './charts/MonthlyEventsChart';
+import { MonthlyParticipantsChart } from './charts/MonthlyParticipantsChart';
+
+interface RecentActivity {
+    id: string;
+    type: 'event' | 'user' | 'certificate' | 'system';
+    message: string;
+    timestamp: string;
+    status?: 'success' | 'warning' | 'error';
+}
 
 interface DashboardStats {
     monthlyEvents: Array<{ month: number; count: number }>;
     monthlyParticipants: Array<{ month: number; registrations: number; attendance: number }>;
-    topEvents: Array<{
-        id: string;
-        title: string;
-        date: string;
-        time: string;
-        location: string;
-        participantCount: number;
-    }>;
     overallStats: {
         totalEvents: number;
         totalParticipants: number;
@@ -56,9 +67,10 @@ interface DashboardStats {
 }
 
 export function AdminDashboard() {
-    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
 
     useEffect(() => {
         fetchDashboardStats();
@@ -275,6 +287,102 @@ export function AdminDashboard() {
                 </motion.div>
             </div>
 
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <Card className="min-h-[360px]">
+                        <CardHeader>
+                            <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-4">
+                                <Button
+                                    variant="outline"
+                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    onClick={() => router.push('/admin/dashboard?tab=payments')}
+                                >
+                                    <CalendarPlus className="h-6 w-6" />
+                                    <span>Pembayaran</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    onClick={() => router.push('/admin/dashboard?tab=certificates')}
+                                >
+                                    <FileSpreadsheet className="h-6 w-6" />
+                                    <span>Sertifikat</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    onClick={() => router.push('/admin/dashboard?tab=users')}
+                                >
+                                    <Users className="h-6 w-6" />
+                                    <span>Kelola User</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    onClick={() => router.push('/admin/dashboard?tab=settings')}
+                                >
+                                    <Settings className="h-6 w-6" />
+                                    <span>Settings</span>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                >
+                    <Card className="min-h-[360px]">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-lg font-semibold">System Status</CardTitle>
+                            <ShieldCheck className="h-5 w-5 text-green-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                        <span>Server Status</span>
+                                    </div>
+                                    <span className="text-sm text-green-500">Operational</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                        <span>Database</span>
+                                    </div>
+                                    <span className="text-sm text-green-500">Connected</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                        <span>Email Service</span>
+                                    </div>
+                                    <span className="text-sm text-green-500">Active</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Bell className="h-4 w-4" />
+                                        <span>Last Backup</span>
+                                    </div>
+                                    <span className="text-sm">2 hours ago</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            </div>
+
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Monthly Events Chart */}
@@ -288,28 +396,10 @@ export function AdminDashboard() {
                             <CardTitle>Kegiatan per Bulan</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
-                                {stats.monthlyEvents.map((item) => (
-                                    <div key={item.month} className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">
-                                            {monthNames[item.month - 1]}
-                                        </span>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-32 bg-muted rounded-full h-2">
-                                                <div
-                                                    className="bg-primary h-2 rounded-full"
-                                                    style={{
-                                                        width: `${(item.count / Math.max(...stats.monthlyEvents.map(e => e.count))) * 100}%`
-                                                    }}
-                                                ></div>
-                                            </div>
-                                            <span className="text-sm font-bold w-8 text-right">
-                                                {item.count}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <MonthlyEventsChart 
+                                data={stats.monthlyEvents}
+                                monthNames={monthNames}
+                            />
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -325,64 +415,16 @@ export function AdminDashboard() {
                             <CardTitle>Peserta per Bulan</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
-                                {stats.monthlyParticipants.map((item) => (
-                                    <div key={item.month} className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">
-                                            {monthNames[item.month - 1]}
-                                        </span>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-32 bg-muted rounded-full h-2">
-                                                <div
-                                                    className="bg-primary h-2 rounded-full"
-                                                    style={{
-                                                        width: `${(item.registrations / Math.max(...stats.monthlyParticipants.map(p => p.registrations))) * 100}%`
-                                                    }}
-                                                ></div>
-                                            </div>
-                                            <span className="text-sm font-bold w-8 text-right">
-                                                {item.registrations}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <MonthlyParticipantsChart 
+                                data={stats.monthlyParticipants}
+                                monthNames={monthNames}
+                            />
                         </CardContent>
                     </Card>
                 </motion.div>
             </div>
 
-            {/* Top Events */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-            >
-                <Card>
-                    <CardHeader>
-                        <CardTitle>10 Kegiatan Terpopuler</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {stats.topEvents.map((event) => (
-                                <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                    <div className="flex-1">
-                                        <h4 className="font-medium">{event.title}</h4>
-                                        <p className="text-sm text-muted-foreground">
-                                            {new Date(event.date).toLocaleDateString('id-ID')} - {event.location}
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-primary">
-                                            {event.participantCount} peserta
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </motion.div>
+
         </div>
     );
 }

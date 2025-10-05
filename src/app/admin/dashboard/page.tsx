@@ -1,20 +1,25 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
     BarChart3,
     LogOut,
     AlertCircle,
-    Clock
+    Clock,
+    Calendar,
+    Users,
+    Award,
+    Settings,
+    Plus as PlusIcon
 } from 'lucide-react';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { AdminEventManagement } from '@/components/admin/AdminEventManagement';
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
+import { AdminCertificateManagement } from '@/components/admin/AdminCertificateManagement';
 
 interface AdminUser {
     id: string;
@@ -29,6 +34,15 @@ export default function AdminDashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     // const [error] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
+
+    const searchParams = useSearchParams();
+    useEffect(() => {
+        // Sinkronkan tab aktif dengan query param setiap kali berubah
+        const tab = searchParams.get('tab');
+        if (tab) {
+            setActiveTab(tab);
+        }
+    }, [searchParams]);
     const [sessionTimeLeft, setSessionTimeLeft] = useState(300); // 5 minutes in seconds
     const router = useRouter();
 
@@ -105,80 +119,163 @@ export default function AdminDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Header */}
-            <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
-                <div className="container mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <BarChart3 className="w-6 h-6 text-primary" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-                                <p className="text-sm text-muted-foreground">
-                                    Panel administrasi Ramein
-                                </p>
-                            </div>
+        <div className="min-h-screen bg-background flex">
+            {/* Left Sidebar Navigation */}
+            <aside className="w-64 bg-card border-r border-border flex flex-col sticky top-0 h-screen">
+                {/* Logo Section */}
+                <div className="p-6 border-b border-border">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <BarChart3 className="w-6 h-6 text-primary" />
                         </div>
-
-                        <div className="flex items-center gap-4">
-                            {/* Session Timer */}
-                            <div className="flex items-center gap-2 text-sm">
-                                <Clock className="w-4 h-4" />
-                                <span className={sessionTimeLeft < 60 ? 'text-destructive' : 'text-muted-foreground'}>
-                                    {formatTime(sessionTimeLeft)}
-                                </span>
-                            </div>
-
-                            {/* Admin Info */}
-                            <div className="text-right">
-                                <p className="font-medium">{admin.name}</p>
-                                <p className="text-sm text-muted-foreground">{admin.email}</p>
-                            </div>
-
-                            <Button variant="outline" onClick={handleLogout}>
-                                <LogOut className="w-4 h-4 mr-2" />
-                                Logout
-                            </Button>
+                        <div>
+                            <h1 className="text-xl font-bold">Ramein</h1>
+                            <p className="text-xs text-muted-foreground">Admin Panel</p>
                         </div>
                     </div>
                 </div>
-            </header>
 
-            {/* Main Content */}
-            <main className="container mx-auto px-4 py-6">
-                {sessionTimeLeft < 60 && (
-                    <Alert className="mb-6" variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                            Session akan berakhir dalam {formatTime(sessionTimeLeft)}. 
-                            Silakan refresh halaman untuk memperpanjang session.
-                        </AlertDescription>
-                    </Alert>
-                )}
+                {/* Navigation Menu */}
+                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                    <div className="space-y-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">OVERVIEW</p>
+                        <Button
+                            variant={activeTab === 'overview' ? 'secondary' : 'ghost'}
+                            className="w-full justify-start"
+                            onClick={() => setActiveTab('overview')}
+                        >
+                            <BarChart3 className="w-4 h-4 mr-3" />
+                            Dashboard
+                        </Button>
+                        <Button
+                            variant={activeTab === 'events' ? 'secondary' : 'ghost'}
+                            className="w-full justify-start"
+                            onClick={() => setActiveTab('events')}
+                        >
+                            <Calendar className="w-4 h-4 mr-3" />
+                            Kegiatan
+                        </Button>
+                        <Button
+                            variant={activeTab === 'users' ? 'secondary' : 'ghost'}
+                            className="w-full justify-start"
+                            onClick={() => setActiveTab('users')}
+                        >
+                            <Users className="w-4 h-4 mr-3" />
+                            Pengguna
+                        </Button>
+                    </div>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="events">Kegiatan</TabsTrigger>
-                        <TabsTrigger value="users">Pengguna</TabsTrigger>
-                        <TabsTrigger value="settings">Pengaturan</TabsTrigger>
-                    </TabsList>
+                    <div className="space-y-1 pt-4">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">MANAGEMENT</p>
+                        <Button
+                            variant={activeTab === 'payments' ? 'secondary' : 'ghost'}
+                            className="w-full justify-start"
+                            onClick={() => setActiveTab('payments')}
+                        >
+                            <PlusIcon className="w-4 h-4 mr-3" />
+                            Pembayaran
+                        </Button>
+                        <Button
+                            variant={activeTab === 'certificates' ? 'secondary' : 'ghost'}
+                            className="w-full justify-start"
+                            onClick={() => setActiveTab('certificates')}
+                        >
+                            <Award className="w-4 h-4 mr-3" />
+                            Sertifikat
+                        </Button>
+                        <Button
+                            variant={activeTab === 'settings' ? 'secondary' : 'ghost'}
+                            className="w-full justify-start"
+                            onClick={() => setActiveTab('settings')}
+                        >
+                            <Settings className="w-4 h-4 mr-3" />
+                            Pengaturan
+                        </Button>
+                    </div>
+                </nav>
 
-                    <TabsContent value="overview">
-                        <AdminDashboard />
-                    </TabsContent>
+                {/* User Info & Logout */}
+                <div className="p-4 border-t border-border">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary">
+                                {admin.name.charAt(0).toUpperCase()}
+                            </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{admin.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{admin.email}</p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                        <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span className={sessionTimeLeft < 60 ? 'text-destructive' : ''}>
+                                {formatTime(sessionTimeLeft)}
+                            </span>
+                        </div>
+                    </div>
 
-                    <TabsContent value="events">
-                        <AdminEventManagement />
-                    </TabsContent>
+                    <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                    </Button>
+                </div>
+            </aside>
 
-                    <TabsContent value="users">
-                        <AdminUserManagement />
-                    </TabsContent>
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col">
+                {/* Top Header */}
+                <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border px-6 py-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl font-bold">
+                                {activeTab === 'overview' && 'Dashboard'}
+                                {activeTab === 'events' && 'Manajemen Kegiatan'}
+                                {activeTab === 'users' && 'Manajemen Pengguna'}
+                                {activeTab === 'certificates' && 'Manajemen Sertifikat'}
+                                {activeTab === 'settings' && 'Pengaturan'}
+                            </h2>
+                            <p className="text-sm text-muted-foreground">
+                                {activeTab === 'overview' && 'Ringkasan statistik dan aktivitas sistem'}
+                                {activeTab === 'events' && 'Kelola kegiatan dan event'}
+                                {activeTab === 'users' && 'Kelola pengguna dan peserta'}
+                                {activeTab === 'certificates' && 'Generate dan kelola sertifikat'}
+                                {activeTab === 'settings' && 'Konfigurasi sistem dan pengaturan'}
+                            </p>
+                        </div>
+                    </div>
+                </header>
 
-                    <TabsContent value="settings">
+                {/* Content */}
+                <div className="flex-1 p-6">
+                    {sessionTimeLeft < 60 && (
+                        <Alert className="mb-6" variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                Session akan berakhir dalam {formatTime(sessionTimeLeft)}. 
+                                Silakan refresh halaman untuk memperpanjang session.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
+                    {/* Tab Content */}
+                    {activeTab === 'overview' && <AdminDashboard />}
+                    {activeTab === 'events' && <AdminEventManagement />}
+                    {activeTab === 'users' && <AdminUserManagement />}
+                    {activeTab === 'certificates' && <AdminCertificateManagement />}
+                    {activeTab === 'payments' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Pembayaran</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">Fitur pembayaran akan ditambahkan di tahap berikutnya.</p>
+                            </CardContent>
+                        </Card>
+                    )}
+                    {activeTab === 'settings' && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Pengaturan Admin</CardTitle>
@@ -189,8 +286,8 @@ export default function AdminDashboardPage() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </TabsContent>
-                </Tabs>
+                    )}
+                </div>
             </main>
         </div>
     );

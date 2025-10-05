@@ -26,6 +26,16 @@ export const API_ENDPOINTS = {
         detail: '/events',
         register: '/events/register',
         myEvents: '/participants/my-events'
+    },
+    admin: {
+        login: '/admin/auth/login',
+        logout: '/admin/auth/logout',
+        verify: '/admin/auth/verify',
+        profile: '/admin/auth/profile',
+        dashboard: '/admin/dashboard',
+        events: '/admin/events',
+        certificates: '/admin/certificates',
+        participants: '/admin/participants'
     }
 } as const
 
