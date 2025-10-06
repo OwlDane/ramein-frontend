@@ -49,7 +49,7 @@ export function CertificateTemplateManager() {
     const [templates, setTemplates] = useState<CertificateTemplate[]>([]);
     const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [, setIsLoading] = useState(true);
     const [userToken, setUserToken] = useState<string>('');
     const [previewTemplate, setPreviewTemplate] = useState<CertificateTemplate | null>(null);
     const [showPreview, setShowPreview] = useState(false);

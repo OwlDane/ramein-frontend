@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ interface AdminUser {
     isAdmin: boolean;
 }
 
-export default function AdminDashboardPage() {
+function AdminDashboardContent() {
     const [admin, setAdmin] = useState<AdminUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     // const [error] = useState('');
@@ -290,5 +290,20 @@ export default function AdminDashboardPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function AdminDashboardPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        }>
+            <AdminDashboardContent />
+        </Suspense>
     );
 }

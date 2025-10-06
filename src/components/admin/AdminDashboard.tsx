@@ -19,21 +19,11 @@ import {
     ShieldCheck,
     FileSpreadsheet,
     Bell,
-    Shield,
-    CheckCircle,
-    XCircle
+    CheckCircle
 } from 'lucide-react';
 import { MonthlyEventsChart } from './charts/MonthlyEventsChart';
 import { MonthlyParticipantsChart } from './charts/MonthlyParticipantsChart';
 import { TopEventsChart } from './charts/TopEventsChart';
-
-interface RecentActivity {
-    id: string;
-    type: 'event' | 'user' | 'certificate' | 'system';
-    message: string;
-    timestamp: string;
-    status?: 'success' | 'warning' | 'error';
-}
 
 interface DashboardStats {
     monthlyEvents: Array<{ month: number; count: number }>;
