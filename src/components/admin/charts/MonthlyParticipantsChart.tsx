@@ -28,10 +28,10 @@ export function MonthlyParticipantsChart({ data, monthNames }: MonthlyParticipan
                     <CartesianGrid strokeDasharray="3 3" className="opacity-50" />
                     <XAxis 
                         dataKey="month"
-                        tick={{ fill: 'currentColor', fontSize: 12 }}
+                        tick={{ fill: 'hsl(var(--primary))', fontSize: 12 }}
                     />
                     <YAxis 
-                        tick={{ fill: 'currentColor', fontSize: 12 }}
+                        tick={{ fill: 'hsl(var(--primary))', fontSize: 12 }}
                     />
                     <Tooltip
                         contentStyle={{
@@ -41,7 +41,9 @@ export function MonthlyParticipantsChart({ data, monthNames }: MonthlyParticipan
                         }}
                         cursor={{ fill: 'var(--primary-foreground)', opacity: 0.1 }}
                     />
-                    <Legend />
+                    <Legend 
+                        wrapperStyle={{ color: 'hsl(var(--primary))' }}
+                    />
                     <Bar 
                         dataKey="registrasi" 
                         name="Registrasi" 

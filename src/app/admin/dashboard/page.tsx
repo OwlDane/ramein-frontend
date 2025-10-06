@@ -14,12 +14,12 @@ import {
     Users,
     Award,
     Settings,
-    Plus as PlusIcon
+    Banknote
 } from 'lucide-react';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { AdminEventManagement } from '@/components/admin/AdminEventManagement';
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
-import { AdminCertificateManagement } from '@/components/admin/AdminCertificateManagement';
+import { AdminCertificateManagementNew } from '@/components/admin/AdminCertificateManagementNew';
 
 interface AdminUser {
     id: string;
@@ -172,7 +172,7 @@ export default function AdminDashboardPage() {
                             className="w-full justify-start"
                             onClick={() => setActiveTab('payments')}
                         >
-                            <PlusIcon className="w-4 h-4 mr-3" />
+                            <Banknote className="w-4 h-4 mr-3" />
                             Pembayaran
                         </Button>
                         <Button
@@ -264,7 +264,7 @@ export default function AdminDashboardPage() {
                     {activeTab === 'overview' && <AdminDashboard />}
                     {activeTab === 'events' && <AdminEventManagement />}
                     {activeTab === 'users' && <AdminUserManagement />}
-                    {activeTab === 'certificates' && <AdminCertificateManagement />}
+                    {activeTab === 'certificates' && <AdminCertificateManagementNew />}
                     {activeTab === 'payments' && (
                         <Card>
                             <CardHeader>

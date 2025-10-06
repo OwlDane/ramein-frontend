@@ -13,7 +13,7 @@ import {
     AlertCircle,
     RefreshCw,
     TrendingUp,
-    CalendarPlus,
+    Banknote,
     Users,
     Settings,
     ShieldCheck,
@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { MonthlyEventsChart } from './charts/MonthlyEventsChart';
 import { MonthlyParticipantsChart } from './charts/MonthlyParticipantsChart';
+import { TopEventsChart } from './charts/TopEventsChart';
 
 interface RecentActivity {
     id: string;
@@ -37,6 +38,14 @@ interface RecentActivity {
 interface DashboardStats {
     monthlyEvents: Array<{ month: number; count: number }>;
     monthlyParticipants: Array<{ month: number; registrations: number; attendance: number }>;
+    topEvents: Array<{
+        id: string;
+        title: string;
+        date: string;
+        time: string;
+        location: string;
+        participantCount: number;
+    }>;
     overallStats: {
         totalEvents: number;
         totalParticipants: number;
@@ -305,7 +314,7 @@ export function AdminDashboard() {
                                     className="h-24 flex flex-col items-center justify-center gap-2"
                                     onClick={() => router.push('/admin/dashboard?tab=payments')}
                                 >
-                                    <CalendarPlus className="h-6 w-6" />
+                                    <Banknote className="h-6 w-6" />
                                     <span>Pembayaran</span>
                                 </Button>
                                 <Button
@@ -424,6 +433,27 @@ export function AdminDashboard() {
                 </motion.div>
             </div>
 
+            {/* Top 10 Events Chart */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+            >
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-primary" />
+                            Top 10 Kegiatan dengan Peserta Terbanyak
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Ranking kegiatan berdasarkan jumlah peserta yang hadir
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        <TopEventsChart data={stats.topEvents || []} />
+                    </CardContent>
+                </Card>
+            </motion.div>
 
         </div>
     );
