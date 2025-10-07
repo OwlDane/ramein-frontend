@@ -49,16 +49,15 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
         };
 
         if (isMenuOpen) {
-            window.addEventListener('mousemove', handleMouseMove);
         }
 
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, [isMenuOpen]);
 
     const navigation = useMemo(() => [
-        { name: 'Beranda', view: 'home' as const, icon: Home, description: 'Halaman utama dan informasi terbaru' },
-        { name: 'Event', view: 'events' as const, icon: Calendar, description: 'Jelajahi semua event yang tersedia' },
-        { name: 'Contact', view: 'contact' as const, icon: Mail, description: 'Hubungi tim kami untuk bantuan' },
+        { name: 'Home', view: 'home' as const, icon: Home, description: 'Main page and latest info' },
+        { name: 'Event', view: 'events' as const, icon: Calendar, description: 'Explore all available events' },
+        { name: 'Contact', view: 'contact' as const, icon: Mail, description: 'Get in touch with us' },
     ], []);
 
     const handleNavigation = useCallback((view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact') => {

@@ -1,17 +1,35 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { apiFetch } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import {
-    Calendar, MapPin, Users, Star, Share2, Heart,
-    ArrowLeft, Check, Target, BookOpen, Sparkles,
-    ChevronRight, Mail, Phone, Globe, Clipboard
+    Calendar,
+    MapPin,
+    Users,
+    Tag,
+    CheckCircle,
+    XCircle,
+    Loader2,
+    Share2,
+    Download,
+    Heart,
+    Star,
+    Target,
+    Check,
+    Clock,
+    BookOpen,
+    ChevronRight,
+    Sparkles,
+    Globe,
+    Mail,
+    Phone,
+    ClipboardCheck
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { toast } from 'react-hot-toast';
 import { EventRegistrationModal } from './EventRegistrationModal';
@@ -19,7 +37,7 @@ import { AttendanceModal } from './AttendanceModal';
 import { getEventImages, getAvatarFallbackUrl } from '@/lib/unsplash';
 
 interface EventDetailProps {
-    eventId: string | null;
+    eventId: string;
     isLoggedIn: boolean;
     onAuthRequired: () => void;
     onBack: () => void;
@@ -418,29 +436,8 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
             }
         }
     };
-
     return (
         <div className="min-h-screen bg-gradient-dark">
-            {/* Header with Back Button */}
-            <motion.div
-                className="bg-card border-b border-border sticky top-16 z-10"
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-            >
-                <div className="container mx-auto px-4 py-4">
-                    <motion.button
-                        onClick={onBack}
-                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
-                        whileHover={{ x: -5 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <ArrowLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        <span className="text-base font-medium">Kembali ke Event</span>
-                    </motion.button>
-                </div>
-            </motion.div>
-
             <div className="container mx-auto px-4 py-8">
                 <motion.div
                     variants={containerVariants}
@@ -527,9 +524,10 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                     key={index}
                                     whileHover={{ scale: 1.02, y: -5 }}
                                     transition={{ duration: 0.2 }}
+                                    className="h-full"
                                 >
-                                    <Card className="text-center p-4 border-border hover:shadow-lg transition-all duration-200">
-                                        <CardContent className="p-0">
+                                    <Card className="text-center p-4 border-border hover:shadow-lg transition-all duration-200 h-full flex flex-col">
+                                        <CardContent className="p-0 flex flex-col items-center flex-1">
                                             <motion.div
                                                 className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3"
                                                 whileHover={{ rotate: 360 }}
@@ -538,7 +536,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                                 <item.icon className="w-6 h-6 text-primary" />
                                             </motion.div>
                                             <h3 className="text-base font-medium text-muted-foreground mb-1">{item.title}</h3>
-                                            <p className="text-lg font-bold text-foreground">{item.value}</p>
+                                            <p className="text-lg font-bold text-foreground mb-1">{item.value}</p>
                                             <p className="text-sm text-muted-foreground">{item.subvalue}</p>
                                         </CardContent>
                                     </Card>
@@ -809,7 +807,7 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                                                 className="w-full h-12 border-primary text-primary hover:bg-primary/10 shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    <Clipboard className="w-5 h-5" />
+                                                    <ClipboardCheck className="w-5 h-5" />
                                                     Isi Daftar Hadir
                                                 </div>
                                             </Button>
@@ -918,31 +916,6 @@ export function EventDetail({ eventId, isLoggedIn, onAuthRequired, onBack }: Eve
                             </Card>
                         </motion.div>
 
-                        {/* Tags */}
-                        <motion.div variants={itemVariants}>
-                            <Card className="border-border">
-                                <CardHeader>
-                                    <h3 className="text-xl font-bold">Tags</h3>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex flex-wrap gap-2">
-                                        {event.tags.map((tag: string, index: number) => (
-                                            <motion.div
-                                                key={tag}
-                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                transition={{ delay: index * 0.1 + 0.6 }}
-                                                whileHover={{ scale: 1.05 }}
-                                            >
-                                                <Badge variant="outline" className="text-base border-border hover:bg-accent cursor-pointer">
-                                                    {tag}
-                                                </Badge>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
                     </div>
                 </motion.div>
             </div>

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, User, GraduationCap, Github, ArrowLeft } from 'lucide-react';
+import { Mail, Eye, EyeOff, Github, ArrowLeft, User, Phone, MapPin, Ticket, Award, Calendar } from 'lucide-react';
 
 export default function RegisterPage() {
 	const [formData, setFormData] = useState({
@@ -99,16 +99,16 @@ export default function RegisterPage() {
 
 				<div className="relative z-10 flex flex-col justify-center px-12 text-white">
 					<div className="mb-8">
-						<h1 className="text-4xl font-bold mb-4">Create your free account</h1>
+						<h1 className="text-4xl font-bold mb-4">Join Ramein Today</h1>
 						<p className="text-lg text-slate-300 leading-relaxed">
-							Join Ramein to discover amazing events, earn certificates, and connect with others.
+							Discover amazing events, earn certificates, and connect with a vibrant community.
 						</p>
 					</div>
 
 					<div className="space-y-6">
 						<div className="flex items-center space-x-3">
 							<div className="w-12 h-12 bg-purple-600/20 rounded-xl flex items-center justify-center">
-								<Github className="w-6 h-6 text-purple-400" />
+								<Ticket className="w-6 h-6 text-purple-400" />
 							</div>
 							<div>
 								<h3 className="font-semibold">Event Discovery</h3>
@@ -118,11 +118,11 @@ export default function RegisterPage() {
 
 						<div className="flex items-center space-x-3">
 							<div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center">
-								<GraduationCap className="w-6 h-6 text-blue-400" />
+								<Award className="w-6 h-6 text-blue-400" />
 							</div>
 							<div>
-								<h3 className="font-semibold">Skill Development</h3>
-								<p className="text-sm text-slate-400">Learn and grow through events</p>
+								<h3 className="font-semibold">Earn Certificates</h3>
+								<p className="text-sm text-slate-400">Get recognized for your participation</p>
 							</div>
 						</div>
 
@@ -139,13 +139,13 @@ export default function RegisterPage() {
 				</div>
 			</div>
 			{/* Right Side - Registration Form */}
-			<div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
-				<div className="w-full max-w-md">
+			<div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-6 lg:py-12">
+				<div className="w-full max-w-md max-h-[calc(100vh-3rem)] overflow-y-auto custom-scrollbar">
 					{/* Header */}
 					<div className="text-center mb-8">
 						<div className="flex justify-center mb-4">
 							<div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-								<Github className="w-6 h-6 text-primary-foreground" />
+								<Calendar className="w-6 h-6 text-primary-foreground" />
 							</div>
 						</div>
 						<h1 className="text-2xl font-bold text-foreground mb-2">Sign up for Ramein</h1>
@@ -193,7 +193,7 @@ export default function RegisterPage() {
 					</div>
 
 					{/* Registration Form */}
-					<form onSubmit={handleSubmit} className="space-y-4">
+					<form onSubmit={handleSubmit} className="space-y-3">
 						{/* Email */}
 						<div>
 							<label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">

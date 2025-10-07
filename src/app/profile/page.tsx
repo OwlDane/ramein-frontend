@@ -3,10 +3,10 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserDashboardNew } from '../../components/UserDashboardNew';
+import { ProfileLayout } from '../../components/profile/ProfileLayout';
 import { motion } from 'framer-motion';
 
-export default function DashboardPage() {
+export default function ProfilePage() {
 	const { user, isLoading } = useAuth();
 	const router = useRouter();
 
@@ -34,7 +34,7 @@ export default function DashboardPage() {
 						transition={{ delay: 0.2 }}
 						className="text-muted-foreground font-medium"
 					>
-						Memuat dashboard...
+						Memuat profil...
 					</motion.p>
 				</motion.div>
 			</div>
@@ -42,16 +42,8 @@ export default function DashboardPage() {
 	}
 
 	if (!user) {
-		return null; // Will redirect in useEffect
+		return null;
 	}
 
-	return <UserDashboardNew user={{ 
-		id: user.id, 
-		name: user.name, 
-		email: user.email,
-		phone: 'phone' in user ? (user.phone as string) : undefined,
-		address: 'address' in user ? (user.address as string) : undefined,
-		education: 'education' in user ? (user.education as string) : undefined,
-		avatar: 'avatar' in user ? (user.avatar as string | null) : null
-	}} />;
+	return <ProfileLayout user={user} />;
 }

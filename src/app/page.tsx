@@ -3,22 +3,22 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useViewPersistence } from '@/hooks/useViewPersistence'
 
-import { Header } from '@/components/layout/Header'
-import { Hero } from '@/components/common/Hero'
-import { AboutSection } from '@/components/common/AboutSection'
-import { EventCatalog } from '@/components/event/EventCatalog'
+import { HeaderNew as Header } from '@/components/layout/HeaderNew'
+import { HeroNew as Hero } from '@/components/common/HeroNew'
+import { DreamsSection } from '@/components/common/DreamsSection'
+import { EventCatalogNew as EventCatalog } from '@/components/event/EventCatalogNew'
 import { UserDashboard } from '@/components/UserDashboard'
 import { EventDetail } from '@/components/event/EventDetail'
-import { Footer } from '@/components/layout/Footer'
-import { FeaturedGallery } from '@/components/gallery/FeaturedGallery'
+import { FooterNew as Footer } from '@/components/layout/FooterNew'
+import { FeaturedEventsSection } from '@/components/event/FeaturedEventsSection'
+import { UpcomingEventsSection } from '@/components/event/UpcomingEventsSection'
+import { NewsSection } from '@/components/common/NewsSection'
 import { ContactSection } from '@/components/common/ContactSection'
-import EventCarousel from '@/components/event/EventCarousel'
-import TestimonialSection from '@/components/common/TestimonialSection'
 
-type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact'
+type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact' | 'articles'
 
 export default function HomePage() {
   const { 
@@ -32,6 +32,16 @@ export default function HomePage() {
   } = useViewPersistence()
   const { user, isLoggedIn } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Handle query parameter for view
+  React.useEffect(() => {
+    const viewParam = searchParams.get('view')
+    if (viewParam === 'events' && currentView !== 'events') {
+      updateView('events')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   // Clear view state when user logs out
   React.useEffect(() => {
@@ -134,7 +144,7 @@ export default function HomePage() {
             className="min-h-screen"
           >
             <EventDetail
-              eventId={selectedEventId}
+              eventId={selectedEventId || ''}
               isLoggedIn={isLoggedIn}
               onAuthRequired={() => router.push('/login')}
               onBack={() => handleViewChange('events')}
@@ -167,26 +177,16 @@ export default function HomePage() {
           >
             <Hero 
                 onViewEvents={() => handleViewChange('events')} 
-                onViewAbout={() => {
-                    // Scroll to About section (which is the next section)
-                    const aboutSection = document.querySelector('#about-section');
-                    if (aboutSection) {
-                        aboutSection.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                        // Fallback to events if about section is not found
-                        handleViewChange('events');
-                    }
-                }}
             />
-            <AboutSection 
-                onViewContact={() => handleViewChange('contact')}
+            <DreamsSection 
                 onViewEvents={() => handleViewChange('events')}
             />
-            <FeaturedGallery onViewEvents={() => handleViewChange('events')} />
-            <div className="py-12 lg:py-16">
-              <EventCarousel onEventSelect={handleEventSelect} />
-            </div>
-            <TestimonialSection />
+            <FeaturedEventsSection onViewEvents={() => handleViewChange('events')} />
+            <UpcomingEventsSection 
+              onEventSelect={handleEventSelect}
+              onViewAllEvents={() => handleViewChange('events')}
+            />
+            <NewsSection />
           </motion.div>
         )
     }
@@ -211,7 +211,7 @@ export default function HomePage() {
         currentView={currentView}
       />
 
-      <main className="pt-14 sm:pt-16">
+      <main className="pt-20 sm:pt-24">
         <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
       </main>
 

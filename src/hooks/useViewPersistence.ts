@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact'
+type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact' | 'articles'
 
 interface ViewState {
     currentView: ViewType
