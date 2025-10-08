@@ -34,6 +34,7 @@ function AdminDashboardContent() {
     const [isLoading, setIsLoading] = useState(true);
     // const [error] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const searchParams = useSearchParams();
     useEffect(() => {
@@ -119,9 +120,37 @@ function AdminDashboardContent() {
     }
 
     return (
-        <div className="min-h-screen bg-background flex">
-            {/* Left Sidebar Navigation */}
-            <aside className="w-64 bg-card border-r border-border flex flex-col sticky top-0 h-screen">
+        <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden fixed bottom-4 right-4 z-50">
+                <Button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="h-14 w-14 rounded-full shadow-lg"
+                >
+                    <Settings className="w-6 h-6" />
+                </Button>
+            </div>
+
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="lg:hidden fixed inset-0 bg-black/50 z-40"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* Left Sidebar Navigation - Responsive */}
+            <aside className={`
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+                lg:translate-x-0
+                fixed lg:sticky
+                top-0 left-0
+                w-64 h-screen
+                bg-card border-r border-border
+                flex flex-col
+                transition-transform duration-300 ease-in-out
+                z-50 lg:z-auto
+            `}>
                 {/* Logo Section */}
                 <div className="p-6 border-b border-border">
                     <div className="flex items-center gap-3">
@@ -142,7 +171,10 @@ function AdminDashboardContent() {
                         <Button
                             variant={activeTab === 'overview' ? 'secondary' : 'ghost'}
                             className="w-full justify-start"
-                            onClick={() => setActiveTab('overview')}
+                            onClick={() => {
+                                setActiveTab('overview');
+                                setIsMobileMenuOpen(false);
+                            }}
                         >
                             <BarChart3 className="w-4 h-4 mr-3" />
                             Dashboard
@@ -150,7 +182,10 @@ function AdminDashboardContent() {
                         <Button
                             variant={activeTab === 'events' ? 'secondary' : 'ghost'}
                             className="w-full justify-start"
-                            onClick={() => setActiveTab('events')}
+                            onClick={() => {
+                                setActiveTab('events');
+                                setIsMobileMenuOpen(false);
+                            }}
                         >
                             <Calendar className="w-4 h-4 mr-3" />
                             Kegiatan
@@ -158,7 +193,10 @@ function AdminDashboardContent() {
                         <Button
                             variant={activeTab === 'users' ? 'secondary' : 'ghost'}
                             className="w-full justify-start"
-                            onClick={() => setActiveTab('users')}
+                            onClick={() => {
+                                setActiveTab('users');
+                                setIsMobileMenuOpen(false);
+                            }}
                         >
                             <Users className="w-4 h-4 mr-3" />
                             Pengguna
@@ -170,7 +208,10 @@ function AdminDashboardContent() {
                         <Button
                             variant={activeTab === 'payments' ? 'secondary' : 'ghost'}
                             className="w-full justify-start"
-                            onClick={() => setActiveTab('payments')}
+                            onClick={() => {
+                                setActiveTab('payments');
+                                setIsMobileMenuOpen(false);
+                            }}
                         >
                             <Banknote className="w-4 h-4 mr-3" />
                             Pembayaran
@@ -178,7 +219,10 @@ function AdminDashboardContent() {
                         <Button
                             variant={activeTab === 'certificates' ? 'secondary' : 'ghost'}
                             className="w-full justify-start"
-                            onClick={() => setActiveTab('certificates')}
+                            onClick={() => {
+                                setActiveTab('certificates');
+                                setIsMobileMenuOpen(false);
+                            }}
                         >
                             <Award className="w-4 h-4 mr-3" />
                             Sertifikat
@@ -186,7 +230,10 @@ function AdminDashboardContent() {
                         <Button
                             variant={activeTab === 'settings' ? 'secondary' : 'ghost'}
                             className="w-full justify-start"
-                            onClick={() => setActiveTab('settings')}
+                            onClick={() => {
+                                setActiveTab('settings');
+                                setIsMobileMenuOpen(false);
+                            }}
                         >
                             <Settings className="w-4 h-4 mr-3" />
                             Pengaturan
@@ -225,19 +272,19 @@ function AdminDashboardContent() {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col">
+            <main className="flex-1 flex flex-col w-full">
                 {/* Top Header */}
-                <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border px-6 py-4">
-                    <div className="flex items-center justify-between">
+                <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border px-4 sm:px-6 py-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
-                            <h2 className="text-2xl font-bold">
+                            <h2 className="text-xl sm:text-2xl font-bold">
                                 {activeTab === 'overview' && 'Dashboard'}
                                 {activeTab === 'events' && 'Manajemen Kegiatan'}
                                 {activeTab === 'users' && 'Manajemen Pengguna'}
                                 {activeTab === 'certificates' && 'Manajemen Sertifikat'}
                                 {activeTab === 'settings' && 'Pengaturan'}
                             </h2>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground">
                                 {activeTab === 'overview' && 'Ringkasan statistik dan aktivitas sistem'}
                                 {activeTab === 'events' && 'Kelola kegiatan dan event'}
                                 {activeTab === 'users' && 'Kelola pengguna dan peserta'}
@@ -249,11 +296,11 @@ function AdminDashboardContent() {
                 </header>
 
                 {/* Content */}
-                <div className="flex-1 p-6">
+                <div className="flex-1 p-4 sm:p-6">
                     {sessionTimeLeft < 60 && (
-                        <Alert className="mb-6" variant="destructive">
+                        <Alert className="mb-4 sm:mb-6" variant="destructive">
                             <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
+                            <AlertDescription className="text-xs sm:text-sm">
                                 Session akan berakhir dalam {formatTime(sessionTimeLeft)}. 
                                 Silakan refresh halaman untuk memperpanjang session.
                             </AlertDescription>

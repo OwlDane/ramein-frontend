@@ -296,4 +296,42 @@
     .custom-scrollbar::-webkit-scrollbar {
         display: none; /* Chrome, Safari, Opera */
     }
+
+    /* Mobile-specific text utilities */
+    @media (max-width: 640px) {
+        .mobile-text-xs { font-size: 0.7rem !important; }
+        .mobile-text-sm { font-size: 0.8rem !important; }
+        .mobile-text-base { font-size: 0.9rem !important; }
+        .mobile-text-lg { font-size: 1rem !important; }
+        .mobile-heading { font-size: 1.5rem !important; line-height: 1.3 !important; }
+        .mobile-heading-lg { font-size: 1.75rem !important; line-height: 1.2 !important; }
+    }
+
+    /* Touch-friendly tap targets */
+    @media (max-width: 768px) {
+        .tap-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+    }
+
+    /* Responsive container padding */
+    .container-responsive {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .container-responsive {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .container-responsive {
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    }
 }

@@ -172,48 +172,51 @@ export function AdminDashboard() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold">Dashboard Overview</h2>
-                    <p className="text-muted-foreground">
+                    <h2 className="text-2xl sm:text-3xl font-bold">Dashboard Overview</h2>
+                    <p className="text-sm sm:text-base text-muted-foreground">
                         Statistik dan analisis sistem Ramein
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => fetchDashboardStats()}>
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Refresh
+                <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" onClick={() => fetchDashboardStats()} size="sm" className="text-xs sm:text-sm">
+                        <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Refresh</span>
+                        <span className="sm:hidden">↻</span>
                     </Button>
-                    <Button onClick={() => handleExportData('xlsx')}>
-                        <Download className="w-4 h-4 mr-2" />
-                        Export Excel
+                    <Button onClick={() => handleExportData('xlsx')} size="sm" className="text-xs sm:text-sm">
+                        <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Export Excel</span>
+                        <span className="sm:hidden">Excel</span>
                     </Button>
-                    <Button variant="outline" onClick={() => handleExportData('csv')}>
-                        <Download className="w-4 h-4 mr-2" />
-                        Export CSV
+                    <Button variant="outline" onClick={() => handleExportData('csv')} size="sm" className="text-xs sm:text-sm">
+                        <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Export CSV</span>
+                        <span className="sm:hidden">CSV</span>
                     </Button>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
                     <Card>
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
+                        <CardContent className="p-3 sm:p-4 md:p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">
+                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                                         Total Kegiatan
                                     </p>
-                                    <p className="text-3xl font-bold">
+                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
                                         {stats.overallStats.totalEvents}
                                     </p>
                                 </div>
-                                <Calendar className="h-8 w-8 text-primary" />
+                                <Calendar className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                             </div>
                         </CardContent>
                     </Card>
@@ -225,17 +228,17 @@ export function AdminDashboard() {
                     transition={{ delay: 0.2 }}
                 >
                     <Card>
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
+                        <CardContent className="p-3 sm:p-4 md:p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">
+                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                                         Total Peserta
                                     </p>
-                                    <p className="text-3xl font-bold">
+                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
                                         {stats.overallStats.totalParticipants}
                                     </p>
                                 </div>
-                                <Users className="h-8 w-8 text-primary" />
+                                <Users className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                             </div>
                         </CardContent>
                     </Card>
@@ -247,17 +250,17 @@ export function AdminDashboard() {
                     transition={{ delay: 0.3 }}
                 >
                     <Card>
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
+                        <CardContent className="p-3 sm:p-4 md:p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">
+                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                                         Kehadiran
                                     </p>
-                                    <p className="text-3xl font-bold">
+                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
                                         {stats.overallStats.totalAttendance}
                                     </p>
                                 </div>
-                                <Award className="h-8 w-8 text-primary" />
+                                <Award className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                             </div>
                         </CardContent>
                     </Card>
@@ -269,17 +272,17 @@ export function AdminDashboard() {
                     transition={{ delay: 0.4 }}
                 >
                     <Card>
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
+                        <CardContent className="p-3 sm:p-4 md:p-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">
+                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                                         Tingkat Kehadiran
                                     </p>
-                                    <p className="text-3xl font-bold">
+                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
                                         {stats.overallStats.attendanceRate}%
                                     </p>
                                 </div>
-                                <TrendingUp className="h-8 w-8 text-primary" />
+                                <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                             </div>
                         </CardContent>
                     </Card>
@@ -287,7 +290,7 @@ export function AdminDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -298,37 +301,37 @@ export function AdminDashboard() {
                             <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                                 <Button
                                     variant="outline"
-                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    className="h-20 sm:h-24 flex flex-col items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm"
                                     onClick={() => router.push('/admin/dashboard?tab=payments')}
                                 >
-                                    <Banknote className="h-6 w-6" />
+                                    <Banknote className="h-5 w-5 sm:h-6 sm:w-6" />
                                     <span>Pembayaran</span>
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    className="h-20 sm:h-24 flex flex-col items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm"
                                     onClick={() => router.push('/admin/dashboard?tab=certificates')}
                                 >
-                                    <FileSpreadsheet className="h-6 w-6" />
+                                    <FileSpreadsheet className="h-5 w-5 sm:h-6 sm:w-6" />
                                     <span>Sertifikat</span>
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    className="h-20 sm:h-24 flex flex-col items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm"
                                     onClick={() => router.push('/admin/dashboard?tab=users')}
                                 >
-                                    <Users className="h-6 w-6" />
+                                    <Users className="h-5 w-5 sm:h-6 sm:w-6" />
                                     <span>Kelola User</span>
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="h-24 flex flex-col items-center justify-center gap-2"
+                                    className="h-20 sm:h-24 flex flex-col items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm"
                                     onClick={() => router.push('/admin/dashboard?tab=settings')}
                                 >
-                                    <Settings className="h-6 w-6" />
+                                    <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
                                     <span>Settings</span>
                                 </Button>
                             </div>
