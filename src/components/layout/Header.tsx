@@ -68,14 +68,13 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
 
     const handleDashboard = useCallback(() => {
         if (isLoggedIn) {
-            onViewChange('dashboard');
+            router.push('/profile');
             setIsMenuOpen(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
             router.push('/login');
             setIsMenuOpen(false);
         }
-    }, [isLoggedIn, router, onViewChange]);
+    }, [isLoggedIn, router]);
 
     const handlePopupOpen = useCallback((type: 'about' | 'contact' | 'faq' | 'privacy' | 'terms') => {
         setPopupType(type);
@@ -199,7 +198,7 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
                                                 </motion.div>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent className="w-56 bg-card border-border" align="end">
-                                                <DropdownMenuItem onClick={() => handleNavigation('dashboard')} className="hover:bg-accent">
+                                                <DropdownMenuItem onClick={() => router.push('/profile')} className="hover:bg-accent">
                                                     <User className="w-4 h-4 mr-2" />
                                                     Dashboard
                                                 </DropdownMenuItem>

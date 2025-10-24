@@ -1,251 +1,318 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    User,
-    Mail,
-    Phone,
-    MapPin,
-    GraduationCap,
-    Save,
-    Loader2,
-    Camera,
-    CheckCircle
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface ProfileSettingsProps {
-    user: {
-        id: string;
-        name: string;
-        email: string;
-        phone?: string;
-        address?: string;
-        education?: string;
-        avatar?: string | null;
-    };
-    userToken: string;
-    onUpdate: (user: ProfileSettingsProps['user']) => void;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    education?: string;
+    avatar?: string | null;
+  };
+  userToken: string;
+  onUpdate: (user: ProfileSettingsProps["user"]) => void;
 }
 
-export function ProfileSettings({ user, userToken, onUpdate }: ProfileSettingsProps) {
-    const [formData, setFormData] = useState({
-        name: user.name || '',
-        phone: user.phone || '',
-        address: user.address || '',
-        education: user.education || ''
+export function ProfileSettings({
+  user,
+  userToken,
+  onUpdate,
+}: ProfileSettingsProps) {
+  const [formData, setFormData] = useState({
+    email: user.email || "",
+    name: user.name || "",
+    phone: user.phone || "",
+    address: user.address || "",
+    education: user.education || "",
+    dateOfBirth: "",
+    gender: "",
+    country: "Indonesia",
+  });
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.email) {
+      newErrors.email = "Email tidak boleh kosong";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Format email tidak valid";
+    }
+
+    if (!formData.name || formData.name.trim().length < 3) {
+      newErrors.name = "Nama harus minimal 3 karakter";
+    }
+
+    if (
+      formData.phone &&
+      !/^[0-9]{10,15}$/.test(formData.phone.replace(/[\s-]/g, ""))
+    ) {
+      newErrors.phone = "Nomor telepon tidak valid";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) {
+      toast.error("Mohon periksa kembali form Anda");
+      return;
+    }
+
+    if (!userToken) {
+      toast.error("Silakan login terlebih dahulu");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const { authAPI } = await import("@/lib/auth");
+
+      const updateData = {
+        name: formData.name,
+        phone: formData.phone || undefined,
+        address: formData.address || undefined,
+        education: formData.education || undefined,
+      };
+
+      const updatedUser = await authAPI.updateProfile(userToken, updateData);
+
+      onUpdate(updatedUser);
+
+      toast.success("Profil berhasil diperbarui", {
+        icon: <CheckCircle className="w-4 h-4" />,
+      });
+    } catch (error: unknown) {
+      console.error("Error updating profile:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Gagal memperbarui profil",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      email: user.email || "",
+      name: user.name || "",
+      phone: user.phone || "",
+      address: user.address || "",
+      education: user.education || "",
+      dateOfBirth: "",
+      gender: "",
+      country: "Indonesia",
     });
-    const [saving, setSaving] = useState(false);
+    setErrors({});
+    toast.info("Perubahan dibatalkan");
+  };
 
-    const handleSave = async () => {
-        if (!userToken) return;
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="p-6">
+        <h2 className="text-xl font-semibold mb-6">Pengaturan Akun</h2>
 
-        try {
-            setSaving(true);
-            const { authAPI } = await import('@/lib/auth');
-            const updated = await authAPI.updateProfile(userToken, formData);
-            onUpdate(updated);
-            toast.success('Profil berhasil diperbarui!');
-        } catch {
-            toast.error('Gagal memperbarui profil');
-        } finally {
-            setSaving(false);
-        }
-    };
+        <div className="space-y-5 max-w-2xl">
+          {/* Email Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Alamat Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              disabled
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none"
+              placeholder="byeclsss@gmail.com"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Email tidak dapat diubah untuk login dan notifikasi
+            </p>
+          </div>
 
-    const getInitials = (name?: string) => {
-        if (!name) return 'U';
-        const parts = name.trim().split(' ').filter(Boolean);
-        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-    };
+          {/* Full Name Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Nama Lengkap
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${
+                errors.name
+                  ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                  : "border-gray-300"
+              }`}
+              placeholder="Masukkan nama lengkap"
+            />
+            {errors.name && (
+              <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+            )}
+          </div>
 
-    const getCompletionPercentage = () => {
-        const fields = [formData.name, formData.phone, formData.address, formData.education];
-        const filled = fields.filter(f => f && f.trim()).length;
-        return Math.round((filled / fields.length) * 100);
-    };
+          {/* Phone Number Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              No. Handphone
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors ${
+                errors.phone
+                  ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                  : "border-gray-300"
+              }`}
+              placeholder="08123456789"
+            />
+            {errors.phone && (
+              <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+            )}
+          </div>
 
-    const completionPercentage = getCompletionPercentage();
+          {/* Address Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Alamat</label>
+            <textarea
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              rows={3}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
+              placeholder="Masukkan alamat lengkap"
+            />
+          </div>
 
-    return (
-        <div className="space-y-6">
-            {/* Profile Header */}
-            <Card className="border-border/60 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm">
-                <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                        {/* Avatar */}
-                        <div className="relative group">
-                            <div className="h-24 w-24 rounded-2xl ring-4 ring-primary/20 shadow-lg overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                                {user.avatar ? (
-                                    <ImageWithFallback
-                                        src={user.avatar}
-                                        alt={user.name}
-                                        className="h-full w-full object-cover"
-                                    />
-                                ) : (
-                                    <span className="text-3xl font-bold text-primary">
-                                        {getInitials(user.name)}
-                                    </span>
-                                )}
-                            </div>
-                            <button className="absolute -bottom-2 -right-2 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform">
-                                <Camera className="w-4 h-4" />
-                            </button>
-                            <div className="absolute -top-2 -right-2">
-                                <div className="bg-green-500 text-white p-1 rounded-full">
-                                    <CheckCircle className="w-4 h-4" />
-                                </div>
-                            </div>
-                        </div>
+          {/* Education Level Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Pendidikan Terakhir
+            </label>
+            <select
+              name="education"
+              value={formData.education}
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white cursor-pointer"
+            >
+              <option value="">Pilih pendidikan terakhir</option>
+              <option value="SD">SD</option>
+              <option value="SMP">SMP</option>
+              <option value="SMA/SMK">SMA/SMK</option>
+              <option value="D3">D3</option>
+              <option value="S1">S1</option>
+              <option value="S2">S2</option>
+              <option value="S3">S3</option>
+            </select>
+          </div>
 
-                        {/* User Info */}
-                        <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-2xl font-bold mb-1">{user.name}</h2>
-                            <p className="text-muted-foreground mb-4">{user.email}</p>
-                            
-                            {/* Profile Completion */}
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium">Kelengkapan Profil</span>
-                                    <span className="text-sm font-bold text-primary">{completionPercentage}%</span>
-                                </div>
-                                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                    <motion.div
-                                        className="h-full bg-gradient-to-r from-primary to-primary/80"
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${completionPercentage}%` }}
-                                        transition={{ duration: 1 }}
-                                    />
-                                </div>
-                                {completionPercentage < 100 && (
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                        Lengkapi profil Anda untuk pengalaman yang lebih baik
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+          {/* Date of Birth Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Tanggal Lahir
+            </label>
+            <input
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth}
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+              placeholder="mm/dd/yyyy"
+            />
+          </div>
 
-            {/* Edit Form */}
-            <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <User className="w-5 h-5 text-primary" />
-                        Informasi Pribadi
-                    </CardTitle>
-                    <CardDescription>
-                        Perbarui informasi profil Anda. Pastikan data yang diisi akurat.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-4">
-                        {/* Name */}
-                        <div className="space-y-2">
-                            <Label htmlFor="name" className="flex items-center gap-2">
-                                <User className="w-4 h-4 text-muted-foreground" />
-                                Nama Lengkap
-                            </Label>
-                            <Input
-                                id="name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Masukkan nama lengkap"
-                                className="h-11"
-                            />
-                        </div>
+          {/* Gender Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Jenis Kelamin
+            </label>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white cursor-pointer"
+            >
+              <option value="">Pilih jenis kelamin</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
 
-                        {/* Email (Read-only) */}
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-muted-foreground" />
-                                Email
-                            </Label>
-                            <Input
-                                id="email"
-                                value={user.email}
-                                disabled
-                                className="h-11 bg-muted"
-                            />
-                            <p className="text-xs text-muted-foreground">Email tidak dapat diubah</p>
-                        </div>
+          {/* Country Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Negara</label>
+            <select
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white cursor-pointer"
+            >
+              <option value="Indonesia">Indonesia</option>
+              <option value="Malaysia">Malaysia</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Thailand">Thailand</option>
+              <option value="Philippines">Philippines</option>
+              <option value="Vietnam">Vietnam</option>
+            </select>
+          </div>
 
-                        {/* Phone */}
-                        <div className="space-y-2">
-                            <Label htmlFor="phone" className="flex items-center gap-2">
-                                <Phone className="w-4 h-4 text-muted-foreground" />
-                                Nomor Telepon
-                            </Label>
-                            <Input
-                                id="phone"
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                placeholder="08xxxxxxxxxx"
-                                className="h-11"
-                            />
-                        </div>
-
-                        {/* Education */}
-                        <div className="space-y-2">
-                            <Label htmlFor="education" className="flex items-center gap-2">
-                                <GraduationCap className="w-4 h-4 text-muted-foreground" />
-                                Pendidikan Terakhir
-                            </Label>
-                            <Input
-                                id="education"
-                                value={formData.education}
-                                onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-                                placeholder="Contoh: S1 Teknik Informatika"
-                                className="h-11"
-                            />
-                        </div>
-
-                        {/* Address */}
-                        <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="address" className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-muted-foreground" />
-                                Alamat
-                            </Label>
-                            <Input
-                                id="address"
-                                value={formData.address}
-                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                placeholder="Alamat lengkap domisili"
-                                className="h-11"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="flex justify-end pt-4 border-t">
-                        <Button
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="min-w-[150px]"
-                        >
-                            {saving ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Menyimpan...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="w-4 h-4 mr-2" />
-                                    Simpan Perubahan
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={saving}
+              className="px-6"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 bg-primary hover:bg-primary/90"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Menyimpan...
+                </>
+              ) : (
+                "Simpan Perubahan"
+              )}
+            </Button>
+          </div>
         </div>
-    );
+      </CardContent>
+    </Card>
+  );
 }

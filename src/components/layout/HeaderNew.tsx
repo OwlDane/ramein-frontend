@@ -62,7 +62,7 @@ export function HeaderNew({ onViewChange, currentView }: HeaderNewProps) {
 
     const handleLogin = () => {
         if (isLoggedIn) {
-            onViewChange('dashboard');
+            router.push('/profile');
         } else {
             router.push('/login');
         }
@@ -134,7 +134,7 @@ export function HeaderNew({ onViewChange, currentView }: HeaderNewProps) {
                                             </motion.div>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-48" align="end">
-                                            <DropdownMenuItem onClick={() => handleNavigation('dashboard')}>
+                                            <DropdownMenuItem onClick={() => router.push('/profile')}>
                                                 <User className="w-4 h-4 mr-2" />
                                                 Dashboard
                                             </DropdownMenuItem>
