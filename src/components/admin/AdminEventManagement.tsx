@@ -38,11 +38,25 @@ interface Event {
     participantCount: number;
     attendanceCount: number;
     createdAt: string;
+    // New fields
+    price?: number;
+    maxParticipants?: number;
+    registrationDeadline?: string;
+    eventType?: string;
+    contactPersonName?: string;
+    contactPersonPhone?: string;
+    contactPersonEmail?: string;
+    meetingLink?: string;
+    requirements?: string;
+    benefits?: string;
+    isFeatured?: boolean;
+    tags?: string[];
 }
 
 interface Category {
     id: string;
-    name: string;
+    nama_kategori: string;
+    kategori_logo?: string;
 }
 
 export function AdminEventManagement() {
@@ -58,8 +72,8 @@ export function AdminEventManagement() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    // Form state
-    const [formData, setFormData] = useState({
+    // Initial form state
+    const initialFormState = {
         title: '',
         description: '',
         date: '',
@@ -67,8 +81,24 @@ export function AdminEventManagement() {
         location: '',
         flyerUrl: '',
         certificateUrl: '',
-        categoryId: ''
-    });
+        categoryId: '',
+        // New fields
+        price: '0',
+        maxParticipants: '',
+        registrationDeadline: '',
+        eventType: 'offline',
+        contactPersonName: '',
+        contactPersonPhone: '',
+        contactPersonEmail: '',
+        meetingLink: '',
+        requirements: '',
+        benefits: '',
+        isFeatured: false,
+        tags: ''
+    };
+
+    // Form state
+    const [formData, setFormData] = useState(initialFormState);
 
     const fetchEvents = useCallback(async () => {
         try {
@@ -104,8 +134,8 @@ export function AdminEventManagement() {
     }, [currentPage, searchTerm, selectedCategory]);
 
     useEffect(() => {
+        fetchCategories(); // Fetch categories first
         fetchEvents();
-        fetchCategories();
     }, [fetchEvents]);
 
     // Open create dialog if URL has ?action=create
@@ -119,10 +149,15 @@ export function AdminEventManagement() {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/categories');
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+            const response = await fetch(`${API_URL}/categories`);
+            
             if (response.ok) {
                 const data = await response.json();
+                console.log('📦 Categories loaded:', data);
                 setCategories(data);
+            } else {
+                console.error('Failed to fetch categories:', response.status, response.statusText);
             }
         } catch (error) {
             console.error('Failed to fetch categories:', error);
@@ -145,16 +180,7 @@ export function AdminEventManagement() {
 
             if (response.ok) {
                 setIsCreateDialogOpen(false);
-                setFormData({
-                    title: '',
-                    description: '',
-                    date: '',
-                    time: '',
-                    location: '',
-                    flyerUrl: '',
-                    certificateUrl: '',
-                    categoryId: ''
-                });
+                setFormData(initialFormState);
                 fetchEvents();
             } else {
                 const data = await response.json();
@@ -260,22 +286,25 @@ export function AdminEventManagement() {
             location: event.location,
             flyerUrl: event.flyerUrl || '',
             certificateUrl: event.certificateUrl || '',
-            categoryId: event.category.id
+            categoryId: event.category.id,
+            price: event.price?.toString() || '0',
+            maxParticipants: event.maxParticipants?.toString() || '',
+            registrationDeadline: event.registrationDeadline || '',
+            eventType: event.eventType || 'offline',
+            contactPersonName: event.contactPersonName || '',
+            contactPersonPhone: event.contactPersonPhone || '',
+            contactPersonEmail: event.contactPersonEmail || '',
+            meetingLink: event.meetingLink || '',
+            requirements: event.requirements || '',
+            benefits: event.benefits || '',
+            isFeatured: event.isFeatured || false,
+            tags: event.tags?.join(', ') || ''
         });
         setIsEditDialogOpen(true);
     };
 
     const resetForm = () => {
-        setFormData({
-            title: '',
-            description: '',
-            date: '',
-            time: '',
-            location: '',
-            flyerUrl: '',
-            certificateUrl: '',
-            categoryId: ''
-        });
+        setFormData(initialFormState);
     };
 
     return (
@@ -321,11 +350,15 @@ export function AdminEventManagement() {
                                         required
                                     >
                                         <option value="">Pilih kategori</option>
-                                        {categories.map(category => (
-                                            <option key={category.id} value={category.id}>
-                                                {category.name}
-                                            </option>
-                                        ))}
+                                        {categories.length === 0 ? (
+                                            <option disabled>Loading...</option>
+                                        ) : (
+                                            categories.map(category => (
+                                                <option key={category.id} value={category.id}>
+                                                    {category.nama_kategori}
+                                                </option>
+                                            ))
+                                        )}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
@@ -387,6 +420,163 @@ export function AdminEventManagement() {
                                         required
                                     />
                                 </div>
+
+                                {/* Divider */}
+                                <div className="md:col-span-2 border-t pt-4">
+                                    <h4 className="font-semibold mb-4">📋 Detail Pendaftaran</h4>
+                                </div>
+
+                                {/* Event Type */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="eventType">Tipe Event *</Label>
+                                    <select
+                                        id="eventType"
+                                        value={formData.eventType}
+                                        onChange={(e) => setFormData({...formData, eventType: e.target.value})}
+                                        className="w-full p-2 border rounded-md"
+                                        required
+                                    >
+                                        <option value="offline">Offline</option>
+                                        <option value="online">Online</option>
+                                        <option value="hybrid">Hybrid</option>
+                                    </select>
+                                </div>
+
+                                {/* Price */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="price">Harga (Rp)</Label>
+                                    <Input
+                                        id="price"
+                                        type="number"
+                                        min="0"
+                                        value={formData.price}
+                                        onChange={(e) => setFormData({...formData, price: e.target.value})}
+                                        placeholder="0"
+                                    />
+                                    <p className="text-xs text-muted-foreground">Isi 0 untuk event gratis</p>
+                                </div>
+
+                                {/* Max Participants */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="maxParticipants">Kapasitas Maksimal</Label>
+                                    <Input
+                                        id="maxParticipants"
+                                        type="number"
+                                        min="1"
+                                        value={formData.maxParticipants}
+                                        onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
+                                        placeholder="Unlimited"
+                                    />
+                                </div>
+
+                                {/* Registration Deadline */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="registrationDeadline">Batas Pendaftaran</Label>
+                                    <Input
+                                        id="registrationDeadline"
+                                        type="datetime-local"
+                                        value={formData.registrationDeadline}
+                                        onChange={(e) => setFormData({...formData, registrationDeadline: e.target.value})}
+                                    />
+                                </div>
+
+                                {/* Meeting Link (conditional) */}
+                                {(formData.eventType === 'online' || formData.eventType === 'hybrid') && (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="meetingLink">Link Meeting</Label>
+                                        <Input
+                                            id="meetingLink"
+                                            value={formData.meetingLink}
+                                            onChange={(e) => setFormData({...formData, meetingLink: e.target.value})}
+                                            placeholder="https://zoom.us/j/..."
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Divider */}
+                                <div className="md:col-span-2 border-t pt-4">
+                                    <h4 className="font-semibold mb-4">👤 Contact Person</h4>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="contactPersonName">Nama</Label>
+                                    <Input
+                                        id="contactPersonName"
+                                        value={formData.contactPersonName}
+                                        onChange={(e) => setFormData({...formData, contactPersonName: e.target.value})}
+                                        placeholder="John Doe"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="contactPersonPhone">WhatsApp</Label>
+                                    <Input
+                                        id="contactPersonPhone"
+                                        value={formData.contactPersonPhone}
+                                        onChange={(e) => setFormData({...formData, contactPersonPhone: e.target.value})}
+                                        placeholder="08123456789"
+                                    />
+                                </div>
+
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="contactPersonEmail">Email</Label>
+                                    <Input
+                                        id="contactPersonEmail"
+                                        type="email"
+                                        value={formData.contactPersonEmail}
+                                        onChange={(e) => setFormData({...formData, contactPersonEmail: e.target.value})}
+                                        placeholder="contact@example.com"
+                                    />
+                                </div>
+
+                                {/* Divider */}
+                                <div className="md:col-span-2 border-t pt-4">
+                                    <h4 className="font-semibold mb-4">ℹ️ Informasi Tambahan</h4>
+                                </div>
+
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="requirements">Syarat Peserta</Label>
+                                    <textarea
+                                        id="requirements"
+                                        value={formData.requirements}
+                                        onChange={(e) => setFormData({...formData, requirements: e.target.value})}
+                                        placeholder="Contoh: Mahasiswa aktif, membawa laptop, dll"
+                                        className="w-full p-2 border rounded-md min-h-[80px]"
+                                    />
+                                </div>
+
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="benefits">Benefit yang Didapat</Label>
+                                    <textarea
+                                        id="benefits"
+                                        value={formData.benefits}
+                                        onChange={(e) => setFormData({...formData, benefits: e.target.value})}
+                                        placeholder="Contoh: E-Certificate, Snack, Modul, dll"
+                                        className="w-full p-2 border rounded-md min-h-[80px]"
+                                    />
+                                </div>
+
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="tags">Tags (pisahkan dengan koma)</Label>
+                                    <Input
+                                        id="tags"
+                                        value={formData.tags}
+                                        onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                                        placeholder="workshop, teknologi, gratis"
+                                    />
+                                </div>
+
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.isFeatured}
+                                            onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                                            className="w-4 h-4"
+                                        />
+                                        <span className="text-sm">⭐ Jadikan Event Unggulan</span>
+                                    </label>
+                                </div>
                             </div>
                             <div className="flex justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -430,7 +620,7 @@ export function AdminEventManagement() {
                                 <option value="">Semua Kategori</option>
                                 {categories.map(category => (
                                     <option key={category.id} value={category.id}>
-                                        {category.name}
+                                        {category.nama_kategori}
                                     </option>
                                 ))}
                             </select>
@@ -584,7 +774,7 @@ export function AdminEventManagement() {
                                     <option value="">Pilih kategori</option>
                                     {categories.map(category => (
                                         <option key={category.id} value={category.id}>
-                                            {category.name}
+                                            {category.nama_kategori}
                                         </option>
                                     ))}
                                 </select>
@@ -647,6 +837,155 @@ export function AdminEventManagement() {
                                     className="w-full p-2 border rounded-md min-h-[100px]"
                                     required
                                 />
+                            </div>
+
+                            {/* Divider */}
+                            <div className="md:col-span-2 border-t pt-4">
+                                <h4 className="font-semibold mb-4">📋 Detail Pendaftaran</h4>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-eventType">Tipe Event *</Label>
+                                <select
+                                    id="edit-eventType"
+                                    value={formData.eventType}
+                                    onChange={(e) => setFormData({...formData, eventType: e.target.value})}
+                                    className="w-full p-2 border rounded-md"
+                                    required
+                                >
+                                    <option value="offline">Offline</option>
+                                    <option value="online">Online</option>
+                                    <option value="hybrid">Hybrid</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-price">Harga (Rp)</Label>
+                                <Input
+                                    id="edit-price"
+                                    type="number"
+                                    min="0"
+                                    value={formData.price}
+                                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-maxParticipants">Kapasitas Maksimal</Label>
+                                <Input
+                                    id="edit-maxParticipants"
+                                    type="number"
+                                    min="1"
+                                    value={formData.maxParticipants}
+                                    onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
+                                    placeholder="Unlimited"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-registrationDeadline">Batas Pendaftaran</Label>
+                                <Input
+                                    id="edit-registrationDeadline"
+                                    type="datetime-local"
+                                    value={formData.registrationDeadline}
+                                    onChange={(e) => setFormData({...formData, registrationDeadline: e.target.value})}
+                                />
+                            </div>
+
+                            {(formData.eventType === 'online' || formData.eventType === 'hybrid') && (
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="edit-meetingLink">Link Meeting</Label>
+                                    <Input
+                                        id="edit-meetingLink"
+                                        value={formData.meetingLink}
+                                        onChange={(e) => setFormData({...formData, meetingLink: e.target.value})}
+                                        placeholder="https://zoom.us/j/..."
+                                    />
+                                </div>
+                            )}
+
+                            <div className="md:col-span-2 border-t pt-4">
+                                <h4 className="font-semibold mb-4">👤 Contact Person</h4>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-contactPersonName">Nama</Label>
+                                <Input
+                                    id="edit-contactPersonName"
+                                    value={formData.contactPersonName}
+                                    onChange={(e) => setFormData({...formData, contactPersonName: e.target.value})}
+                                    placeholder="John Doe"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-contactPersonPhone">WhatsApp</Label>
+                                <Input
+                                    id="edit-contactPersonPhone"
+                                    value={formData.contactPersonPhone}
+                                    onChange={(e) => setFormData({...formData, contactPersonPhone: e.target.value})}
+                                    placeholder="08123456789"
+                                />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="edit-contactPersonEmail">Email</Label>
+                                <Input
+                                    id="edit-contactPersonEmail"
+                                    type="email"
+                                    value={formData.contactPersonEmail}
+                                    onChange={(e) => setFormData({...formData, contactPersonEmail: e.target.value})}
+                                    placeholder="contact@example.com"
+                                />
+                            </div>
+
+                            <div className="md:col-span-2 border-t pt-4">
+                                <h4 className="font-semibold mb-4">ℹ️ Informasi Tambahan</h4>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="edit-requirements">Syarat Peserta</Label>
+                                <textarea
+                                    id="edit-requirements"
+                                    value={formData.requirements}
+                                    onChange={(e) => setFormData({...formData, requirements: e.target.value})}
+                                    placeholder="Contoh: Mahasiswa aktif, membawa laptop, dll"
+                                    className="w-full p-2 border rounded-md min-h-[80px]"
+                                />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="edit-benefits">Benefit yang Didapat</Label>
+                                <textarea
+                                    id="edit-benefits"
+                                    value={formData.benefits}
+                                    onChange={(e) => setFormData({...formData, benefits: e.target.value})}
+                                    placeholder="Contoh: E-Certificate, Snack, Modul, dll"
+                                    className="w-full p-2 border rounded-md min-h-[80px]"
+                                />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="edit-tags">Tags (pisahkan dengan koma)</Label>
+                                <Input
+                                    id="edit-tags"
+                                    value={formData.tags}
+                                    onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                                    placeholder="workshop, teknologi, gratis"
+                                />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isFeatured}
+                                        onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                                        className="w-4 h-4"
+                                    />
+                                    <span className="text-sm">⭐ Jadikan Event Unggulan</span>
+                                </label>
                             </div>
                         </div>
                         <div className="flex justify-end gap-2">

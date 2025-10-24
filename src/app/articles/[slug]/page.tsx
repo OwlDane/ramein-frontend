@@ -8,7 +8,7 @@ import { HeaderNew as Header } from "@/components/layout/HeaderNew";
 import { FooterNew as Footer } from "@/components/layout/FooterNew";
 import { Button } from "@/components/ui/button";
 import { Clock, Calendar, ArrowLeft, Share2, Bookmark } from "lucide-react";
-import { getArticleBySlug, getArticles } from "@/lib/dummyArticles";
+import { articleAPI } from "@/lib/articleApi";
 import type { Article } from "@/types/article";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -26,19 +26,24 @@ export default function ArticleDetailPage() {
   useEffect(() => {
     const fetchArticle = async () => {
       setLoading(true);
-      const data = await getArticleBySlug(slug);
-      setArticle(data);
+      try {
+        const data = await articleAPI.getArticleBySlug(slug);
+        setArticle(data);
 
-      if (data) {
-        // Fetch related articles from same category
-        const related = await getArticles({
-          category: data.category,
-          limit: 3,
-        });
-        setRelatedArticles(related.filter((a) => a.id !== data.id));
+        if (data) {
+          // Fetch related articles from same category
+          const response = await articleAPI.getArticles({
+            category: data.category,
+            limit: 3,
+          });
+          setRelatedArticles(response.data.filter((a) => a.id !== data.id));
+        }
+      } catch (error) {
+        console.error('Failed to fetch article:', error);
+        setArticle(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchArticle();
@@ -135,7 +140,7 @@ export default function ArticleDetailPage() {
                   </div>
                   <div>
                     <div className="font-semibold text-lg">
-                      {article.author.name}
+                      {article.authorName || article.author.name}
                     </div>
                     {article.author.role && (
                       <div className="text-sm text-muted-foreground">

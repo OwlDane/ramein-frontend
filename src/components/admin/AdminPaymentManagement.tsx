@@ -106,9 +106,19 @@ export function AdminPaymentManagement() {
       const { transactions: txs, total } = await getAllTransactions(filters);
       setTransactions(txs);
       setTotalTransactions(total);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
-      toast.error('Gagal memuat data pembayaran');
+      
+      // Check if it's an auth error
+      if (error.message?.includes('token') || error.message?.includes('Session expired')) {
+        toast.error('Sesi Anda telah berakhir. Silakan login kembali.');
+        // Redirect to admin login after a short delay
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 2000);
+      } else {
+        toast.error('Gagal memuat data pembayaran');
+      }
     } finally {
       setIsLoading(false);
     }

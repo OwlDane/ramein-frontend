@@ -15,12 +15,14 @@ import {
   Award,
   Settings,
   Banknote,
+  FileText,
 } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminEventManagement } from "@/components/admin/AdminEventManagement";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminCertificateManagementNew } from "@/components/admin/AdminCertificateManagementNew";
 import { AdminPaymentManagement } from "@/components/admin/AdminPaymentManagement";
+import { AdminArticleManagement } from "@/components/admin/AdminArticleManagement";
 
 interface AdminUser {
   id: string;
@@ -238,6 +240,17 @@ function AdminDashboardContent() {
               Sertifikat
             </Button>
             <Button
+              variant={activeTab === "articles" ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab("articles");
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              <FileText className="w-4 h-4 mr-3" />
+              Artikel
+            </Button>
+            <Button
               variant={activeTab === "settings" ? "secondary" : "ghost"}
               className="w-full justify-start"
               onClick={() => {
@@ -300,6 +313,7 @@ function AdminDashboardContent() {
                 {activeTab === "users" && "Manajemen Pengguna"}
                 {activeTab === "payments" && "Manajemen Pembayaran"}
                 {activeTab === "certificates" && "Manajemen Sertifikat"}
+                {activeTab === "articles" && "Manajemen Artikel"}
                 {activeTab === "settings" && "Pengaturan"}
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground">
@@ -311,6 +325,8 @@ function AdminDashboardContent() {
                   "Monitor dan kelola transaksi pembayaran"}
                 {activeTab === "certificates" &&
                   "Generate dan kelola sertifikat"}
+                {activeTab === "articles" &&
+                  "Kelola artikel dan konten blog"}
                 {activeTab === "settings" &&
                   "Konfigurasi sistem dan pengaturan"}
               </p>
@@ -336,6 +352,9 @@ function AdminDashboardContent() {
           {activeTab === "users" && <AdminUserManagement />}
           {activeTab === "certificates" && <AdminCertificateManagementNew />}
           {activeTab === "payments" && <AdminPaymentManagement />}
+          {activeTab === "articles" && (
+            <AdminArticleManagement token={localStorage.getItem("ramein_admin_token") || ""} />
+          )}
           {activeTab === "settings" && (
             <Card>
               <CardHeader>

@@ -6,6 +6,8 @@ export interface Article {
     content: string;
     coverImage: string;
     category: string;
+    categoryId?: string;
+    authorName?: string;
     author: {
         name: string;
         avatar?: string;
@@ -15,6 +17,8 @@ export interface Article {
     readTime: string;
     tags?: string[];
     isPublished?: boolean;
+    isDraft?: boolean;
+    viewCount?: number;
 }
 
 export interface ArticleCategory {

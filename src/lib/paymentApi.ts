@@ -13,10 +13,22 @@ const getAuthToken = (): string | null => {
 };
 
 /**
+ * Get admin token from localStorage
+ */
+const getAdminToken = (): string | null => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("ramein_admin_token");
+    console.log("🔑 Admin token from localStorage:", token ? "EXISTS" : "NOT FOUND");
+    return token;
+  }
+  return null;
+};
+
+/**
  * Create headers with auth token
  */
-const createHeaders = (): HeadersInit => {
-  const token = getAuthToken();
+const createHeaders = (useAdminToken: boolean = false): HeadersInit => {
+  const token = useAdminToken ? getAdminToken() : getAuthToken();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
@@ -261,10 +273,23 @@ export async function cancelTransaction(orderId: string): Promise<Transaction> {
  */
 export async function getEventTransactions(
   eventId: string,
-): Promise<Transaction[]> {
-  const response = await fetch(`${API_URL}/payment/event/${eventId}`, {
+  filters?: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  },
+): Promise<{ transactions: Transaction[]; total: number }> {
+  const params = new URLSearchParams({ eventId });
+  if (filters?.status) params.append("status", filters.status);
+  if (filters?.limit) params.append("limit", filters.limit.toString());
+  if (filters?.offset) params.append("offset", filters.offset.toString());
+
+  const queryString = params.toString();
+  const url = `${API_URL}/payment/admin/event?${queryString}`;
+
+  const response = await fetch(url, {
     method: "GET",
-    headers: createHeaders(),
+    headers: createHeaders(true),
   });
 
   const data = await response.json();
@@ -273,7 +298,10 @@ export async function getEventTransactions(
     throw new Error(data.message || "Failed to get event transactions");
   }
 
-  return data.data;
+  return {
+    transactions: data.data,
+    total: data.total,
+  };
 }
 
 /**
@@ -281,16 +309,21 @@ export async function getEventTransactions(
  */
 export async function getAllTransactions(filters?: {
   status?: string;
-  startDate?: string;
-  endDate?: string;
+  eventId?: string;
+  search?: string;
   limit?: number;
   offset?: number;
 }): Promise<{ transactions: Transaction[]; total: number }> {
-  const params = new URLSearchParams();
+  const adminToken = getAdminToken();
+  
+  if (!adminToken) {
+    throw new Error("Admin token not found. Please login again.");
+  }
 
+  const params = new URLSearchParams();
   if (filters?.status) params.append("status", filters.status);
-  if (filters?.startDate) params.append("startDate", filters.startDate);
-  if (filters?.endDate) params.append("endDate", filters.endDate);
+  if (filters?.eventId) params.append("eventId", filters.eventId);
+  if (filters?.search) params.append("search", filters.search);
   if (filters?.limit) params.append("limit", filters.limit.toString());
   if (filters?.offset) params.append("offset", filters.offset.toString());
 
@@ -299,13 +332,17 @@ export async function getAllTransactions(filters?: {
 
   const response = await fetch(url, {
     method: "GET",
-    headers: createHeaders(),
+    headers: createHeaders(true),
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "Failed to get all transactions");
+    // If unauthorized, might need to re-login
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("Session expired. Please login again.");
+    }
+    throw new Error(data.message || "Failed to get transactions");
   }
 
   return {
@@ -320,6 +357,12 @@ export async function getAllTransactions(filters?: {
 export async function getTransactionStatistics(
   eventId?: string,
 ): Promise<TransactionStatistics> {
+  const adminToken = getAdminToken();
+  
+  if (!adminToken) {
+    throw new Error("Admin token not found. Please login again.");
+  }
+
   const params = new URLSearchParams();
   if (eventId) params.append("eventId", eventId);
 
@@ -328,12 +371,16 @@ export async function getTransactionStatistics(
 
   const response = await fetch(url, {
     method: "GET",
-    headers: createHeaders(),
+    headers: createHeaders(true),
   });
 
   const data = await response.json();
 
   if (!response.ok) {
+    // If unauthorized, might need to re-login
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("Session expired. Please login again.");
+    }
     throw new Error(data.message || "Failed to get transaction statistics");
   }
 

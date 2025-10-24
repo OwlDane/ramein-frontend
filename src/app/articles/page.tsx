@@ -6,38 +6,54 @@ import Image from "next/image";
 import { HeaderNew as Header } from "@/components/layout/HeaderNew";
 import { FooterNew as Footer } from "@/components/layout/FooterNew";
 import { Clock, Calendar, ArrowRight, Search } from "lucide-react";
-import { getArticles, dummyCategories } from "@/lib/dummyArticles";
-import type { Article } from "@/types/article";
+import { articleAPI } from "@/lib/articleApi";
+import type { Article, ArticleCategory } from "@/types/article";
 import { format } from "date-fns";
 import Link from "next/link";
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await articleAPI.getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch articles
   useEffect(() => {
     const fetchArticles = async () => {
       setLoading(true);
-      const data = await getArticles({
-        category: selectedCategory === "all" ? undefined : selectedCategory,
-      });
-      setArticles(data);
-      setLoading(false);
+      try {
+        const response = await articleAPI.getArticles({
+          category: selectedCategory === "all" ? undefined : selectedCategory,
+          search: searchQuery || undefined,
+        });
+        setArticles(response.data);
+      } catch (error) {
+        console.error('Failed to fetch articles:', error);
+        setArticles([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchArticles();
-  }, [selectedCategory]);
+  }, [selectedCategory, searchQuery]);
 
-  const filteredArticles = articles.filter(
-    (article) =>
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.excerpt.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const featuredArticle = filteredArticles[0];
-  const regularArticles = filteredArticles.slice(1);
+  const featuredArticle = articles[0];
+  const regularArticles = articles.slice(1);
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,12 +112,12 @@ export default function ArticlesPage() {
                 >
                   All Articles
                 </button>
-                {dummyCategories.map((category) => (
+                {categories.map((category) => (
                   <button
                     key={category.id}
-                    onClick={() => setSelectedCategory(category.name)}
+                    onClick={() => setSelectedCategory(category.slug)}
                     className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                      selectedCategory === category.name
+                      selectedCategory === category.slug
                         ? "bg-foreground text-background"
                         : "bg-muted hover:bg-muted/80"
                     }`}
@@ -116,7 +132,7 @@ export default function ArticlesPage() {
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
               </div>
-            ) : filteredArticles.length === 0 ? (
+            ) : articles.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No articles found.</p>
               </div>
