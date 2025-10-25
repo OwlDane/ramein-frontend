@@ -17,6 +17,7 @@ import { FeaturedEventsSection } from "@/components/event/FeaturedEventsSection"
 import { UpcomingEventsSection } from "@/components/event/UpcomingEventsSection";
 import { NewsSection } from "@/components/common/NewsSection";
 import { ContactSection } from "@/components/common/ContactSection";
+import { ArticlesSection } from "@/components/common/ArticlesSection";
 
 type ViewType =
   | "home"
@@ -209,6 +210,22 @@ function HomePageContent() {
             className="min-h-screen"
           >
             <ContactSection />
+          </motion.div>
+        );
+      case "articles":
+        return (
+          <motion.div
+            key="articles"
+            initial="initial"
+            animate="in"
+            exit="out"
+            variants={pageVariants}
+            transition={pageTransition}
+            className="min-h-screen"
+          >
+            <div className="pt-4 lg:pt-8">
+              <ArticlesSection />
+            </div>
           </motion.div>
         );
       default:

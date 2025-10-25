@@ -29,34 +29,15 @@ export function HeaderNew({ onViewChange, currentView }: HeaderNewProps) {
         setIsMobileMenuOpen(false);
         
         // Handle navigation based on view
-        switch (view) {
-            case 'home':
-                // Always navigate to home, let the page handle view reset
-                if (window.location.pathname === '/') {
-                    onViewChange('home');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    router.push('/');
-                }
-                break;
-            case 'events':
-                // If we're on home page, use view change, otherwise navigate
-                if (window.location.pathname === '/') {
-                    onViewChange('events');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    router.push('/?view=events');
-                }
-                break;
-            case 'articles':
-                router.push('/articles');
-                break;
-            case 'contact':
-                router.push('/contact');
-                break;
-            default:
-                onViewChange(view);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+        // All views now use smooth view switching for consistent UX
+        if (window.location.pathname === '/') {
+            // Already on homepage, use view switching
+            onViewChange(view);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            // Navigate to homepage with view parameter
+            const viewParam = view === 'home' ? '' : `?view=${view}`;
+            router.push(`/${viewParam}`);
         }
     };
 
