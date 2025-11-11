@@ -1,115 +1,233 @@
-import React, { useState, useCallback } from 'react';
-import { Mail, Phone, MapPin, Sparkles } from 'lucide-react';
-import { PopupContent } from '@/components/PopupContent';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Instagram, Twitter, Linkedin, Github } from "lucide-react";
+import Link from "next/link";
+import { FAQModal, PrivacyModal, TermsModal } from "@/components/modals";
 
 export function Footer() {
-    const [popupType, setPopupType] = useState<'privacy' | 'terms' | null>(null);
+  const currentYear = new Date().getFullYear();
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
 
-    const handlePopupOpen = useCallback((type: 'privacy' | 'terms') => {
-        setPopupType(type);
-    }, []);
+  // Prevent body scroll saat modal open
+  useEffect(() => {
+    if (showPrivacy || showTerms || showFaq) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showPrivacy, showTerms, showFaq]);
 
-    const handlePopupClose = useCallback(() => {
-        setPopupType(null);
-    }, []);
+  const footerLinks = {
+    product: [
+      { name: "Events", href: "/?view=events", type: "link" },
+      { name: "FAQ", onClick: () => setShowFaq(true), type: "button" },
+    ],
+    company: [
+      { name: "About", href: "/about" },
+      { name: "Articles", href: "/articles" },
+      { name: "Contact", href: "/contact" },
+    ],
+    legal: [
+      {
+        name: "Privacy Policy",
+        onClick: () => setShowPrivacy(true),
+        type: "button",
+      },
+      {
+        name: "Terms of Service",
+        onClick: () => setShowTerms(true),
+        type: "button",
+      },
+      { name: "Customer Service", href: "/customer-service", type: "link" },
+    ],
+  };
 
-    return (
-        <footer className="bg-card border-t border-border">
-            <div className="container mx-auto px-4 py-6">
-                {/* Main Content */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                    {/* Company Info */}
-                    <div className="lg:col-span-2">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="w-6 h-6 bg-primary rounded-lg flex items-center justify-center shadow-glow">
-                                <Sparkles className="w-4 h-4 text-primary-foreground" />
-                            </div>
-                            <span className="text-base font-semibold text-foreground">Ramein</span>
-                        </div>
-                        <p className="text-muted-foreground text-xs leading-relaxed mb-3 max-w-md">
-                            Platform event terpercaya yang menghubungkan peserta dengan pengalaman berkualitas tinggi.
-                        </p>
-                        
-                        {/* Contact Info */}
-                        <div className="space-y-1.5 mb-3">
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                                <Mail className="w-3 h-3 text-primary" />
-                                <span>hello@ramein.com</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                                <Phone className="w-3 h-3 text-primary" />
-                                <span>+62 21 1234 5678</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                                <MapPin className="w-3 h-3 text-primary" />
-                                <span>Jakarta, Indonesia</span>
-                            </div>
-                        </div>
-                    </div>
+  const socialLinks = [
+    { name: "Instagram", icon: Instagram, href: "#" },
+    { name: "Twitter", icon: Twitter, href: "#" },
+    { name: "LinkedIn", icon: Linkedin, href: "#" },
+    { name: "GitHub", icon: Github, href: "#" },
+  ];
 
-                    {/* Quick Links */}
-                    <div>
-                        <h3 className="text-foreground font-medium mb-2 text-xs">Perusahaan</h3>
-                        <ul className="space-y-1.5">
-                            {['Tentang Kami', 'Tim Kami', 'Karir', 'Press Kit'].map((link) => (
-                                <li key={link}>
-                                    <button className="text-xs text-muted-foreground hover:text-foreground transition-colors hover:translate-x-1 duration-200">
-                                        {link}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Newsletter */}
-                    <div>
-                        <h3 className="text-foreground font-medium mb-2 text-xs">Newsletter</h3>
-                        <p className="text-xs text-muted-foreground mb-2">
-                            Dapatkan update event terbaru
-                        </p>
-                        <div className="space-y-1.5">
-                            <input
-                                type="email"
-                                placeholder="Email Anda"
-                                className="w-full px-2 py-1.5 text-xs bg-background border border-border rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
-                            />
-                            <button className="w-full px-2 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-all shadow-glow hover:shadow-glow-hover">
-                                Contact Us
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Bar */}
-                <div className="border-t border-border mt-4 pt-3">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-muted-foreground">
-                        <span className="text-xs">© 2024 Ramein. All rights reserved.</span>
-                        <div className="flex gap-3">
-                            <button 
-                                onClick={() => handlePopupOpen('privacy')}
-                                className="hover:text-foreground transition-colors text-xs hover:translate-y-[-1px] duration-200"
-                            >
-                                Privacy Policy
-                            </button>
-                            <button 
-                                onClick={() => handlePopupOpen('terms')}
-                                className="hover:text-foreground transition-colors text-xs hover:translate-y-[-1px] duration-200"
-                            >
-                                Terms of Service
-                            </button>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <footer className="bg-foreground text-background">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        <div className="max-w-screen-2xl mx-auto">
+          {/* Main Footer Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+            {/* Brand Column */}
+            <div className="lg:col-span-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <Link href="/">
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4 hover:opacity-80 transition-opacity cursor-pointer">
+                    Ramein
+                  </h2>
+                </Link>
+                <p className="text-background/70 text-base mb-6 max-w-sm">
+                  Creating unforgettable experiences through amazing events.
+                  Join our community today.
+                </p>
+              </motion.div>
             </div>
 
-            {/* Popup Content */}
-            {popupType && (
-                <PopupContent
-                    type={popupType}
-                    isOpen={!!popupType}
-                    onClose={handlePopupClose}
-                />
-            )}
-        </footer>
-    );
+            {/* Product Links */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">
+                Product
+              </h3>
+              <ul className="space-y-2">
+                {footerLinks.product.map((link) => (
+                  <li key={link.name}>
+                    {link.type === "link" && link.href ? (
+                      <Link
+                        href={link.href}
+                        className="group inline-flex items-center gap-2 text-background/70 hover:text-background transition-all text-sm py-1"
+                      >
+                        <span className="w-1 h-1 rounded-full bg-background/40 group-hover:bg-background group-hover:w-2 transition-all" />
+                        <span className="group-hover:translate-x-1 transition-transform">
+                          {link.name}
+                        </span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={link.onClick}
+                        className="group inline-flex items-center gap-2 text-background/70 hover:text-background transition-all text-sm text-left py-1"
+                      >
+                        <span className="w-1 h-1 rounded-full bg-background/40 group-hover:bg-background group-hover:w-2 transition-all" />
+                        <span className="group-hover:translate-x-1 transition-transform">
+                          {link.name}
+                        </span>
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Company Links */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">
+                Company
+              </h3>
+              <ul className="space-y-2">
+                {footerLinks.company.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="group inline-flex items-center gap-2 text-background/70 hover:text-background transition-all text-sm py-1"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-background/40 group-hover:bg-background group-hover:w-2 transition-all" />
+                      <span className="group-hover:translate-x-1 transition-transform">
+                        {link.name}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Legal Links */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">
+                Legal
+              </h3>
+              <ul className="space-y-2">
+                {footerLinks.legal.map((link) => (
+                  <li key={link.name}>
+                    {link.type === "link" && link.href ? (
+                      <Link
+                        href={link.href}
+                        className="group inline-flex items-center gap-2 text-background/70 hover:text-background transition-all text-sm py-1"
+                      >
+                        <span className="w-1 h-1 rounded-full bg-background/40 group-hover:bg-background group-hover:w-2 transition-all" />
+                        <span className="group-hover:translate-x-1 transition-transform">
+                          {link.name}
+                        </span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={link.onClick}
+                        className="group inline-flex items-center gap-2 text-background/70 hover:text-background transition-all text-sm text-left py-1"
+                      >
+                        <span className="w-1 h-1 rounded-full bg-background/40 group-hover:bg-background group-hover:w-2 transition-all" />
+                        <span className="group-hover:translate-x-1 transition-transform">
+                          {link.name}
+                        </span>
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+
+          {/* Bottom Bar */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="pt-8 border-t border-background/20"
+          >
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+              <p className="text-sm text-background/60">
+                © {currentYear} Ramein. All rights reserved.
+              </p>
+
+              <div className="flex items-center gap-4">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    aria-label={social.name}
+                    className="w-10 h-10 rounded-full bg-background/10 hover:bg-background/20 flex items-center justify-center transition-colors group"
+                  >
+                    <social.icon className="w-5 h-5 text-background/70 group-hover:text-background transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <AnimatePresence mode="wait">
+        {showPrivacy && (
+          <PrivacyModal key="privacy-modal" isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
+        )}
+        {showTerms && (
+          <TermsModal key="terms-modal" isOpen={showTerms} onClose={() => setShowTerms(false)} />
+        )}
+        {showFaq && (
+          <FAQModal key="faq-modal" isOpen={showFaq} onClose={() => setShowFaq(false)} />
+        )}
+      </AnimatePresence>
+    </footer>
+  );
 }

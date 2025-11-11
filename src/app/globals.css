@@ -176,6 +176,22 @@
     ::-webkit-scrollbar-thumb:hover {
         background: var(--muted-foreground);
     }
+
+    /* Fix browser autofill styling */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px var(--input-background) inset !important;
+        -webkit-text-fill-color: var(--foreground) !important;
+        box-shadow: 0 0 0 30px var(--input-background) inset !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* Remove extra border/outline on autofilled inputs */
+    input[type="email"]:-webkit-autofill {
+        border: 1px solid var(--border) !important;
+    }
 }
 
 /**

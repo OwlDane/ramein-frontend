@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 type ViewType = 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact' | 'articles'
 
@@ -51,39 +51,39 @@ export function useViewPersistence() {
         }
     }, [viewState, isLoaded])
 
-    const updateView = (newView: ViewType) => {
+    const updateView = useCallback((newView: ViewType) => {
         setViewState(prev => ({
             ...prev,
             currentView: newView,
             scrollPosition: 0 // Reset scroll position when changing views
         }))
-    }
+    }, [])
 
-    const updateEventId = (eventId: string | null) => {
+    const updateEventId = useCallback((eventId: string | null) => {
         setViewState(prev => ({
             ...prev,
             selectedEventId: eventId
         }))
-    }
+    }, [])
 
-    const updateViewAndEvent = (newView: ViewType, eventId: string | null) => {
+    const updateViewAndEvent = useCallback((newView: ViewType, eventId: string | null) => {
         setViewState(prev => ({
             ...prev,
             currentView: newView,
             selectedEventId: eventId,
             scrollPosition: 0 // Reset scroll position when changing views
         }))
-    }
+    }, [])
 
-    const resetToHome = () => {
+    const resetToHome = useCallback(() => {
         setViewState({
             currentView: 'home',
             selectedEventId: null,
             scrollPosition: 0
         })
-    }
+    }, [])
 
-    const clearState = () => {
+    const clearState = useCallback(() => {
         try {
             localStorage.removeItem(STORAGE_KEY)
             setViewState({
@@ -94,14 +94,14 @@ export function useViewPersistence() {
         } catch (error) {
             console.warn('Failed to clear view state from localStorage:', error)
         }
-    }
+    }, [])
 
-    const saveScrollPosition = () => {
+    const saveScrollPosition = useCallback(() => {
         setViewState(prev => ({
             ...prev,
             scrollPosition: window.scrollY
         }))
-    }
+    }, [])
 
     return {
         currentView: viewState.currentView,

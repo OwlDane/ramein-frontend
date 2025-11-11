@@ -58,8 +58,8 @@ export function ContactSection() {
         {
             icon: MapPin,
             title: 'Visit Us',
-            description: 'Kantor pusat di Jakarta',
-            value: 'Jakarta, Indonesia',
+            description: 'Kantor pusat di Bogor',
+            value: 'Bogor, Indonesia',
             color: 'text-red-500'
         },
         {
@@ -430,33 +430,6 @@ export function ContactSection() {
                                         </AccordionItem>
                                     ))}
                                 </Accordion>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-
-                    {/* Bottom CTA */}
-                    <motion.div
-                        className="text-center"
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20 p-6 lg:p-8">
-                            <CardContent className="p-0">
-                                <motion.div
-                                    className="w-12 h-12 lg:w-16 lg:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 lg:mb-6"
-                                    whileHover={{ scale: 1.1, rotate: 360 }}
-                                    transition={{ duration: 0.6 }}
-                                >
-                                    <Clock className="w-6 h-6 lg:w-8 lg:h-8 text-primary" />
-                                </motion.div>
-                                <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-2 lg:mb-3 mobile-text-lg">
-                                    Quick Response Guarantee
-                                </h3>
-                                <p className="text-muted-foreground text-base lg:text-lg mobile-text-sm">
-                                    Kami berkomitmen untuk merespons semua pertanyaan dalam waktu 24 jam
-                                </p>
                             </CardContent>
                         </Card>
                     </motion.div>

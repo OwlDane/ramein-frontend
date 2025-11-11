@@ -1,372 +1,161 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Calendar, Users, Star, ArrowRight, Sparkles, Zap } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import type { BackendEvent } from "@/types/event";
 
 interface HeroProps {
-    onViewEvents: () => void;
-    onViewAbout?: () => void;
+  onViewEvents: () => void;
 }
 
-export function Hero({ onViewEvents, onViewAbout }: HeroProps) {
-    const { scrollY } = useScroll()
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+export function Hero({ onViewEvents }: HeroProps) {
+  const [events, setEvents] = useState<BackendEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const backgroundY = useTransform(scrollY, [0, 500], [0, 150])
-    const textY = useTransform(scrollY, [0, 500], [0, -100])
-    const heroY = useTransform(scrollY, [0, 500], [0, -150])
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await apiFetch<{ events: BackendEvent[] }>(
+          '/events?limit=6&status=PUBLISHED'
+        );
+        setEvents(response.events || []);
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
 
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            setMousePosition({
-                x: (e.clientX - window.innerWidth / 2) / 50,
-                y: (e.clientY - window.innerHeight / 2) / 50
-            })
-        }
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=500&fit=crop",
+    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=500&fit=crop",
+    "https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&h=500&fit=crop",
+    "https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&h=500&fit=crop",
+    "https://images.unsplash.com/photo-1506157786151-b8491531f063?w=400&h=500&fit=crop",
+    "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=400&h=500&fit=crop",
+  ];
 
-        window.addEventListener('mousemove', handleMouseMove)
-        return () => window.removeEventListener('mousemove', handleMouseMove)
-    }, [])
+  const displayImages = events.length > 0 
+    ? events.slice(0, 6).map(e => e.flyer || fallbackImages[0])
+    : fallbackImages;
 
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.2,
-                delayChildren: 0.1
-            }
-        }
-    }
+  return (
+    <section className="relative min-h-screen flex items-center justify-center bg-background pt-24 pb-16 px-4">
+      <div className="container mx-auto max-w-screen-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <span className="text-sm tracking-[0.3em] uppercase text-muted-foreground font-medium">
+            RAMEIN
+          </span>
+        </motion.div>
 
-    const itemVariants = {
-        hidden: { opacity: 0, y: 30 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.6,
-                ease: "easeOut" as const
-            }
-        }
-    }
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-display-xl mb-6">
+            <span className="block">AWESOME</span>
+            <span className="block">EVENTS!</span>
+          </h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8"
+          >
+            Discover and join amazing events that match your interests. Create
+            unforgettable memories with Ramein.
+          </motion.p>
 
-    const floatingVariants = {
-        animate: {
-            y: [-10, 10, -10],
-            rotate: [-5, 5, -5],
-            transition: {
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut" as const
-            }
-        }
-    }
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <Button
+              onClick={onViewEvents}
+              size="lg"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-6 text-base font-medium group"
+            >
+              Explore Events
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </motion.div>
+        </motion.div>
 
-    return (
-        <section className="relative overflow-hidden bg-gradient-dark text-foreground min-h-[100vh] flex items-center">
-            {/* Subtle background pattern */}
-            <motion.div className="absolute inset-0" style={{ y: backgroundY }}>
-                <motion.div
-                    className="absolute inset-0 opacity-5"
-                    animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
-                    transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
-                    style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300ED64' fill-opacity='0.1'%3E%3Ccircle cx='5' cy='5' r='2'/%3E%3Ccircle cx='55' cy='55' r='2'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                        backgroundSize: '60px 60px'
-                    }}
-                />
-            </motion.div>
-
-            {/* Floating background elements */}
-            <motion.div
-                className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-xl"
-                style={{
-                    x: mousePosition.x * 0.5,
-                    y: mousePosition.y * 0.3,
-                }}
-                animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.6, 0.3]
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const }}
-            />
-
-            <motion.div
-                className="absolute bottom-20 right-10 w-40 h-40 bg-primary/5 rounded-full blur-xl"
-                style={{
-                    x: mousePosition.x * -0.3,
-                    y: mousePosition.y * 0.5,
-                }}
-                animate={{
-                    scale: [1.2, 1, 1.2],
-                    opacity: [0.2, 0.5, 0.2]
-                }}
-                transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "easeInOut" as const,
-                    delay: 1
-                }}
-            />
-
-            <div className="relative container mx-auto px-4 py-20 lg:py-32">
-                <motion.div className="grid lg:grid-cols-2 gap-12 items-center" variants={containerVariants} initial="hidden" animate="visible">
-
-                    {/* TEXT SECTION */}
-                    <motion.div className="text-center lg:text-left" style={{ y: textY }}>
-                        <motion.div
-                            className="inline-flex items-center gap-3 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-border/50"
-                            variants={itemVariants}
-                            whileHover={{ scale: 1.05 }}
-                            style={{
-                                backgroundColor: 'rgba(0, 237, 100, 0.1)',
-                                x: mousePosition.x * 0.2
-                            }}
-                        >
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                            >
-                                <Star className="w-5 h-5 text-primary" />
-                            </motion.div>
-                            <span className="text-base text-muted-foreground font-medium">Platform Event Terpercaya #1</span>
-                        </motion.div>
-
-                        <motion.div variants={itemVariants}>
-                            <motion.h1
-                                className="text-4xl lg:text-6xl mb-8 leading-tight text-foreground font-bold tracking-tight"
-                                style={{
-                                    y: mousePosition.y * -0.5,
-                                    x: mousePosition.x * 0.3
-                                }}
-                            >
-                                <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}>
-                                    Temukan
-                                </motion.span>{' '}
-                                <motion.span
-                                    className="relative inline-block"
-                                    whileHover={{ scale: 1.05 }}
-                                    transition={{ duration: 0.2 }}
-                                    initial={{ opacity: 0, rotateX: 90 }}
-                                    animate={{ opacity: 1, rotateX: 0 }}
-                                    style={{
-                                        transformPerspective: 1000,
-                                        y: mousePosition.y * -0.8
-                                    }}
-                                >
-                                    <span className="text-gradient-primary">
-                                        Event
-                                    </span>
-                                    <motion.div
-                                        className="absolute -top-3 -right-3"
-                                        animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
-                                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" as const }}
-                                        style={{
-                                            x: mousePosition.x * 0.5,
-                                            y: mousePosition.y * -0.5
-                                        }}
-                                    >
-                                        <Sparkles className="w-8 h-8 text-primary" />
-                                    </motion.div>
-                                </motion.span>
-                                <br />
-                                <motion.span
-                                    className="relative"
-                                    whileHover={{ scale: 1.02 }}
-                                    initial={{ opacity: 0, y: 50 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.8, delay: 0.4 }}
-                                    style={{
-                                        x: mousePosition.x * -0.2
-                                    }}
-                                >
-                                    Impianmu
-                                    <motion.div
-                                        className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary to-accent rounded-full"
-                                        initial={{ scaleX: 0 }}
-                                        animate={{ scaleX: 1 }}
-                                        transition={{ delay: 1, duration: 0.8 }}
-                                    />
-                                </motion.span>
-                            </motion.h1>
-                        </motion.div>
-
-                        <motion.p
-                            className="text-lg text-muted-foreground mb-10 max-w-2xl leading-relaxed"
-                            variants={itemVariants}
-                            style={{
-                                y: mousePosition.y * -0.3,
-                                x: mousePosition.x * 0.1
-                            }}
-                        >
-                            Bergabunglah dengan ribuan peserta dalam event-event berkualitas tinggi.
-                            Dapatkan sertifikat dan pengalaman tak terlupakan bersama{' '}
-                            <motion.span
-                                className="text-primary font-medium"
-                                whileHover={{ scale: 1.05 }}
-                                style={{
-                                    display: 'inline-block',
-                                    x: mousePosition.x * 0.2
-                                }}
-                            >
-                                Ramein
-                            </motion.span>.
-                        </motion.p>
-
-                        <motion.div className="flex flex-col sm:flex-row gap-6 mb-16" variants={itemVariants} style={{ x: mousePosition.x * 0.15 }}>
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button 
-                                    onClick={onViewEvents} 
-                                    size="lg" 
-                                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow hover:shadow-glow-hover transition-all duration-200 group text-base px-8 py-6 border-0"
-                                >
-                                    Jelajahi Event
-                                    <motion.div
-                                        className="ml-3"
-                                        animate={{ x: [0, 5, 0] }}
-                                        transition={{ duration: 1.5, repeat: Infinity }}
-                                    >
-                                        <ArrowRight className="w-6 h-6" />
-                                    </motion.div>
-                                </Button>
-                            </motion.div>
-
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button 
-                                    variant="outline" 
-                                    size="lg" 
-                                    className="border-2 border-border bg-card/50 text-foreground hover:bg-accent hover:border-primary backdrop-blur-sm transition-all duration-200 text-base px-8 py-6"
-                                    onClick={onViewAbout || onViewEvents}
-                                >
-                                    Pelajari Lebih Lanjut
-                                </Button>
-                            </motion.div>
-                        </motion.div>
-
-                        {/* Stats */}
-                        <motion.div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto lg:mx-0" variants={itemVariants} style={{ y: mousePosition.y * -0.2 }}>
-                            {[
-                                { number: '1000+', label: 'Event Tersedia', icon: Calendar },
-                                { number: '50K+', label: 'Peserta Aktif', icon: Users },
-                                { number: '25K+', label: 'Sertifikat Terbit', icon: Star }
-                            ].map((stat, index) => (
-                                <motion.div
-                                    key={index}
-                                    className="text-center group cursor-pointer"
-                                    whileHover={{ scale: 1.1, y: -5 }}
-                                    transition={{ duration: 0.2 }}
-                                    style={{
-                                        x: mousePosition.x * (index % 2 === 0 ? 0.1 : -0.1),
-                                        y: mousePosition.y * (index % 2 === 0 ? -0.1 : 0.1)
-                                    }}
-                                >
-                                    <motion.div
-                                        className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-primary/20 transition-colors backdrop-blur-sm border border-border/50"
-                                        whileHover={{ rotate: 360 }}
-                                        transition={{ duration: 0.6 }}
-                                    >
-                                        <stat.icon className="w-6 h-6 text-primary" />
-                                    </motion.div>
-                                    <motion.div
-                                        className="text-2xl text-primary mb-2 font-bold"
-                                        initial={{ opacity: 0, scale: 0 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 1 + index * 0.2, duration: 0.5 }}
-                                    >
-                                        {stat.number}
-                                    </motion.div>
-                                    <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
-                                </motion.div>
-                            ))}
-                        </motion.div>
-                    </motion.div>
-
-                    {/* IMAGE/GRAPHIC SIDE */}
-                    <motion.div className="relative" variants={itemVariants} style={{ y: heroY }}>
-                        {/* Visual Box */}
-                        <motion.div
-                            className="relative z-10 bg-card/80 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-border"
-                            whileHover={{ scale: 1.02, rotateY: 5 }}
-                            transition={{ duration: 0.3 }}
-                            style={{
-                                x: mousePosition.x * 0.3,
-                                y: mousePosition.y * 0.2
-                            }}
-                        >
-                            <motion.div
-                                className="aspect-square bg-gradient-to-br from-accent/50 to-muted/30 rounded-xl flex items-center justify-center border border-border relative overflow-hidden"
-                                variants={floatingVariants}
-                                animate="animate"
-                            >
-                                <div className="absolute inset-0 opacity-20">
-                                    <div className="grid grid-cols-4 h-full">
-                                        {Array.from({ length: 16 }).map((_, i) => (
-                                            <motion.div
-                                                key={i}
-                                                className="border border-primary/20"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: i * 0.05 }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="text-center relative z-10">
-                                    <motion.div
-                                        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const }}
-                                        style={{
-                                            x: mousePosition.x * -0.2,
-                                            y: mousePosition.y * -0.3
-                                        }}
-                                    >
-                                        <Sparkles className="w-16 h-16 text-primary mx-auto mb-4" />
-                                    </motion.div>
-                                    <h3 className="text-lg mb-2 text-foreground font-bold">Event Mendatang</h3>
-                                    <p className="text-muted-foreground text-sm leading-relaxed">
-                                        Daftar sekarang dan dapatkan early bird discount!
-                                    </p>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-
-                        {/* Floating Icons */}
-                        <motion.div className="absolute -top-6 -right-6 bg-primary rounded-2xl p-6 shadow-lg border border-border"
-                            animate={{ y: [-10, 10, -10], rotate: [-10, 10, -10], scale: [1, 1.05, 1] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const }}
-                            whileHover={{ scale: 1.15 }}
-                            style={{ x: mousePosition.x * 0.4, y: mousePosition.y * 0.3 }}
-                        >
-                            <Users className="w-10 h-10 text-primary-foreground" />
-                        </motion.div>
-
-                        <motion.div className="absolute -bottom-6 -left-6 bg-accent rounded-2xl p-6 shadow-lg border border-border"
-                            animate={{ y: [10, -10, 10], rotate: [10, -10, 10], scale: [1, 1.05, 1] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" as const, delay: 2 }}
-                            whileHover={{ scale: 1.15 }}
-                            style={{ x: mousePosition.x * -0.4, y: mousePosition.y * -0.3 }}
-                        >
-                            <Zap className="w-10 h-10 text-primary" />
-                        </motion.div>
-
-                        <motion.div className="absolute top-1/4 -left-4 w-4 h-4 bg-primary rounded-full"
-                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" as const }}
-                            style={{ x: mousePosition.x * 0.6, y: mousePosition.y * 0.4 }}
-                        />
-
-                        <motion.div className="absolute bottom-1/4 -right-4 w-6 h-6 bg-accent rounded-full"
-                            animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
-                            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" as const, delay: 1 }}
-                            style={{ x: mousePosition.x * -0.6, y: mousePosition.y * -0.4 }}
-                        />
-                    </motion.div>
-                </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 max-w-[1400px] mx-auto"
+        >
+          {loading ? (
+            <div className="col-span-full flex justify-center items-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-        </section>
-    )
+          ) : (
+            displayImages.map((image, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.9 + index * 0.1 }}
+                whileHover={{ scale: 1.05, zIndex: 10 }}
+                className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-soft cursor-pointer group"
+              >
+                <Image
+                  src={image}
+                  alt={`Event ${index + 1}`}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </motion.div>
+            ))
+          )}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1.5 }}
+          className="text-center mt-12"
+        >
+          <p className="text-sm text-muted-foreground">
+            Scroll down to explore more
+          </p>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="mt-4"
+          >
+            <svg
+              className="w-6 h-6 mx-auto text-muted-foreground"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
 }

@@ -34,7 +34,7 @@ export function DreamsSection({ onViewEvents }: DreamsSectionProps) {
   return (
     <section className="py-24 md:py-32 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-[1600px] mx-auto">
           {/* Main Content */}
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-20">
             {/* Left - Text */}

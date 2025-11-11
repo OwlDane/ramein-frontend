@@ -6,18 +6,19 @@ import { useAuth } from "../contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useViewPersistence } from "@/hooks/useViewPersistence";
 
-import { HeaderNew as Header } from "@/components/layout/HeaderNew";
-import { HeroNew as Hero } from "@/components/common/HeroNew";
+import { Header } from "@/components/layout/Header";
+import { Hero } from "@/components/common/Hero";
 import { DreamsSection } from "@/components/common/DreamsSection";
-import { EventCatalogNew as EventCatalog } from "@/components/event/EventCatalogNew";
+import { EventCatalog } from "@/components/event/EventCatalog";
 import { UserDashboard } from "@/components/UserDashboard";
 import { EventDetail } from "@/components/event/EventDetail";
-import { FooterNew as Footer } from "@/components/layout/FooterNew";
+import { Footer } from "@/components/layout/Footer";
 import { FeaturedEventsSection } from "@/components/event/FeaturedEventsSection";
 import { UpcomingEventsSection } from "@/components/event/UpcomingEventsSection";
 import { NewsSection } from "@/components/common/NewsSection";
 import { ContactSection } from "@/components/common/ContactSection";
 import { ArticlesSection } from "@/components/common/ArticlesSection";
+import { BackToTop } from "@/components/common/BackToTop";
 
 type ViewType =
   | "home"
@@ -35,10 +36,10 @@ function SearchParamsHandler({
 }) {
   const searchParams = useSearchParams();
   const { currentView } = useViewPersistence();
+  const lastHandledViewRef = React.useRef<ViewType | null>(null);
 
-  // 💡 PERBAIKAN: Ambil nilai parameter di luar useEffect
+  // Get and validate view parameter
   const viewParam = searchParams.get("view");
-  // Anda mungkin juga ingin memvalidasi bahwa viewParam adalah salah satu dari ViewType yang valid
   const targetView =
     viewParam &&
     (
@@ -55,20 +56,24 @@ function SearchParamsHandler({
       : null;
 
   React.useEffect(() => {
-    // 💡 PERBAIKAN: Gunakan nilai viewParam yang stabil, bukan objek searchParams.
-    // Tambahkan logika untuk viewParam yang Anda harapkan.
-
-    if (targetView && currentView !== targetView) {
+    // Only update if:
+    // 1. There's a target view from URL
+    // 2. It's different from current view
+    // 3. We haven't just handled this view (prevent duplicate updates)
+    if (
+      targetView &&
+      currentView !== targetView &&
+      lastHandledViewRef.current !== targetView
+    ) {
+      lastHandledViewRef.current = targetView;
       onViewChange(targetView);
     }
 
-    // Logika asli Anda (disederhanakan untuk menunjukkan fix)
-    /*
-    if (viewParam === "events" && currentView !== "events") {
-      onViewChange("events");
+    // Reset the ref when currentView matches targetView
+    if (targetView && currentView === targetView) {
+      lastHandledViewRef.current = targetView;
     }
-    */
-  }, [targetView, currentView, onViewChange]); // 👈 Dependensi diubah menjadi targetView
+  }, [targetView, currentView, onViewChange]);
 
   return null;
 }
@@ -278,7 +283,8 @@ function HomePageContent() {
         <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
       </main>
 
-      {currentView !== "contact" && <Footer />}
+      <Footer />
+      <BackToTop />
     </div>
   );
 }

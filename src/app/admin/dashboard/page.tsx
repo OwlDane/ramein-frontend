@@ -20,7 +20,7 @@ import {
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminEventManagement } from "@/components/admin/AdminEventManagement";
 import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
-import { AdminCertificateManagementNew } from "@/components/admin/AdminCertificateManagementNew";
+import { AdminCertificateManagementNew as AdminCertificateManagement } from "@/components/admin/AdminCertificateManagementNew";
 import { AdminPaymentManagement } from "@/components/admin/AdminPaymentManagement";
 import { AdminArticleManagement } from "@/components/admin/AdminArticleManagement";
 
@@ -350,7 +350,7 @@ function AdminDashboardContent() {
           {activeTab === "overview" && <AdminDashboard />}
           {activeTab === "events" && <AdminEventManagement />}
           {activeTab === "users" && <AdminUserManagement />}
-          {activeTab === "certificates" && <AdminCertificateManagementNew />}
+          {activeTab === "certificates" && <AdminCertificateManagement />}
           {activeTab === "payments" && <AdminPaymentManagement />}
           {activeTab === "articles" && (
             <AdminArticleManagement token={localStorage.getItem("ramein_admin_token") || ""} />

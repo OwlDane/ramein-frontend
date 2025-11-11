@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -346,7 +347,7 @@ export function AdminEventManagement() {
                                         id="categoryId"
                                         value={formData.categoryId}
                                         onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-                                        className="w-full p-2 border rounded-md"
+                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                         required
                                     >
                                         <option value="">Pilih kategori</option>
@@ -416,7 +417,7 @@ export function AdminEventManagement() {
                                         value={formData.description}
                                         onChange={(e) => setFormData({...formData, description: e.target.value})}
                                         placeholder="Masukkan deskripsi kegiatan"
-                                        className="w-full p-2 border rounded-md min-h-[100px]"
+                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                                         required
                                     />
                                 </div>
@@ -433,7 +434,7 @@ export function AdminEventManagement() {
                                         id="eventType"
                                         value={formData.eventType}
                                         onChange={(e) => setFormData({...formData, eventType: e.target.value})}
-                                        className="w-full p-2 border rounded-md"
+                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                         required
                                     >
                                         <option value="offline">Offline</option>
@@ -541,7 +542,7 @@ export function AdminEventManagement() {
                                         value={formData.requirements}
                                         onChange={(e) => setFormData({...formData, requirements: e.target.value})}
                                         placeholder="Contoh: Mahasiswa aktif, membawa laptop, dll"
-                                        className="w-full p-2 border rounded-md min-h-[80px]"
+                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                                     />
                                 </div>
 
@@ -552,7 +553,7 @@ export function AdminEventManagement() {
                                         value={formData.benefits}
                                         onChange={(e) => setFormData({...formData, benefits: e.target.value})}
                                         placeholder="Contoh: E-Certificate, Snack, Modul, dll"
-                                        className="w-full p-2 border rounded-md min-h-[80px]"
+                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                                     />
                                 </div>
 
@@ -642,7 +643,7 @@ export function AdminEventManagement() {
                     ))}
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {events.map((event, index) => (
                         <motion.div
                             key={event.id}
@@ -652,67 +653,82 @@ export function AdminEventManagement() {
                         >
                             <Card>
                                 <CardContent className="p-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
+                                    {/* Top Section: Image + Info */}
+                                    <div className="flex items-start gap-4 mb-4">
+                                        {/* Event Image Preview */}
+                                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
+                                            <ImageWithFallback
+                                                src={event.flyerUrl || `https://picsum.photos/seed/${event.id}/400/300`}
+                                                alt={event.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+
+                                        {/* Event Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-start justify-between gap-3 mb-2">
                                                 <h3 className="text-lg font-semibold">{event.title}</h3>
-                                                <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                                                <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full shrink-0">
                                                     {event.category.name}
                                                 </span>
                                             </div>
-                                            <p className="text-muted-foreground mb-4 line-clamp-2">
+                                            <p className="text-muted-foreground mb-3 line-clamp-2 text-sm">
                                                 {event.description}
                                             </p>
-                                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                                <div className="flex items-center gap-1">
+                                            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                                                <div className="flex items-center gap-1.5">
                                                     <Calendar className="w-4 h-4" />
-                                                    {new Date(event.date).toLocaleDateString('id-ID')}
+                                                    <span>{new Date(event.date).toLocaleDateString('id-ID')}</span>
                                                 </div>
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1.5">
                                                     <Clock className="w-4 h-4" />
-                                                    {event.time}
+                                                    <span>{event.time}</span>
                                                 </div>
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1.5">
                                                     <MapPin className="w-4 h-4" />
-                                                    {event.location}
+                                                    <span>{event.location}</span>
                                                 </div>
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1.5">
                                                     <Users className="w-4 h-4" />
-                                                    {event.participantCount} peserta
+                                                    <span>{event.participantCount} peserta</span>
                                                 </div>
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1.5">
                                                     <CheckCircle className="w-4 h-4" />
-                                                    {event.attendanceCount} hadir
+                                                    <span>{event.attendanceCount} hadir</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 ml-4">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleExportParticipants(event.id, event.title)}
-                                            >
-                                                <Download className="w-4 h-4 mr-1" />
-                                                Export
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => openEditDialog(event)}
-                                            >
-                                                <Edit className="w-4 h-4 mr-1" />
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteEvent(event.id)}
-                                                className="text-destructive hover:text-destructive"
-                                            >
-                                                <Trash2 className="w-4 h-4 mr-1" />
-                                                Hapus
-                                            </Button>
-                                        </div>
+                                    </div>
+
+                                    {/* Bottom Section: Action Buttons */}
+                                    <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
+                                        <Button
+                                            variant="outline"
+                                            size="default"
+                                            onClick={() => handleExportParticipants(event.id, event.title)}
+                                            className="flex-1 sm:flex-none"
+                                        >
+                                            <Download className="w-4 h-4 mr-2" />
+                                            Export Peserta
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="default"
+                                            onClick={() => openEditDialog(event)}
+                                            className="flex-1 sm:flex-none"
+                                        >
+                                            <Edit className="w-4 h-4 mr-2" />
+                                            Edit Event
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="default"
+                                            onClick={() => handleDeleteEvent(event.id)}
+                                            className="flex-1 sm:flex-none text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                        >
+                                            <Trash2 className="w-4 h-4 mr-2" />
+                                            Hapus Event
+                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -768,7 +784,7 @@ export function AdminEventManagement() {
                                     id="edit-categoryId"
                                     value={formData.categoryId}
                                     onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-                                    className="w-full p-2 border rounded-md"
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                     required
                                 >
                                     <option value="">Pilih kategori</option>
@@ -834,7 +850,7 @@ export function AdminEventManagement() {
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                                     placeholder="Masukkan deskripsi kegiatan"
-                                    className="w-full p-2 border rounded-md min-h-[100px]"
+                                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                                     required
                                 />
                             </div>
@@ -850,7 +866,7 @@ export function AdminEventManagement() {
                                     id="edit-eventType"
                                     value={formData.eventType}
                                     onChange={(e) => setFormData({...formData, eventType: e.target.value})}
-                                    className="w-full p-2 border rounded-md"
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                     required
                                 >
                                     <option value="offline">Offline</option>
@@ -951,7 +967,7 @@ export function AdminEventManagement() {
                                     value={formData.requirements}
                                     onChange={(e) => setFormData({...formData, requirements: e.target.value})}
                                     placeholder="Contoh: Mahasiswa aktif, membawa laptop, dll"
-                                    className="w-full p-2 border rounded-md min-h-[80px]"
+                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                                 />
                             </div>
 
@@ -962,7 +978,7 @@ export function AdminEventManagement() {
                                     value={formData.benefits}
                                     onChange={(e) => setFormData({...formData, benefits: e.target.value})}
                                     placeholder="Contoh: E-Certificate, Snack, Modul, dll"
-                                    className="w-full p-2 border rounded-md min-h-[80px]"
+                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
                                 />
                             </div>
 

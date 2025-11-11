@@ -56,7 +56,7 @@ export function ArticlesSection() {
     return (
         <div className="py-8 lg:py-12">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-[1600px] mx-auto">
                     {/* Page Header */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -200,7 +200,7 @@ export function ArticlesSection() {
                             )}
 
                             {/* Regular Articles Grid */}
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                                 {regularArticles.map((article, index) => (
                                     <motion.div
                                         key={article.id}

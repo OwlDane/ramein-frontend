@@ -1,653 +1,362 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Search, Calendar, MapPin, Users, Clock, Filter, Sparkles, SlidersHorizontal, X } from 'lucide-react';
-import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
-import { apiFetch, buildQuery } from '@/lib/api';
-import type { BackendEvent } from '@/types/event';
+"use client";
 
-interface Event {
-    id: string;
-    title: string;
-    description: string;
-    date: string;
-    time: string;
-    location: string;
-    category: string;
-    price: number;
-    maxParticipants: number;
-    currentParticipants: number;
-    image: string;
-    organizer: string;
-    tags: string[];
-}
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import {
+  Search,
+  MapPin,
+  Clock,
+  SlidersHorizontal,
+  X,
+  Loader2,
+  ArrowRight,
+} from "lucide-react";
+import { apiFetch, buildQuery } from "@/lib/api";
+import type { BackendEvent } from "@/types/event";
+import { format, parseISO } from "date-fns";
 
 interface EventCatalogProps {
-    onEventSelect: (eventId: string) => void;
-    limit?: number;
+  onEventSelect: (eventId: string) => void;
 }
 
-export function EventCatalog({ onEventSelect, limit }: EventCatalogProps) {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
-    const [sortBy, setSortBy] = useState<string>('date-asc');
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const pageSize = 10;
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string>('');
-    const [serverEvents, setServerEvents] = useState<BackendEvent[] | null>(null);
+export function EventCatalog({ onEventSelect }: EventCatalogProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("nearest");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [events, setEvents] = useState<BackendEvent[]>([]);
 
-    // Default fallback image provider that always returns an image
-    const defaultFlyerFor = useCallback((seed: string) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/450`, []);
+  const categories = [
+    "all",
+    "Technology",
+    "Marketing",
+    "Business",
+    "Design",
+    "Creative",
+  ];
 
-    const categories = useMemo(() => ['all', 'Technology', 'Marketing', 'Business', 'Design', 'Creative'], []);
-
-    // Map backend events into CatalogEvent shape used by UI
-    const mappedServerEvents: Event[] = useMemo(() => {
-        if (!serverEvents) return [];
-        return serverEvents.map(ev => ({
-            id: ev.id,
-            title: ev.title,
-            description: ev.description,
-            date: ev.date,
-            time: ev.time,
-            location: ev.location,
-            category: (ev as { category?: string }).category || 'General',
-            price: Number((ev as { price?: number }).price ?? 0),
-            maxParticipants: 0,
-            currentParticipants: 0,
-            image: (ev.flyer && ev.flyer.startsWith('http')) ? ev.flyer : defaultFlyerFor(ev.id),
-            organizer: 'Panitia',
-            tags: [],
-        }));
-    }, [serverEvents, defaultFlyerFor]);
-
-    // Decide source of events: server if available, otherwise placeholder
-    const events: Event[] = useMemo(() => mappedServerEvents, [mappedServerEvents]);
-
-    // Fetch events from backend with search/sort (date-based)
-    useEffect(() => {
-        const controller = new AbortController();
-        const fetchEvents = async () => {
-            setLoading(true);
-            setError('');
-            try {
-                const sortParam = sortBy === 'date-desc' ? 'furthest' : 'nearest';
-                const q = buildQuery({
-                    search: searchQuery || undefined,
-                    sort: sortParam,
-                    category: selectedCategory !== 'all' ? selectedCategory : undefined
-                });
-                const data = await apiFetch<BackendEvent[]>(`/events${q}`, { method: 'GET' });
-                setServerEvents(data);
-            } catch (e: unknown) {
-                const errorMessage = e instanceof Error ? e.message : 'Gagal memuat data event';
-                setError(errorMessage);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchEvents();
-        return () => controller.abort();
-    }, [searchQuery, sortBy, selectedCategory]);
-
-    const filteredAndSortedEvents = useMemo(() => {
-        const filtered = events.filter(event => {
-            const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                event.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-
-            const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
-
-            return matchesSearch && matchesCategory;
+  // Fetch events from backend
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const q = buildQuery({
+          search: searchQuery || undefined,
+          sort: sortBy,
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
         });
-
-        // Sort events
-        filtered.sort((a, b) => {
-            switch (sortBy) {
-                case 'date-asc':
-                    return new Date(a.date).getTime() - new Date(b.date).getTime();
-                case 'date-desc':
-                    return new Date(b.date).getTime() - new Date(a.date).getTime();
-                case 'price-asc':
-                    return a.price - b.price;
-                case 'price-desc':
-                    return b.price - a.price;
-                default:
-                    return 0;
-            }
-        });
-
-        return limit ? filtered.slice(0, limit) : filtered;
-    }, [events, searchQuery, selectedCategory, sortBy, limit]);
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        const data = await apiFetch<BackendEvent[]>(`/events${q}`);
+        setEvents(data);
+      } catch (e) {
+        console.error("Failed to fetch events:", e);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchEvents();
+  }, [searchQuery, sortBy, selectedCategory]);
 
-    const formatPrice = (price: number) => {
-        if (price === 0) return 'Gratis';
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(price);
-    };
+  const formatEventDate = (dateString: string) => {
+    try {
+      const date = parseISO(dateString);
+      return {
+        day: format(date, "dd"),
+        month: format(date, "MMM"),
+        year: format(date, "yyyy"),
+        full: format(date, "MMM dd, yyyy"),
+      };
+    } catch {
+      return { day: "01", month: "Jan", year: "2025", full: "TBA" };
+    }
+  };
 
-    const getAvailabilityStatus = (current: number, max: number) => {
-        const percentage = (current / max) * 100;
-        if (percentage >= 90) return { status: 'Hampir Penuh', color: 'bg-destructive' };
-        if (percentage >= 70) return { status: 'Terbatas', color: 'bg-muted-foreground' };
-        return { status: 'Tersedia', color: 'bg-primary' };
-    };
+  return (
+    <div className="min-h-screen bg-background py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
+          >
+            <span className="text-sm tracking-[0.3em] uppercase text-muted-foreground font-medium block mb-4">
+              DISCOVER
+            </span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              All <span className="italic">Events</span>
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
+              Explore amazing events and find your next experience
+            </p>
+          </motion.div>
 
-    const containerVariants = useMemo(() => ({
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
-    }), []);
+          {/* Search & Filter Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="mb-12"
+          >
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border border-border bg-card focus:outline-none focus:border-foreground/30 transition-colors text-lg"
+                />
+              </div>
 
-    const itemVariants = useMemo(() => ({
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.5,
-                ease: "easeOut" as const
-            }
-        }
-    }), []);
+              {/* Filter Button */}
+              <Button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                size="lg"
+                variant={isFilterOpen ? "default" : "outline"}
+                className="rounded-2xl px-8"
+              >
+                <SlidersHorizontal className="w-5 h-5 mr-2" />
+                Filters
+                {(selectedCategory !== "all" || sortBy !== "nearest") && (
+                  <span className="ml-2 w-2 h-2 rounded-full bg-primary" />
+                )}
+              </Button>
+            </div>
 
-    // Category color mapping for badges (keeps in-theme with Tailwind palette)
-    const categoryClassMap = useMemo<Record<string, string>>(() => ({
-        technology: 'bg-blue-500 text-white',
-        marketing: 'bg-pink-500 text-white',
-        business: 'bg-amber-500 text-black',
-        design: 'bg-violet-500 text-white',
-        creative: 'bg-emerald-500 text-white',
-        general: 'bg-primary/90 text-primary-foreground'
-    }), []);
-
-    const getCategoryBadgeClass = useCallback((category: string | undefined) => {
-        const key = (category || 'general').toLowerCase();
-        return categoryClassMap[key] || categoryClassMap.general;
-    }, [categoryClassMap]);
-
-    const clearFilters = useCallback(() => {
-        setSearchQuery('');
-        setSelectedCategory('all');
-        setSortBy('date-asc');
-    }, []);
-
-    const hasActiveFilters = searchQuery !== '' || selectedCategory !== 'all' || sortBy !== 'date-asc';
-
-    // Reset page when filters or data change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery, selectedCategory, sortBy, mappedServerEvents.length]);
-
-    // Pagination calculations
-    const totalItems = events.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-    const pageStartIdx = (currentPage - 1) * pageSize;
-    const pageEndIdx = Math.min(pageStartIdx + pageSize, totalItems);
-    const pagedEvents = useMemo(() => events.slice(pageStartIdx, pageEndIdx), [events, pageStartIdx, pageEndIdx]);
-
-    return (
-        <section className="container mx-auto px-4 py-12">
-            <motion.div
-                className="text-center mb-12"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-            >
+            {/* Filter Panel */}
+            <AnimatePresence>
+              {isFilterOpen && (
                 <motion.div
-                    className="inline-flex items-center gap-2 mb-6"
-                    whileHover={{ scale: 1.05 }}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
                 >
-                    <Sparkles className="w-8 h-8 text-primary" />
-                    <h2 className="text-3xl lg:text-4xl text-foreground font-bold tracking-tight">
-                        {limit ? 'Event ' : 'Katalog '}
-                        <span className="text-gradient-primary">{limit ? 'Terpopuler' : 'Event'}</span>
-                    </h2>
-                </motion.div>
-                <p className="text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                    Temukan event yang sesuai dengan minat dan kebutuhan Anda
-                </p>
-            </motion.div>
-
-            {/* Enhanced Search and Filters */}
-            {!limit && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="mb-12"
-                >
-                    {/* Main Search Bar */}
-                    <Card className="mb-6 border-border shadow-glow hover:shadow-glow-hover transition-all duration-300 bg-card/80 backdrop-blur-sm">
-                        <CardContent className="p-8">
-                            <div className="relative">
-                                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 w-6 h-6 text-muted-foreground" />
-                                <Input
-                                    placeholder="Cari event impian Anda..."
-                                    value={searchQuery}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                                    className="pl-16 h-16 text-lg border-0 bg-transparent focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/60"
-                                />
-                                <motion.button
-                                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <SlidersHorizontal className="w-6 h-6 text-primary" />
-                                </motion.button>
-                            </div>
-
-                            {/* Active Filters Display */}
-                            {hasActiveFilters && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    className="flex items-center gap-3 mt-4 pt-4 border-t border-border"
-                                >
-                                    <span className="text-sm text-muted-foreground">Aktif:</span>
-                                    {searchQuery && (
-                                        <Badge variant="secondary" className="gap-2 bg-accent/50 text-foreground">
-                                            Search: {searchQuery}
-                                            <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchQuery('')} />
-                                        </Badge>
-                                    )}
-                                    {selectedCategory !== 'all' && (
-                                        <Badge variant="secondary" className="gap-2 bg-accent/50 text-foreground">
-                                            Kategori: {selectedCategory}
-                                            <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedCategory('all')} />
-                                        </Badge>
-                                    )}
-                                    {sortBy !== 'date-asc' && (
-                                        <Badge variant="secondary" className="gap-2 bg-accent/50 text-foreground">
-                                            Sort: {sortBy === 'date-desc' ? 'Tanggal Terjauh' :
-                                                sortBy === 'price-asc' ? 'Harga Terendah' :
-                                                    sortBy === 'price-desc' ? 'Harga Tertinggi' : sortBy}
-                                            <X className="w-3 h-3 cursor-pointer" onClick={() => setSortBy('date-asc')} />
-                                        </Badge>
-                                    )}
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={clearFilters}
-                                        className="text-primary hover:text-primary/80 text-sm ml-auto"
-                                    >
-                                        Clear All
-                                    </Button>
-                                </motion.div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Advanced Filters */}
-                    <motion.div
-                        initial={false}
-                        animate={{
-                            height: isFilterOpen ? 'auto' : 0,
-                            opacity: isFilterOpen ? 1 : 0,
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                    >
-                        <Card className="border-border bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-                            <CardContent className="p-6">
-                                <div className="grid md:grid-cols-3 gap-6">
-                                    <motion.div
-                                        whileFocus={{ scale: 1.02 }}
-                                        className="space-y-2"
-                                    >
-                                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                            <Filter className="w-4 h-4 text-primary" />
-                                            Kategori Event
-                                        </label>
-                                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                                            <SelectTrigger className="h-12 bg-background/50 border-border/50 backdrop-blur-sm">
-                                                <SelectValue placeholder="Pilih kategori" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {categories.map(category => (
-                                                    <SelectItem key={category} value={category}>
-                                                        {category === 'all' ? 'Semua Kategori' : category}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </motion.div>
-
-                                    <motion.div
-                                        whileFocus={{ scale: 1.02 }}
-                                        className="space-y-2"
-                                    >
-                                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                            <Clock className="w-4 h-4 text-primary" />
-                                            Urutkan Berdasarkan
-                                        </label>
-                                        <Select value={sortBy} onValueChange={setSortBy}>
-                                            <SelectTrigger className="h-12 bg-background/50 border-border/50 backdrop-blur-sm">
-                                                <SelectValue placeholder="Pilih urutan" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="date-asc">📅 Tanggal Terdekat</SelectItem>
-                                                <SelectItem value="date-desc">📅 Tanggal Terjauh</SelectItem>
-                                                <SelectItem value="price-asc">💰 Harga Terendah</SelectItem>
-                                                <SelectItem value="price-desc">💰 Harga Tertinggi</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </motion.div>
-
-                                    <motion.div
-                                        className="flex items-end"
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <Button
-                                            onClick={() => setIsFilterOpen(false)}
-                                            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-                                        >
-                                            Terapkan Filter
-                                        </Button>
-                                    </motion.div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                </motion.div>
-            )}
-
-            {/* Results Count */}
-            {!limit && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="mb-8 flex items-center justify-between"
-                >
-                    <p className="text-lg text-muted-foreground">
-                        Menampilkan <span className="text-foreground font-medium">{filteredAndSortedEvents.length}</span> event
-                        {searchQuery && (
-                            <span> untuk &ldquo;{searchQuery}&rdquo;</span>
-                        )}
-                    </p>
-                    {loading && (
-                        <Badge variant="secondary" className="text-sm">Memuat...</Badge>
-                    )}
-                    {error && !loading && (
-                        <Badge variant="destructive" className="text-sm">{error}</Badge>
-                    )}
-                    {filteredAndSortedEvents.length > 0 && (
-                        <Badge variant="outline" className="text-sm">
-                            {filteredAndSortedEvents.length} hasil
-                        </Badge>
-                    )}
-                </motion.div>
-            )}
-
-            {/* Events Grid */}
-            <motion.div
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-            >
-                {pagedEvents.map((event, index) => {
-                    const availability = getAvailabilityStatus(event.currentParticipants, event.maxParticipants);
-
-                    return (
-                        <motion.div
-                            key={event.id}
-                            variants={itemVariants}
-                            whileHover={{
-                                y: -8,
-                                transition: { duration: 0.3 }
-                            }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <Card className="group hover:shadow-glow-hover transition-all duration-300 border-border shadow-glow overflow-hidden bg-card h-full flex flex-col">
-                                <div className="relative overflow-hidden">
-                                    <motion.div
-                                        whileHover={{ scale: 1.1 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <ImageWithFallback
-                                            src={event.image}
-                                            alt={event.title}
-                                            className="w-full h-48 object-cover"
-                                        />
-                                    </motion.div>
-                                    <div className="absolute top-4 left-4">
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ delay: index * 0.1 + 0.3 }}
-                                        >
-                                            <Badge className={`${availability.color} text-white`}>
-                                                {availability.status}
-                                            </Badge>
-                                        </motion.div>
-                                    </div>
-                                    <div className="absolute top-4 right-4">
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ delay: index * 0.1 + 0.4 }}
-                                        >
-                                            <Badge className={`${getCategoryBadgeClass(event.category)} shadow-md`}>{event.category}</Badge>
-                                        </motion.div>
-                                    </div>
-                                </div>
-
-                                <CardHeader className="pb-3 flex-grow">
-                                    <motion.h3
-                                        className="text-xl group-hover:text-primary transition-colors duration-200 line-clamp-2"
-                                        whileHover={{ x: 5 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        {event.title}
-                                    </motion.h3>
-                                    <p className="text-muted-foreground text-base line-clamp-2">{event.description}</p>
-                                </CardHeader>
-
-                                <CardContent className="pt-0">
-                                    <div className="space-y-3 mb-6">
-                                        <motion.div
-                                            className="flex items-center gap-2 text-base text-muted-foreground"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <Calendar className="w-5 h-5 text-primary" />
-                                            <span>{formatDate(event.date)}</span>
-                                        </motion.div>
-
-                                        <motion.div
-                                            className="flex items-center gap-2 text-base text-muted-foreground"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <Clock className="w-5 h-5 text-primary" />
-                                            <span>{event.time} WIB</span>
-                                        </motion.div>
-
-                                        <motion.div
-                                            className="flex items-center gap-2 text-base text-muted-foreground"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <MapPin className="w-5 h-5 text-primary" />
-                                            <span className="line-clamp-1">{event.location}</span>
-                                        </motion.div>
-
-                                        <motion.div
-                                            className="flex items-center gap-2 text-base text-muted-foreground"
-                                            whileHover={{ x: 5 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <Users className="w-5 h-5 text-primary" />
-                                            <span>{event.currentParticipants}/{event.maxParticipants} peserta</span>
-                                        </motion.div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div>
-                                            <motion.div
-                                                className="text-2xl text-primary mb-1 font-bold"
-                                                whileHover={{ scale: 1.1 }}
-                                                transition={{ duration: 0.2 }}
-                                            >
-                                                {formatPrice(event.price)}
-                                            </motion.div>
-                                            <div className="text-sm text-muted-foreground">by {event.organizer}</div>
-                                        </div>
-
-                                        <motion.div
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                        >
-                                            <Button
-                                                onClick={() => onEventSelect(event.id)}
-                                                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
-                                            >
-                                                Lihat Detail
-                                            </Button>
-                                        </motion.div>
-                                    </div>
-
-                                    {/* Tags */}
-                                    <div className="flex flex-wrap gap-2">
-                                        {event.tags.slice(0, 3).map((tag, tagIndex) => (
-                                            <motion.div
-                                                key={tag}
-                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                transition={{ delay: index * 0.1 + tagIndex * 0.1 + 0.5 }}
-                                                whileHover={{ scale: 1.05 }}
-                                            >
-                                                <Badge variant="outline" className="text-sm border-border">
-                                                    {tag}
-                                                </Badge>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    );
-                })}
-            </motion.div>
-
-            {filteredAndSortedEvents.length === 0 && (
-                <motion.div
-                    className="text-center py-16"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6 }}
-                >
-                    <motion.div
-                        className="text-muted-foreground mb-6"
-                        animate={{
-                            rotate: [0, 10, -10, 0],
-                            scale: [1, 1.1, 1]
-                        }}
-                        transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                        }}
-                    >
-                        <Search className="w-20 h-20 mx-auto" />
-                    </motion.div>
-                    <h3 className="text-3xl text-foreground mb-4 font-bold">Event tidak ditemukan</h3>
-                    <p className="text-xl text-muted-foreground mb-8">Coba ubah kata kunci pencarian atau filter yang digunakan</p>
-                    {hasActiveFilters && (
-                        <Button onClick={clearFilters} variant="outline" size="lg">
-                            Reset Filter
-                        </Button>
-                    )}
-                </motion.div>
-            )}
-
-            {limit && filteredAndSortedEvents.length > 0 && (
-                <motion.div
-                    className="text-center mt-16"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                >
-                    <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <Button
-                            size="lg"
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 text-lg px-8 py-6"
-                        >
-                            Lihat Semua Event
-                        </Button>
-                    </motion.div>
-                </motion.div>
-            )}
-
-            {!limit && totalItems > 0 && (
-                <motion.div
-                    className="flex items-center justify-between mt-10"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                >
-                    <div className="text-sm text-muted-foreground">
-                        Menampilkan {pageStartIdx + 1}-{pageEndIdx} dari {totalItems} event
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                        >
-                            Sebelumnya
-                        </Button>
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                            <Button
-                                key={i}
-                                variant={currentPage === i + 1 ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setCurrentPage(i + 1)}
+                  <div className="mt-4 p-6 rounded-2xl bg-card border border-border">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Category Filter */}
+                      <div>
+                        <label className="block text-sm font-medium mb-3">
+                          Category
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {categories.map((cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => setSelectedCategory(cat)}
+                              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                selectedCategory === cat
+                                  ? "bg-foreground text-background"
+                                  : "bg-muted hover:bg-muted/80"
+                              }`}
                             >
-                                {i + 1}
-                            </Button>
-                        ))}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                        >
-                            Selanjutnya
-                        </Button>
+                              {cat === "all" ? "All Categories" : cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Sort Filter */}
+                      <div>
+                        <label className="block text-sm font-medium mb-3">
+                          Sort By
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => setSortBy("nearest")}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                              sortBy === "nearest"
+                                ? "bg-foreground text-background"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            Nearest First
+                          </button>
+                          <button
+                            onClick={() => setSortBy("furthest")}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                              sortBy === "furthest"
+                                ? "bg-foreground text-background"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            Furthest First
+                          </button>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Clear Filters */}
+                    {(selectedCategory !== "all" || sortBy !== "nearest") && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <Button
+                          onClick={() => {
+                            setSelectedCategory("all");
+                            setSortBy("nearest");
+                          }}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Clear Filters
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
-            )}
-        </section>
-    );
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Results Count */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-6"
+          >
+            <p className="text-muted-foreground">
+              {loading ? "Loading..." : `${events.length} events found`}
+            </p>
+          </motion.div>
+
+          {/* Events Grid */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
+            </div>
+          ) : events.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-20"
+            >
+              <div className="w-20 h-20 rounded-full bg-muted mx-auto mb-6 flex items-center justify-center">
+                <Search className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">No events found</h3>
+              <p className="text-muted-foreground mb-6">
+                Try adjusting your filters or search query
+              </p>
+              <Button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                  setSortBy("nearest");
+                }}
+                variant="outline"
+              >
+                Clear All Filters
+              </Button>
+            </motion.div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+              {events.map((event, index) => {
+                const dateInfo = formatEventDate(event.date);
+
+                return (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                    whileHover={{ y: -8 }}
+                    onClick={() => onEventSelect(event.id)}
+                    className="group cursor-pointer"
+                  >
+                    <div className="bg-card rounded-3xl overflow-hidden border border-border hover:border-foreground/30 transition-all duration-300 shadow-soft hover:shadow-soft-hover h-full flex flex-col">
+                      {/* Image */}
+                      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                        <Image
+                          src={
+                            event.flyer ||
+                            `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop&seed=${event.id}`
+                          }
+                          alt={event.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+
+                        {/* Date Badge */}
+                        <div className="absolute top-4 right-4 bg-background/95 backdrop-blur-sm rounded-2xl p-3 text-center min-w-[70px]">
+                          <div className="text-2xl font-bold leading-none">
+                            {dateInfo.day}
+                          </div>
+                          <div className="text-xs font-medium uppercase mt-1">
+                            {dateInfo.month}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6 flex-1 flex flex-col">
+                        <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                          {event.title}
+                        </h3>
+
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
+                          {event.description}
+                        </p>
+
+                        <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                          {event.time && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span>{event.time}</span>
+                            </div>
+                          )}
+                          {event.location && (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4" />
+                              <span className="line-clamp-1">
+                                {event.location}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Price */}
+                        <div className="mb-4 pb-4 border-t border-border pt-4">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold text-primary">
+                              {"price" in event && event.price
+                                ? new Intl.NumberFormat("id-ID", {
+                                    style: "currency",
+                                    currency: "IDR",
+                                    minimumFractionDigits: 0,
+                                  }).format(event.price as number)
+                                : "Gratis"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              /orang
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* View Details Button */}
+                        <div className="flex items-center gap-2 text-foreground font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <span className="text-sm">View Details</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
