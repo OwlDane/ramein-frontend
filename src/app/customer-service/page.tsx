@@ -29,7 +29,7 @@ export default function CustomerServicePage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Header onViewChange={() => {}} currentView="contact" />
+            <Header currentView="contact" />
 
             <main className="pt-32 pb-16">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">

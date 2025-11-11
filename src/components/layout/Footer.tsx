@@ -24,7 +24,7 @@ export function Footer() {
 
   const footerLinks = {
     product: [
-      { name: "Events", href: "/?view=events", type: "link" },
+      { name: "Events", href: "/events", type: "link" },
       { name: "FAQ", onClick: () => setShowFaq(true), type: "button" },
     ],
     company: [

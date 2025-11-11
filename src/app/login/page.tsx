@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, ArrowLeft, Calendar, Zap, Shield, Users } from 'lucide-react';
+import { Eye, EyeOff, Calendar } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -21,21 +21,7 @@ export default function LoginPage() {
     const { login, requestOTP } = useAuth();
     const router = useRouter();
 
-    const resendVerificationLink = async () => {
-        if (!email) {
-            setError('Masukkan email terlebih dahulu untuk mengirim ulang link verifikasi.');
-            return;
-        }
-        setError('');
-        setSuccess('');
-        try {
-            await requestOTP(email);
-            setSuccess('Link verifikasi telah dikirim ke email Anda.');
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Gagal mengirim link verifikasi.';
-            setError(msg);
-        }
-    };
+    // Removed unused resendVerificationLink function
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

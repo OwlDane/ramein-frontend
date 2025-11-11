@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   User,
   Calendar,
   Award,
   CreditCard,
-  Lock,
   Shield,
   Heart,
   LogOut,
@@ -220,7 +219,7 @@ export function ProfileLayout({ user: initialUser }: ProfileLayoutProps) {
       transition={pageTransition}
     >
       {/* Header - Consistent dengan pages lainnya */}
-      <Header onViewChange={() => {}} currentView="profile" />
+      <Header currentView="profile" />
 
       {/* Mobile Menu Button for Sidebar - Fixed position */}
       <div className="lg:hidden fixed top-20 left-4 z-40">

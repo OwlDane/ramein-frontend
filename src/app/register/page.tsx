@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import {
   Eye,
   EyeOff,
-  ArrowLeft,
   User,
   Ticket,
   Award,

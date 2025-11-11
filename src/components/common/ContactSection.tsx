@@ -11,6 +11,7 @@ import {
     ChevronDown, HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { contactAPI } from '@/lib/contactApi';
 
 export function ContactSection() {
     const [formData, setFormData] = useState({
@@ -26,11 +27,18 @@ export function ContactSection() {
         setIsSubmitting(true);
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            toast.success('Pesan berhasil dikirim! Kami akan membalas dalam 24 jam.');
-            setFormData({ name: '', email: '', subject: '', message: '' });
-        } catch {
-            toast.error('Terjadi kesalahan. Silakan coba lagi.');
+            // Send to backend API
+            const response = await contactAPI.submitContactForm(formData);
+            
+            if (response.success) {
+                toast.success(response.message || 'Pesan berhasil dikirim! Kami akan membalas dalam 24 jam.');
+                setFormData({ name: '', email: '', subject: '', message: '' });
+            } else {
+                toast.error('Gagal mengirim pesan. Silakan coba lagi.');
+            }
+        } catch (error) {
+            console.error('Contact form error:', error);
+            toast.error(error instanceof Error ? error.message : 'Terjadi kesalahan. Silakan coba lagi.');
         } finally {
             setIsSubmitting(false);
         }

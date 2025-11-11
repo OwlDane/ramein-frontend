@@ -142,7 +142,7 @@ export function FAQModal({ isOpen, onClose }: FAQModalProps) {
                             <h3 className="font-bold text-foreground">Still have questions?</h3>
                         </div>
                         <p className="text-sm text-foreground/70 mb-3">
-                            Can't find the answer you're looking for? Our support team is here to help.
+                            Can&apos;t find the answer you&apos;re looking for? Our support team is here to help.
                         </p>
                         <a
                             href="mailto:hello@ramein.com"

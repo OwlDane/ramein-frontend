@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Star } from 'lucide-react'
 import { testimonialAPI } from '@/lib/testimonialApi';
-import { getAvatarFallbackUrl } from '@/lib/unsplash'
 
 interface Testimonial {
     id: string
@@ -20,26 +19,11 @@ interface Testimonial {
     sortOrder?: number
 }
 
-const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-const [loading, setLoading] = useState(true);
-
-useEffect(() => {
-    const fetchTestimonials = async () => {
-        try {
-            const data = await testimonialAPI.getTestimonials();
-            setTestimonials(data);
-        } catch (error) {
-            console.error('Failed to fetch testimonials:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-    fetchTestimonials();
-}, []);
-
 export default function TestimonialSection() {
     const containerRef = useRef<HTMLDivElement>(null)
     const [isVisible, setIsVisible] = useState(false)
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+    const [loading, setLoading] = useState(true)
 
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -47,6 +31,20 @@ export default function TestimonialSection() {
     })
 
     const x = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"])
+
+    useEffect(() => {
+        const fetchTestimonials = async () => {
+            try {
+                const data = await testimonialAPI.getTestimonials();
+                setTestimonials(data);
+            } catch (error) {
+                console.error('Failed to fetch testimonials:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTestimonials();
+    }, []);
 
     useEffect(() => {
         const observer = new IntersectionObserver(

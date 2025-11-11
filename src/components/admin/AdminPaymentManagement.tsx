@@ -106,11 +106,13 @@ export function AdminPaymentManagement() {
       const { transactions: txs, total } = await getAllTransactions(filters);
       setTransactions(txs);
       setTotalTransactions(total);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load data:', error);
       
+      const errorMessage = error instanceof Error ? error.message : '';
+      
       // Check if it's an auth error
-      if (error.message?.includes('token') || error.message?.includes('Session expired')) {
+      if (errorMessage.includes('token') || errorMessage.includes('Session expired')) {
         toast.error('Sesi Anda telah berakhir. Silakan login kembali.');
         // Redirect to admin login after a short delay
         setTimeout(() => {

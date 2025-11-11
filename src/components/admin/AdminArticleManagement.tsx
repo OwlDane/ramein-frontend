@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, Eye, EyeOff, Filter } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, Search, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { articleAPI } from '@/lib/articleApi';
 import type { Article, ArticleCategory } from '@/types/article';
 import { format } from 'date-fns';
@@ -122,7 +122,7 @@ export function AdminArticleManagement({ token }: AdminArticleManagementProps) {
                     {/* Status Filter */}
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value as any)}
+                        onChange={(e) => setStatusFilter(e.target.value as 'all' | 'published' | 'draft')}
                         className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:border-foreground/30"
                     >
                         <option value="all">Semua Status</option>

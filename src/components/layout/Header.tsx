@@ -8,11 +8,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
-    onViewChange: (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact' | 'articles') => void;
     currentView: string;
 }
 
-export function Header({ onViewChange, currentView }: HeaderProps) {
+export function Header({ currentView }: HeaderProps) {
     const { user, logout } = useAuth();
     const router = useRouter();
     const isLoggedIn = !!user;
@@ -28,17 +27,19 @@ export function Header({ onViewChange, currentView }: HeaderProps) {
     const handleNavigation = (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact' | 'articles') => {
         setIsMobileMenuOpen(false);
         
-        // Handle navigation based on view
-        // All views now use smooth view switching for consistent UX
-        if (window.location.pathname === '/') {
-            // Already on homepage, use view switching
-            onViewChange(view);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-            // Navigate to homepage with view parameter
-            const viewParam = view === 'home' ? '' : `?view=${view}`;
-            router.push(`/${viewParam}`);
-        }
+        // Map view to proper URL paths
+        const pathMap = {
+            'home': '/',
+            'events': '/events',
+            'articles': '/articles',
+            'contact': '/contact',
+            'dashboard': '/dashboard',
+            'event-detail': '/'
+        };
+        
+        const targetPath = pathMap[view] || '/';
+        router.push(targetPath);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleLogin = () => {

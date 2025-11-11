@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { 
     Calendar, Clock, MapPin, Users, CheckCircle, XCircle, 
     Clock3, Download, Search, Filter, Ticket, X, CalendarDays, Award, UserCheck, UserX, ChevronDown, ChevronUp

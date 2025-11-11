@@ -73,9 +73,14 @@ export default function ArticleDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onViewChange={() => {}} currentView="articles" />
+      <Header currentView="articles" />
 
-      <main className="pt-32 pb-16">
+      <motion.main 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="pt-32 pb-16"
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             {/* Back Button & Actions */}
@@ -253,7 +258,7 @@ export default function ArticleDetailPage() {
             )}
           </div>
         </div>
-      </main>
+      </motion.main>
 
       <Footer />
     </div>
