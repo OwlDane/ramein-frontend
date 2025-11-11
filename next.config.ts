@@ -17,21 +17,31 @@ const nextConfig: NextConfig = {
         hostname: "picsum.photos",
         pathname: "/**",
       },
+      // Development
       {
         protocol: "http",
         hostname: "localhost",
         port: "3001",
         pathname: "/api/files/**",
       },
+      // Production - Render backend
       {
         protocol: "https",
-        hostname: "**", // Allow all HTTPS images
+        hostname: "*.onrender.com",
+        pathname: "/api/files/**",
+      },
+      // Allow all HTTPS images for flexibility
+      {
+        protocol: "https",
+        hostname: "**",
       },
     ],
-    // Alternatively, use unoptimized for external images
     unoptimized: false,
   },
-  allowedDevOrigins: ["http://172.16.12.194:3000", "172.16.12.194"],
+  // Remove dev origins in production
+  ...(process.env.NODE_ENV === 'development' && {
+    allowedDevOrigins: ["http://172.16.12.194:3000", "172.16.12.194"],
+  }),
 };
 
 export default nextConfig;

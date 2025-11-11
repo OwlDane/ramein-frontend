@@ -10,6 +10,7 @@ interface AuthContextType {
     isLoading: boolean;
     isLoggedIn: boolean;
     login: (email: string, password: string) => Promise<void>;
+    googleLogin: (idToken: string) => Promise<void>;
     register: (userData: RegisterRequest) => Promise<RegisterResponse>;
     logout: () => void;
     requestOTP: (email: string) => Promise<void>;
@@ -95,6 +96,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const googleLogin = async (idToken: string) => {
+        try {
+            const response = await authAPI.googleLogin(idToken);
+            // Google login: expect token + user
+            if (response.token && response.user) {
+                const userData: User = {
+                    id: response.user.id,
+                    email: response.user.email,
+                    name: response.user.name,
+                    phone: '',
+                    address: '',
+                    education: '',
+                    isVerified: true,
+                    isEmailVerified: true,
+                    isOtpVerified: true,
+                    role: response.user.role as 'USER' | 'ADMIN',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                setUser(userData);
+                setToken(response.token);
+                localStorage.setItem('ramein_token', response.token);
+            } else {
+                throw new Error('Google login failed: Invalid response from server');
+            }
+        } catch (error) {
+            throw error;
+        }
+    };
+
     const register = async (userData: RegisterRequest) => {
         try {
             const response: RegisterResponse = await authAPI.register(userData);
@@ -162,6 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isLoggedIn: !!user,
         login,
+        googleLogin,
         register,
         logout,
         requestOTP,

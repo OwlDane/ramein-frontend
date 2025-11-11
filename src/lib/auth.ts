@@ -19,6 +19,14 @@ export const authAPI = {
         });
     },
 
+    // Google OAuth login
+    googleLogin: async (idToken: string): Promise<LoginResponse> => {
+        return apiFetch<LoginResponse>('/auth/google', {
+            method: 'POST',
+            body: { idToken }
+        });
+    },
+
     // Register user
     register: async (data: RegisterRequest): Promise<RegisterResponse> => {
         return apiFetch<RegisterResponse>('/auth/register', {

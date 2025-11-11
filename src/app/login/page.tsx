@@ -7,8 +7,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Calendar } from 'lucide-react';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
-export default function LoginPage() {
+function LoginPageContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [otp, setOtp] = useState('');
@@ -18,8 +19,32 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    const { login, requestOTP } = useAuth();
+    const { login, googleLogin } = useAuth();
     const router = useRouter();
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setIsLoading(true);
+            setError('');
+            try {
+                // Get ID token from the access token
+                const response = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${tokenResponse.access_token}`);
+                if (!response.ok) throw new Error('Failed to verify Google token');
+                
+                // Use the access token as ID token (for backend verification)
+                await googleLogin(tokenResponse.access_token);
+                router.push('/');
+            } catch (err: unknown) {
+                const errorMessage = err instanceof Error ? err.message : 'Google login failed';
+                setError(errorMessage);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        onError: () => {
+            setError('Google login was cancelled or failed');
+        },
+    });
 
     // Removed unused resendVerificationLink function
 
@@ -215,7 +240,7 @@ export default function LoginPage() {
                         {!isOtpStep && (
                             <Button
                                 type="button"
-                                onClick={() => console.log('Google login')}
+                                onClick={() => handleGoogleLogin()}
                                 variant="outline"
                                 className="w-full h-12 border-gray-300 hover:bg-gray-50 font-medium rounded-lg"
                                 disabled={isLoading}
@@ -257,5 +282,15 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+    
+    return (
+        <GoogleOAuthProvider clientId={googleClientId}>
+            <LoginPageContent />
+        </GoogleOAuthProvider>
     );
 }
