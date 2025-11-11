@@ -14,8 +14,9 @@ import {
   Award,
   Calendar,
 } from "lucide-react";
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -31,8 +32,28 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [emailPreferences, setEmailPreferences] = useState(true);
 
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const router = useRouter();
+
+  const handleGoogleRegister = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLoading(true);
+      setError('');
+      try {
+        // Use the access token for Google authentication
+        await googleLogin(tokenResponse.access_token);
+        router.push('/');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Google sign up failed';
+        setError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      setError('Google sign up was cancelled or failed');
+    },
+  });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -86,11 +107,6 @@ export default function RegisterPage() {
     }
   };
 
-  const handleGoogleRegister = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google register clicked");
-  };
-
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left Side - Registration Form */}
@@ -112,7 +128,8 @@ export default function RegisterPage() {
 
           {/* Google Sign Up Button */}
           <Button
-            onClick={handleGoogleRegister}
+            type="button"
+            onClick={() => handleGoogleRegister()}
             variant="outline"
             className="w-full mb-6 h-12 border-gray-300 hover:bg-gray-50 font-medium rounded-lg"
             disabled={isLoading}
@@ -446,5 +463,15 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+  
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <RegisterPageContent />
+    </GoogleOAuthProvider>
   );
 }
