@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { Card, CardContent } from '@/components/ui/card';
@@ -113,7 +114,7 @@ export function AdminEventManagement() {
                 ...(selectedCategory && { categoryId: selectedCategory })
             });
 
-            const response = await fetch(`http://localhost:3001/api/admin/events?${params}`, {
+            const response = await fetch(`${API_BASE_URL}/admin/events?${params}`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }
@@ -150,8 +151,7 @@ export function AdminEventManagement() {
 
     const fetchCategories = async () => {
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-            const response = await fetch(`${API_URL}/categories`);
+            const response = await fetch(`${API_BASE_URL}/categories`);
             
             if (response.ok) {
                 const data = await response.json();
@@ -170,7 +170,7 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch('http://localhost:3001/api/admin/events', {
+            const response = await fetch(`${API_BASE_URL}/admin/events`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`/api/admin/events/${selectedEvent.id}`, {
+            const response = await fetch(`${API_BASE_URL}/admin/events/${selectedEvent.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -229,7 +229,7 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`http://localhost:3001/api/admin/events/${eventId}`, {
+            const response = await fetch(`${API_BASE_URL}/admin/events/${eventId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
@@ -252,7 +252,7 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`http://localhost:3001/api/admin/events/${eventId}/participants/export?format=xlsx`, {
+            const response = await fetch(`${API_BASE_URL}/admin/events/${eventId}/participants/export?format=xlsx`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }

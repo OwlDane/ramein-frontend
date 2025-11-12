@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +74,7 @@ export function CertificateTemplateManager() {
     const fetchTemplates = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('http://localhost:3001/api/certificate-templates', {
+            const response = await fetch(`${API_BASE_URL}/certificate-templates`, {
                 headers: {
                     'Authorization': `Bearer ${userToken}`
                 }
@@ -139,7 +140,7 @@ export function CertificateTemplateManager() {
             console.log('Token:', userToken ? 'Token exists' : 'No token');
             console.log('Template data:', templateData);
 
-            const response = await fetch('http://localhost:3001/api/certificate-templates', {
+            const response = await fetch(`${API_BASE_URL}/certificate-templates`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ export function CertificateTemplateManager() {
         }
 
         try {
-            const response = await fetch(`http://localhost:3001/api/certificate-templates/${templateId}`, {
+            const response = await fetch(`${API_BASE_URL}/certificate-templates/${templateId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${userToken}`
@@ -205,7 +206,7 @@ export function CertificateTemplateManager() {
 
     const handleSetAsDefault = async (templateId: string) => {
         try {
-            const response = await fetch(`http://localhost:3001/api/certificate-templates/${templateId}/set-default`, {
+            const response = await fetch(`${API_BASE_URL}/certificate-templates/${templateId}/set-default`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${userToken}`

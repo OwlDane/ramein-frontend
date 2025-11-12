@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,7 @@ export default function AdminLoginPage() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3001/api/admin/auth/login', {
+            const response = await fetch(`${API_BASE_URL}/admin/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

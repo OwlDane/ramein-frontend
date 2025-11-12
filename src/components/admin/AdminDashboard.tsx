@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,7 +81,7 @@ export function AdminDashboard() {
             setIsLoading(true);
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch('http://localhost:3001/api/admin/dashboard/stats', {
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/stats`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }
@@ -104,7 +105,7 @@ export function AdminDashboard() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
-            const response = await fetch(`http://localhost:3001/api/admin/dashboard/export?format=${format}`, {
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/export?format=${format}`, {
                 headers: {
                     'Authorization': `Bearer ${adminToken}`
                 }

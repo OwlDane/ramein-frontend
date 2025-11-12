@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
+import { API_BASE_URL } from '@/lib/api';
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,14 +59,11 @@ function AdminDashboardContent() {
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:3001/api/admin/auth/verify",
-        {
-          headers: {
-            Authorization: `Bearer ${adminToken}`,
-          },
+      const response = await fetch(`${API_BASE_URL}/admin/auth/verify`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
         },
-      );
+      });
 
       if (response.ok) {
         const data = await response.json();

@@ -1,4 +1,7 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Support both NEXT_PUBLIC_API_URL (full with /api) and NEXT_PUBLIC_API_BASE_URL (base without /api)
+const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
+const envApiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+export const API_BASE_URL = envApiUrl || (envApiBase ? `${envApiBase.replace(/\/+$/,'')}/api` : 'http://localhost:3001/api');
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
