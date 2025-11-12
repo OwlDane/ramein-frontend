@@ -5,10 +5,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["sin1"],
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@ramein-api-url",
-    "NEXT_PUBLIC_API_BASE_URL": "@ramein-api-base-url"
-  },
   "headers": [
     {
       "source": "/:path*",
@@ -35,7 +31,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://your-backend-url.onrender.com/api/:path*"
+      "destination": "https://ramein-backend.onrender.com/api/:path*"
     }
   ]
 }
