@@ -97,17 +97,21 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
         // Fetch registration status if user is logged in
         if (isLoggedIn && token && data.length > 0) {
           const eventIds = data.map(e => e.id).join(',');
+          console.log('🔍 Checking registration status for events:', eventIds);
+          console.log('🔑 User logged in:', isLoggedIn, 'Token exists:', !!token);
           try {
             const status = await apiFetch<Record<string, boolean>>(
               `/participants/check-registration?eventIds=${eventIds}`,
               { token }
             );
+            console.log('✅ Registration status received:', status);
             setRegistrationStatus(status);
           } catch (error) {
-            console.error('Failed to fetch registration status:', error);
+            console.error('❌ Failed to fetch registration status:', error);
             setRegistrationStatus({});
           }
         } else {
+          console.log('⚠️ Not fetching registration status - isLoggedIn:', isLoggedIn, 'token:', !!token, 'events:', data.length);
           setRegistrationStatus({});
         }
       } catch (e) {
