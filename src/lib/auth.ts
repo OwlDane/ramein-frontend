@@ -20,10 +20,10 @@ export const authAPI = {
     },
 
     // Google OAuth login
-    googleLogin: async (idToken: string): Promise<LoginResponse> => {
+    googleLogin: async (accessToken: string): Promise<LoginResponse> => {
         return apiFetch<LoginResponse>('/auth/google', {
             method: 'POST',
-            body: { idToken }
+            body: { accessToken }
         });
     },
 
