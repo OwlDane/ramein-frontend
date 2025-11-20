@@ -18,6 +18,16 @@ export async function generateQRCode(
     options?: QRCodeOptions
 ): Promise<string> {
     try {
+        // Check if running in browser (SSR safe)
+        if (typeof window === 'undefined') {
+            throw new Error('QR code generation requires browser environment');
+        }
+
+        // Validate text
+        if (!text || text.trim() === '') {
+            throw new Error('QR code text cannot be empty');
+        }
+
         const defaultOptions: QRCodeOptions = {
             width: 300,
             margin: 2,
@@ -32,7 +42,7 @@ export async function generateQRCode(
         return await QRCode.toDataURL(text, defaultOptions);
     } catch (error) {
         console.error('Error generating QR code:', error);
-        throw new Error('Failed to generate QR code');
+        throw new Error(`Failed to generate QR code: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 

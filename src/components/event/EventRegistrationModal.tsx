@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiFetch } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 interface EventRegistrationModalProps {
     isOpen: boolean;
@@ -32,6 +33,7 @@ export function EventRegistrationModal({
     userToken, 
     onRegistrationSuccess 
 }: EventRegistrationModalProps) {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [registrationStep, setRegistrationStep] = useState<'confirm' | 'success'>('confirm');
     const [generatedToken, setGeneratedToken] = useState<string>('');
@@ -61,21 +63,30 @@ export function EventRegistrationModal({
 
         setIsLoading(true);
         try {
-            const response = await apiFetch<{ participant?: { tokenNumber?: string } }>('/participants/register', {
-                method: 'POST',
-                body: {
-                    eventId: event.id
-                },
-                token: userToken
-            });
+            // Check if event is free or paid
+            if (event.price === 0) {
+                // For free events, register directly
+                const response = await apiFetch<{ participant?: { tokenNumber?: string } }>('/participants/register', {
+                    method: 'POST',
+                    body: {
+                        eventId: event.id
+                    },
+                    token: userToken
+                });
 
-            if (response.participant?.tokenNumber) {
-                setGeneratedToken(response.participant.tokenNumber);
-                setRegistrationStep('success');
-                onRegistrationSuccess(response.participant.tokenNumber);
-                toast.success('Pendaftaran berhasil! Token kehadiran telah dikirim ke email Anda.');
+                if (response.participant?.tokenNumber) {
+                    setGeneratedToken(response.participant.tokenNumber);
+                    setRegistrationStep('success');
+                    onRegistrationSuccess(response.participant.tokenNumber);
+                    toast.success('Pendaftaran berhasil! Token kehadiran telah dikirim ke email Anda.');
+                } else {
+                    toast.error('Gagal mendapatkan token kehadiran');
+                }
             } else {
-                toast.error('Gagal mendapatkan token kehadiran');
+                // For paid events, redirect to payment flow
+                toast.success('Mengarahkan ke halaman pembayaran...');
+                onClose(); // Close the modal
+                router.push(`/payment/summary?eventId=${event.id}`);
             }
         } catch (error: unknown) {
             console.error('Registration error:', error);

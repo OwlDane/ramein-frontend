@@ -28,23 +28,8 @@ import {
   type PaymentSummary,
 } from "@/lib/paymentApi";
 import { toast } from "sonner";
-import Script from "next/script";
 
-declare global {
-  interface Window {
-    snap: {
-      pay: (
-        token: string,
-        options: {
-          onSuccess: (result: unknown) => void;
-          onPending: (result: unknown) => void;
-          onError: (error: unknown) => void;
-          onClose: () => void;
-        },
-      ) => void;
-    };
-  }
-}
+// Xendit uses direct invoice URLs, no need for Snap popup
 
 function PaymentSummaryContent() {
   const router = useRouter();
@@ -54,7 +39,6 @@ function PaymentSummaryContent() {
   const [summary, setSummary] = useState<PaymentSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [snapScriptLoaded, setSnapScriptLoaded] = useState(false);
 
   const loadSummary = useCallback(async () => {
     if (!eventId) {
@@ -85,12 +69,6 @@ function PaymentSummaryContent() {
   const handlePayment = async () => {
     if (!summary || !eventId) return;
 
-    // Check if Snap script is loaded for paid events
-    if (!summary.pricing.isFree && !snapScriptLoaded) {
-      toast.error("Payment gateway sedang dimuat, mohon tunggu...");
-      return;
-    }
-
     try {
       setProcessing(true);
 
@@ -103,28 +81,14 @@ function PaymentSummaryContent() {
         return;
       }
 
-      // For paid events, open Midtrans Snap
-      if (transaction.snapToken && window.snap) {
-        window.snap.pay(transaction.snapToken, {
-          onSuccess: function (result: unknown) {
-            console.log("Payment success:", result);
-            router.push(`/payment/success?order_id=${transaction.orderId}`);
-          },
-          onPending: function (result: unknown) {
-            console.log("Payment pending:", result);
-            router.push(`/payment/pending?order_id=${transaction.orderId}`);
-          },
-          onError: function (error: unknown) {
-            console.error("Payment error:", error);
-            router.push(`/payment/error?order_id=${transaction.orderId}`);
-          },
-          onClose: function () {
-            console.log("Payment popup closed");
-            setProcessing(false);
-          },
-        });
+      // For paid events, Xendit will redirect automatically via invoiceUrl
+      // The createTransaction function handles the redirect
+      // This code is just a fallback
+      if (transaction.invoiceUrl) {
+        toast.info("Mengarahkan ke halaman pembayaran...");
+        window.location.href = transaction.invoiceUrl;
       } else {
-        throw new Error("Payment gateway tidak tersedia");
+        throw new Error("Invoice URL tidak tersedia");
       }
     } catch (error) {
       console.error("Payment error:", error);
@@ -152,16 +116,8 @@ function PaymentSummaryContent() {
 
   return (
     <>
-      {/* Load Midtrans Snap Script */}
-      <Script
-        src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL}
-        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-        strategy="lazyOnload"
-        onLoad={() => setSnapScriptLoaded(true)}
-      />
-
       <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Back Button */}
           <button
             onClick={() => router.back()}
@@ -179,50 +135,70 @@ function PaymentSummaryContent() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid lg:grid-cols-2 gap-8">
             {/* Left Column - Event & User Details */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="space-y-6">
               {/* Event Information */}
-              <Card className="shadow-sm">
+              <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">Detail Event</h2>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
+                    <h2 className="text-lg font-semibold text-gray-800">Detail Event</h2>
+                  </div>
 
                   <div className="space-y-4">
                     {/* Event Title */}
-                    <div>
-                      <h3 className="text-xl font-bold mb-2">
+                    <div className="bg-white rounded-lg p-4 border border-gray-100">
+                      <h3 className="text-2xl font-bold mb-3 text-gray-900">
                         {summary.event.title}
                       </h3>
                       {summary.event.category && (
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
                           {summary.event.category}
                         </Badge>
                       )}
                     </div>
 
                     {/* Event Details */}
-                    <div className="space-y-3 pt-4 border-t">
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <Calendar className="w-5 h-5 flex-shrink-0" />
-                        <span>
-                          {format(
-                            parseISO(summary.event.date),
-                            "EEEE, dd MMMM yyyy",
-                            {
-                              locale: localeId,
-                            },
-                          )}
-                        </span>
-                      </div>
+                    <div className="bg-white rounded-lg p-4 border border-gray-100">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Tanggal</p>
+                            <p className="font-semibold text-gray-900">
+                              {format(
+                                parseISO(summary.event.date),
+                                "EEEE, dd MMMM yyyy",
+                                {
+                                  locale: localeId,
+                                },
+                              )}
+                            </p>
+                          </div>
+                        </div>
 
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <Clock className="w-5 h-5 flex-shrink-0" />
-                        <span>{summary.event.time}</span>
-                      </div>
+                        <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Clock className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Waktu</p>
+                            <p className="font-semibold text-gray-900">{summary.event.time} WIB</p>
+                          </div>
+                        </div>
 
-                      <div className="flex items-start gap-3 text-muted-foreground">
-                        <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                        <span>{summary.event.location}</span>
+                        <div className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                            <MapPin className="w-5 h-5 text-red-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Lokasi</p>
+                            <p className="font-semibold text-gray-900">{summary.event.location}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -230,100 +206,101 @@ function PaymentSummaryContent() {
               </Card>
 
               {/* User Information */}
-              <Card className="shadow-sm">
+              <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Informasi Peserta
-                  </h2>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
+                    <h2 className="text-lg font-semibold text-gray-800">Informasi Peserta</h2>
+                  </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <User className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Nama Lengkap
-                        </p>
-                        <p className="font-medium">{summary.user.name}</p>
+                  <div className="bg-white rounded-lg p-4 border border-gray-100">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-muted-foreground">Nama Lengkap</p>
+                          <p className="font-semibold text-gray-900">{summary.user.name}</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <Mail className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">{summary.user.email}</p>
+                      <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                          <Mail className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-muted-foreground">Email</p>
+                          <p className="font-semibold text-gray-900">{summary.user.email}</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          No. Handphone
-                        </p>
-                        <p className="font-medium">{summary.user.phone}</p>
+                      <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                          <Phone className="w-5 h-5 text-teal-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-muted-foreground">No. Handphone</p>
+                          <p className="font-semibold text-gray-900">{summary.user.phone || 'Tidak tersedia'}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Security Notice */}
-              <Card className="shadow-sm border-blue-200 bg-blue-50/50">
-                <CardContent className="p-4">
-                  <div className="flex gap-3">
-                    <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h3 className="font-medium text-blue-900 mb-1">
-                        Transaksi Aman
-                      </h3>
-                      <p className="text-sm text-blue-700">
-                        Pembayaran Anda dilindungi dengan enkripsi tingkat bank.
-                        Kami tidak menyimpan informasi kartu kredit Anda.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Right Column - Price Summary */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-6">
-                <Card className="shadow-md border-2">
+            <div>
+              <div className="sticky top-6 space-y-6">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white via-gray-50 to-white">
                   <CardContent className="p-6">
-                    <h2 className="text-lg font-semibold mb-4">
-                      Ringkasan Pembayaran
-                    </h2>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-2 h-8 bg-gradient-to-b from-emerald-500 to-green-500 rounded-full"></div>
+                      <h2 className="text-xl font-bold text-gray-800">Ringkasan Pembayaran</h2>
+                    </div>
 
                     <div className="space-y-4">
                       {/* Price Breakdown */}
-                      <div className="space-y-3 pb-4 border-b">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Harga Event
-                          </span>
-                          <span className="font-medium">
+                      <div className="space-y-4 pb-4 border-b">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <span className="text-muted-foreground">Harga Event</span>
+                          </div>
+                          <span className="font-medium text-lg">
                             {formatCurrency(summary.pricing.amount)}
                           </span>
                         </div>
 
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Biaya Admin
-                          </span>
-                          <span className="font-medium">
-                            {formatCurrency(summary.pricing.adminFee)}
-                          </span>
-                        </div>
+                        {!summary.pricing.isFree && (
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <span className="text-muted-foreground">Biaya Admin</span>
+                              <div className="text-xs text-muted-foreground/70">
+                                1.5% dari harga ticket
+                              </div>
+                            </div>
+                            <span className="font-medium text-lg">
+                              {formatCurrency(summary.pricing.adminFee)}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Total */}
-                      <div className="flex justify-between items-baseline pt-2">
-                        <span className="text-lg font-semibold">Total</span>
-                        <span className="text-2xl font-bold text-primary">
-                          {formatCurrency(summary.pricing.totalAmount)}
-                        </span>
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-semibold text-green-800">Total</span>
+                          <span className="text-3xl font-bold text-green-600">
+                            {formatCurrency(summary.pricing.totalAmount)}
+                          </span>
+                        </div>
+                        {!summary.pricing.isFree && (
+                          <div className="text-xs text-green-700 mt-1">
+                            Sudah termasuk biaya admin 1.5%
+                          </div>
+                        )}
                       </div>
 
                       {/* Free Event Notice */}
@@ -338,7 +315,7 @@ function PaymentSummaryContent() {
 
                       {/* Payment Button */}
                       <Button
-                        className="w-full h-12 text-base"
+                        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
                         onClick={handlePayment}
                         disabled={processing}
                       >
@@ -401,6 +378,60 @@ function PaymentSummaryContent() {
                             </a>{" "}
                             kami.
                           </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Additional Information Card */}
+                <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
+                      <h3 className="text-lg font-semibold text-blue-800">Informasi Penting</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-white/70 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <CheckCircle className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-blue-900 mb-1">E-Ticket Digital</h4>
+                            <p className="text-sm text-blue-700">
+                              Setelah pembayaran berhasil, e-ticket akan dikirim ke email Anda
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/70 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Shield className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-green-900 mb-1">Pembayaran Aman</h4>
+                            <p className="text-sm text-green-700">
+                              Transaksi diproses dengan enkripsi SSL 256-bit
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/70 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <AlertCircle className="w-4 h-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-purple-900 mb-1">Kebijakan Pembatalan</h4>
+                            <p className="text-sm text-purple-700">
+                              Pembatalan dapat dilakukan hingga 24 jam sebelum event
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>

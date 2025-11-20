@@ -17,12 +17,18 @@ const nextConfig: NextConfig = {
         hostname: "picsum.photos",
         pathname: "/**",
       },
-      // Development
+      // Development - localhost with API files
       {
         protocol: "http",
         hostname: "localhost",
         port: "3001",
         pathname: "/api/files/**",
+      },
+      // Development - localhost general (for any path)
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3001",
       },
       // Production - Render backend
       {

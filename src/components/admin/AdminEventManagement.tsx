@@ -31,7 +31,9 @@ interface Event {
     date: string;
     time: string;
     location: string;
+    flyer?: string;
     flyerUrl?: string;
+    certificate?: string;
     certificateUrl?: string;
     category: {
         id: string;
@@ -83,6 +85,8 @@ export function AdminEventManagement() {
         location: '',
         flyerUrl: '',
         certificateUrl: '',
+        flyerFile: null as File | null,
+        certificateFile: null as File | null,
         categoryId: '',
         // New fields
         price: '0',
@@ -101,6 +105,8 @@ export function AdminEventManagement() {
 
     // Form state
     const [formData, setFormData] = useState(initialFormState);
+    const [flyerPreview, setFlyerPreview] = useState<string>('');
+    const [certificatePreview, setCertificatePreview] = useState<string>('');
 
     const fetchEvents = useCallback(async () => {
         try {
@@ -165,23 +171,82 @@ export function AdminEventManagement() {
         }
     };
 
+    const handleFlyerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setFormData({...formData, flyerFile: file});
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFlyerPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleCertificateFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setFormData({...formData, certificateFile: file});
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setCertificatePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleCreateEvent = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
+            // Prepare form data with files if present
+            const formDataToSend = new FormData();
+            
+            // Add text fields
+            formDataToSend.append('title', formData.title);
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('date', formData.date);
+            formDataToSend.append('time', formData.time);
+            formDataToSend.append('location', formData.location);
+            formDataToSend.append('categoryId', formData.categoryId);
+            formDataToSend.append('price', formData.price);
+            formDataToSend.append('maxParticipants', formData.maxParticipants);
+            formDataToSend.append('registrationDeadline', formData.registrationDeadline);
+            formDataToSend.append('eventType', formData.eventType);
+            formDataToSend.append('contactPersonName', formData.contactPersonName);
+            formDataToSend.append('contactPersonPhone', formData.contactPersonPhone);
+            formDataToSend.append('contactPersonEmail', formData.contactPersonEmail);
+            formDataToSend.append('meetingLink', formData.meetingLink);
+            formDataToSend.append('requirements', formData.requirements);
+            formDataToSend.append('benefits', formData.benefits);
+            formDataToSend.append('isFeatured', formData.isFeatured.toString());
+            formDataToSend.append('tags', formData.tags);
+            
+            // Add files if present, otherwise add URLs
+            if (formData.flyerFile) {
+                formDataToSend.append('flyerFile', formData.flyerFile);
+            } else if (formData.flyerUrl) {
+                formDataToSend.append('flyerUrl', formData.flyerUrl);
+            }
+            
+            if (formData.certificateFile) {
+                formDataToSend.append('certificateFile', formData.certificateFile);
+            } else if (formData.certificateUrl) {
+                formDataToSend.append('certificateUrl', formData.certificateUrl);
+            }
+            
             const response = await fetch(`${API_BASE_URL}/admin/events`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${adminToken}`
                 },
-                body: JSON.stringify(formData)
+                body: formDataToSend
             });
 
             if (response.ok) {
                 setIsCreateDialogOpen(false);
-                setFormData(initialFormState);
+                resetForm();
                 fetchEvents();
             } else {
                 const data = await response.json();
@@ -200,18 +265,54 @@ export function AdminEventManagement() {
         try {
             const adminToken = localStorage.getItem('ramein_admin_token');
             
+            // Prepare form data with files if present
+            const formDataToSend = new FormData();
+            
+            // Add text fields
+            formDataToSend.append('title', formData.title);
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('date', formData.date);
+            formDataToSend.append('time', formData.time);
+            formDataToSend.append('location', formData.location);
+            formDataToSend.append('categoryId', formData.categoryId);
+            formDataToSend.append('price', formData.price);
+            formDataToSend.append('maxParticipants', formData.maxParticipants);
+            formDataToSend.append('registrationDeadline', formData.registrationDeadline);
+            formDataToSend.append('eventType', formData.eventType);
+            formDataToSend.append('contactPersonName', formData.contactPersonName);
+            formDataToSend.append('contactPersonPhone', formData.contactPersonPhone);
+            formDataToSend.append('contactPersonEmail', formData.contactPersonEmail);
+            formDataToSend.append('meetingLink', formData.meetingLink);
+            formDataToSend.append('requirements', formData.requirements);
+            formDataToSend.append('benefits', formData.benefits);
+            formDataToSend.append('isFeatured', formData.isFeatured.toString());
+            formDataToSend.append('tags', formData.tags);
+            
+            // Add files if present, otherwise add URLs
+            if (formData.flyerFile) {
+                formDataToSend.append('flyerFile', formData.flyerFile);
+            } else if (formData.flyerUrl) {
+                formDataToSend.append('flyerUrl', formData.flyerUrl);
+            }
+            
+            if (formData.certificateFile) {
+                formDataToSend.append('certificateFile', formData.certificateFile);
+            } else if (formData.certificateUrl) {
+                formDataToSend.append('certificateUrl', formData.certificateUrl);
+            }
+            
             const response = await fetch(`${API_BASE_URL}/admin/events/${selectedEvent.id}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${adminToken}`
                 },
-                body: JSON.stringify(formData)
+                body: formDataToSend
             });
 
             if (response.ok) {
                 setIsEditDialogOpen(false);
                 setSelectedEvent(null);
+                resetForm();
                 fetchEvents();
             } else {
                 const data = await response.json();
@@ -287,6 +388,8 @@ export function AdminEventManagement() {
             location: event.location,
             flyerUrl: event.flyerUrl || '',
             certificateUrl: event.certificateUrl || '',
+            flyerFile: null,
+            certificateFile: null,
             categoryId: event.category.id,
             price: event.price?.toString() || '0',
             maxParticipants: event.maxParticipants?.toString() || '',
@@ -306,6 +409,8 @@ export function AdminEventManagement() {
 
     const resetForm = () => {
         setFormData(initialFormState);
+        setFlyerPreview('');
+        setCertificatePreview('');
     };
 
     return (
@@ -325,12 +430,18 @@ export function AdminEventManagement() {
                             Buat Kegiatan Baru
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Buat Kegiatan Baru</DialogTitle>
+                            <p className="text-sm text-muted-foreground mt-1">Lengkapi informasi kegiatan yang akan diselenggarakan</p>
                         </DialogHeader>
-                        <form onSubmit={handleCreateEvent} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <form onSubmit={handleCreateEvent} className="flex-1 overflow-y-auto pr-4 space-y-6">
+                            {/* Section 1: Basic Information */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-base flex items-center gap-2">
+                                    <span className="text-lg">📋</span> Informasi Dasar
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="title">Judul Kegiatan</Label>
                                     <Input
@@ -383,31 +494,13 @@ export function AdminEventManagement() {
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="location">Lokasi</Label>
+                                    <Label htmlFor="location">Lokasi Event *</Label>
                                     <Input
                                         id="location"
                                         value={formData.location}
                                         onChange={(e) => setFormData({...formData, location: e.target.value})}
                                         placeholder="Masukkan lokasi kegiatan"
                                         required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="flyerUrl">URL Flyer (Opsional)</Label>
-                                    <Input
-                                        id="flyerUrl"
-                                        value={formData.flyerUrl}
-                                        onChange={(e) => setFormData({...formData, flyerUrl: e.target.value})}
-                                        placeholder="https://example.com/flyer.jpg"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="certificateUrl">URL Sertifikat (Opsional)</Label>
-                                    <Input
-                                        id="certificateUrl"
-                                        value={formData.certificateUrl}
-                                        onChange={(e) => setFormData({...formData, certificateUrl: e.target.value})}
-                                        placeholder="https://example.com/certificate.jpg"
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
@@ -417,33 +510,30 @@ export function AdminEventManagement() {
                                         value={formData.description}
                                         onChange={(e) => setFormData({...formData, description: e.target.value})}
                                         placeholder="Masukkan deskripsi kegiatan"
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                                         required
                                     />
                                 </div>
-
-                                {/* Divider */}
-                                <div className="md:col-span-2 border-t pt-4">
-                                    <h4 className="font-semibold mb-4">📋 Detail Pendaftaran</h4>
                                 </div>
+                            </div>
 
-                                {/* Event Type */}
+                            {/* Section 2: Capacity & Price */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-base flex items-center gap-2">
+                                    <span className="text-lg">💰</span> Kapasitas & Harga
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="eventType">Tipe Event *</Label>
-                                    <select
-                                        id="eventType"
-                                        value={formData.eventType}
-                                        onChange={(e) => setFormData({...formData, eventType: e.target.value})}
-                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                        required
-                                    >
-                                        <option value="offline">Offline</option>
-                                        <option value="online">Online</option>
-                                        <option value="hybrid">Hybrid</option>
-                                    </select>
+                                    <Label htmlFor="maxParticipants">Kapasitas Peserta</Label>
+                                    <Input
+                                        id="maxParticipants"
+                                        type="number"
+                                        min="1"
+                                        value={formData.maxParticipants}
+                                        onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
+                                        placeholder="Unlimited"
+                                    />
                                 </div>
-
-                                {/* Price */}
                                 <div className="space-y-2">
                                     <Label htmlFor="price">Harga (Rp)</Label>
                                     <Input
@@ -456,21 +546,29 @@ export function AdminEventManagement() {
                                     />
                                     <p className="text-xs text-muted-foreground">Isi 0 untuk event gratis</p>
                                 </div>
-
-                                {/* Max Participants */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="maxParticipants">Kapasitas Maksimal</Label>
-                                    <Input
-                                        id="maxParticipants"
-                                        type="number"
-                                        min="1"
-                                        value={formData.maxParticipants}
-                                        onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
-                                        placeholder="Unlimited"
-                                    />
                                 </div>
+                            </div>
 
-                                {/* Registration Deadline */}
+                            {/* Section 3: Event Type & Meeting Link */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-base flex items-center gap-2">
+                                    <span className="text-lg">🎯</span> Tipe Event
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="eventType">Tipe Event *</Label>
+                                    <select
+                                        id="eventType"
+                                        value={formData.eventType}
+                                        onChange={(e) => setFormData({...formData, eventType: e.target.value})}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                        required
+                                    >
+                                        <option value="offline">Offline</option>
+                                        <option value="online">Online</option>
+                                        <option value="hybrid">Hybrid</option>
+                                    </select>
+                                </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="registrationDeadline">Batas Pendaftaran</Label>
                                     <Input
@@ -480,8 +578,6 @@ export function AdminEventManagement() {
                                         onChange={(e) => setFormData({...formData, registrationDeadline: e.target.value})}
                                     />
                                 </div>
-
-                                {/* Meeting Link (conditional) */}
                                 {(formData.eventType === 'online' || formData.eventType === 'hybrid') && (
                                     <div className="space-y-2 md:col-span-2">
                                         <Label htmlFor="meetingLink">Link Meeting</Label>
@@ -493,12 +589,15 @@ export function AdminEventManagement() {
                                         />
                                     </div>
                                 )}
-
-                                {/* Divider */}
-                                <div className="md:col-span-2 border-t pt-4">
-                                    <h4 className="font-semibold mb-4">👤 Contact Person</h4>
                                 </div>
+                            </div>
 
+                            {/* Section 4: Contact Person */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-base flex items-center gap-2">
+                                    <span className="text-lg">👤</span> Contact Person
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="contactPersonName">Nama</Label>
                                     <Input
@@ -508,7 +607,6 @@ export function AdminEventManagement() {
                                         placeholder="John Doe"
                                     />
                                 </div>
-
                                 <div className="space-y-2">
                                     <Label htmlFor="contactPersonPhone">WhatsApp</Label>
                                     <Input
@@ -518,7 +616,6 @@ export function AdminEventManagement() {
                                         placeholder="08123456789"
                                     />
                                 </div>
-
                                 <div className="space-y-2 md:col-span-2">
                                     <Label htmlFor="contactPersonEmail">Email</Label>
                                     <Input
@@ -529,63 +626,142 @@ export function AdminEventManagement() {
                                         placeholder="contact@example.com"
                                     />
                                 </div>
-
-                                {/* Divider */}
-                                <div className="md:col-span-2 border-t pt-4">
-                                    <h4 className="font-semibold mb-4">ℹ️ Informasi Tambahan</h4>
                                 </div>
+                            </div>
 
-                                <div className="space-y-2 md:col-span-2">
+                            {/* Section 5: Additional Info */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-base flex items-center gap-2">
+                                    <span className="text-lg">ℹ️</span> Informasi Tambahan
+                                </h3>
+                                <div className="space-y-4">
+                                <div className="space-y-2">
                                     <Label htmlFor="requirements">Syarat Peserta</Label>
                                     <textarea
                                         id="requirements"
                                         value={formData.requirements}
                                         onChange={(e) => setFormData({...formData, requirements: e.target.value})}
                                         placeholder="Contoh: Mahasiswa aktif, membawa laptop, dll"
-                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                                        className="flex min-h-[70px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                                     />
                                 </div>
-
-                                <div className="space-y-2 md:col-span-2">
+                                <div className="space-y-2">
                                     <Label htmlFor="benefits">Benefit yang Didapat</Label>
                                     <textarea
                                         id="benefits"
                                         value={formData.benefits}
                                         onChange={(e) => setFormData({...formData, benefits: e.target.value})}
                                         placeholder="Contoh: E-Certificate, Snack, Modul, dll"
-                                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                                        className="flex min-h-[70px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                                     />
                                 </div>
-
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="tags">Tags (pisahkan dengan koma)</Label>
-                                    <Input
-                                        id="tags"
-                                        value={formData.tags}
-                                        onChange={(e) => setFormData({...formData, tags: e.target.value})}
-                                        placeholder="workshop, teknologi, gratis"
-                                    />
-                                </div>
-
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isFeatured}
-                                            onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
-                                            className="w-4 h-4"
-                                        />
-                                        <span className="text-sm">⭐ Jadikan Event Unggulan</span>
-                                    </label>
                                 </div>
                             </div>
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                                    Batal
-                                </Button>
-                                <Button type="submit">Buat Kegiatan</Button>
+
+                            {/* Section 6: Files & Featured */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-base flex items-center gap-2">
+                                    <span className="text-lg">📎</span> File & Pengaturan
+                                </h3>
+                                <div className="space-y-4">
+                                {/* Flyer Upload */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="flyerFile">Upload Flyer (Opsional)</Label>
+                                    <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-accent/50 transition-colors">
+                                        <input
+                                            id="flyerFile"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFlyerFileChange}
+                                            className="hidden"
+                                        />
+                                        <label htmlFor="flyerFile" className="cursor-pointer block">
+                                            {flyerPreview ? (
+                                                <div className="space-y-2">
+                                                    <img src={flyerPreview} alt="Flyer preview" className="w-full h-32 object-cover rounded" />
+                                                    <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <p className="text-sm font-medium">Klik atau drag file gambar di sini</p>
+                                                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF (Max 5MB)</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Flyer URL Fallback */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="flyerUrl">atau URL Flyer (Jika tidak upload file)</Label>
+                                    <Input
+                                        id="flyerUrl"
+                                        value={formData.flyerUrl}
+                                        onChange={(e) => setFormData({...formData, flyerUrl: e.target.value})}
+                                        placeholder="https://example.com/flyer.jpg"
+                                        disabled={!!formData.flyerFile}
+                                    />
+                                </div>
+
+                                {/* Certificate Upload */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="certificateFile">Upload Sertifikat (Opsional)</Label>
+                                    <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-accent/50 transition-colors">
+                                        <input
+                                            id="certificateFile"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleCertificateFileChange}
+                                            className="hidden"
+                                        />
+                                        <label htmlFor="certificateFile" className="cursor-pointer block">
+                                            {certificatePreview ? (
+                                                <div className="space-y-2">
+                                                    <img src={certificatePreview} alt="Certificate preview" className="w-full h-32 object-cover rounded" />
+                                                    <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <p className="text-sm font-medium">Klik atau drag file gambar di sini</p>
+                                                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF (Max 5MB)</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Certificate URL Fallback */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="certificateUrl">atau URL Sertifikat (Jika tidak upload file)</Label>
+                                    <Input
+                                        id="certificateUrl"
+                                        value={formData.certificateUrl}
+                                        onChange={(e) => setFormData({...formData, certificateUrl: e.target.value})}
+                                        placeholder="https://example.com/certificate.jpg"
+                                        disabled={!!formData.certificateFile}
+                                    />
+                                </div>
+
+                                <label className="flex items-center gap-2 cursor-pointer p-3 border rounded-md hover:bg-accent transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isFeatured}
+                                        onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                                        className="w-4 h-4"
+                                    />
+                                    <span className="text-sm font-medium">⭐ Jadikan Event Unggulan</span>
+                                </label>
+                                </div>
                             </div>
                         </form>
+                        <div className="flex justify-end gap-2 pt-4 border-t mt-6">
+                            <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button type="submit" onClick={handleCreateEvent}>
+                                Buat Kegiatan
+                            </Button>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -658,7 +834,7 @@ export function AdminEventManagement() {
                                         {/* Event Image Preview */}
                                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden shrink-0 bg-muted">
                                             <ImageWithFallback
-                                                src={event.flyerUrl || `https://picsum.photos/seed/${event.id}/400/300`}
+                                                src={event.flyer || `https://picsum.photos/seed/${event.id}/400/300`}
                                                 alt={event.title}
                                                 className="w-full h-full object-cover"
                                             />
@@ -762,12 +938,18 @@ export function AdminEventManagement() {
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle>Edit Kegiatan</DialogTitle>
+                        <p className="text-sm text-muted-foreground mt-1">Perbarui informasi kegiatan</p>
                     </DialogHeader>
-                    <form onSubmit={handleUpdateEvent} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <form onSubmit={handleUpdateEvent} className="flex-1 overflow-y-auto pr-4 space-y-6">
+                        {/* Section 1: Basic Information */}
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-base flex items-center gap-2">
+                                <span className="text-lg">📋</span> Informasi Dasar
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="edit-title">Judul Kegiatan</Label>
                                 <Input
@@ -844,37 +1026,46 @@ export function AdminEventManagement() {
                                 />
                             </div>
                             <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="edit-location">Lokasi Event *</Label>
+                                <Input
+                                    id="edit-location"
+                                    value={formData.location}
+                                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                                    placeholder="Masukkan lokasi kegiatan"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
                                 <Label htmlFor="edit-description">Deskripsi</Label>
                                 <textarea
                                     id="edit-description"
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                                     placeholder="Masukkan deskripsi kegiatan"
-                                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                                     required
                                 />
                             </div>
-
-                            {/* Divider */}
-                            <div className="md:col-span-2 border-t pt-4">
-                                <h4 className="font-semibold mb-4">📋 Detail Pendaftaran</h4>
                             </div>
+                        </div>
 
+                        {/* Section 2: Capacity & Price */}
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-base flex items-center gap-2">
+                                <span className="text-lg">💰</span> Kapasitas & Harga
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-eventType">Tipe Event *</Label>
-                                <select
-                                    id="edit-eventType"
-                                    value={formData.eventType}
-                                    onChange={(e) => setFormData({...formData, eventType: e.target.value})}
-                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                    required
-                                >
-                                    <option value="offline">Offline</option>
-                                    <option value="online">Online</option>
-                                    <option value="hybrid">Hybrid</option>
-                                </select>
+                                <Label htmlFor="edit-maxParticipants">Kapasitas Peserta</Label>
+                                <Input
+                                    id="edit-maxParticipants"
+                                    type="number"
+                                    min="1"
+                                    value={formData.maxParticipants}
+                                    onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
+                                    placeholder="Unlimited"
+                                />
                             </div>
-
                             <div className="space-y-2">
                                 <Label htmlFor="edit-price">Harga (Rp)</Label>
                                 <Input
@@ -886,19 +1077,29 @@ export function AdminEventManagement() {
                                     placeholder="0"
                                 />
                             </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-maxParticipants">Kapasitas Maksimal</Label>
-                                <Input
-                                    id="edit-maxParticipants"
-                                    type="number"
-                                    min="1"
-                                    value={formData.maxParticipants}
-                                    onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
-                                    placeholder="Unlimited"
-                                />
                             </div>
+                        </div>
 
+                        {/* Section 3: Event Type & Meeting Link */}
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-base flex items-center gap-2">
+                                <span className="text-lg">🎯</span> Tipe Event
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-eventType">Tipe Event *</Label>
+                                <select
+                                    id="edit-eventType"
+                                    value={formData.eventType}
+                                    onChange={(e) => setFormData({...formData, eventType: e.target.value})}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    required
+                                >
+                                    <option value="offline">Offline</option>
+                                    <option value="online">Online</option>
+                                    <option value="hybrid">Hybrid</option>
+                                </select>
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="edit-registrationDeadline">Batas Pendaftaran</Label>
                                 <Input
@@ -908,7 +1109,6 @@ export function AdminEventManagement() {
                                     onChange={(e) => setFormData({...formData, registrationDeadline: e.target.value})}
                                 />
                             </div>
-
                             {(formData.eventType === 'online' || formData.eventType === 'hybrid') && (
                                 <div className="space-y-2 md:col-span-2">
                                     <Label htmlFor="edit-meetingLink">Link Meeting</Label>
@@ -920,11 +1120,15 @@ export function AdminEventManagement() {
                                     />
                                 </div>
                             )}
-
-                            <div className="md:col-span-2 border-t pt-4">
-                                <h4 className="font-semibold mb-4">👤 Contact Person</h4>
                             </div>
+                        </div>
 
+                        {/* Section 4: Contact Person */}
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-base flex items-center gap-2">
+                                <span className="text-lg">👤</span> Contact Person
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="edit-contactPersonName">Nama</Label>
                                 <Input
@@ -934,7 +1138,6 @@ export function AdminEventManagement() {
                                     placeholder="John Doe"
                                 />
                             </div>
-
                             <div className="space-y-2">
                                 <Label htmlFor="edit-contactPersonPhone">WhatsApp</Label>
                                 <Input
@@ -944,7 +1147,6 @@ export function AdminEventManagement() {
                                     placeholder="08123456789"
                                 />
                             </div>
-
                             <div className="space-y-2 md:col-span-2">
                                 <Label htmlFor="edit-contactPersonEmail">Email</Label>
                                 <Input
@@ -955,62 +1157,142 @@ export function AdminEventManagement() {
                                     placeholder="contact@example.com"
                                 />
                             </div>
-
-                            <div className="md:col-span-2 border-t pt-4">
-                                <h4 className="font-semibold mb-4">ℹ️ Informasi Tambahan</h4>
                             </div>
+                        </div>
 
-                            <div className="space-y-2 md:col-span-2">
+                        {/* Section 5: Additional Info */}
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-base flex items-center gap-2">
+                                <span className="text-lg">ℹ️</span> Informasi Tambahan
+                            </h3>
+                            <div className="space-y-4">
+                            <div className="space-y-2">
                                 <Label htmlFor="edit-requirements">Syarat Peserta</Label>
                                 <textarea
                                     id="edit-requirements"
                                     value={formData.requirements}
                                     onChange={(e) => setFormData({...formData, requirements: e.target.value})}
                                     placeholder="Contoh: Mahasiswa aktif, membawa laptop, dll"
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                                    className="flex min-h-[70px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                                 />
                             </div>
-
-                            <div className="space-y-2 md:col-span-2">
+                            <div className="space-y-2">
                                 <Label htmlFor="edit-benefits">Benefit yang Didapat</Label>
                                 <textarea
                                     id="edit-benefits"
                                     value={formData.benefits}
                                     onChange={(e) => setFormData({...formData, benefits: e.target.value})}
                                     placeholder="Contoh: E-Certificate, Snack, Modul, dll"
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-y"
+                                    className="flex min-h-[70px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                                 />
                             </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="edit-tags">Tags (pisahkan dengan koma)</Label>
-                                <Input
-                                    id="edit-tags"
-                                    value={formData.tags}
-                                    onChange={(e) => setFormData({...formData, tags: e.target.value})}
-                                    placeholder="workshop, teknologi, gratis"
-                                />
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.isFeatured}
-                                        onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
-                                        className="w-4 h-4"
-                                    />
-                                    <span className="text-sm">⭐ Jadikan Event Unggulan</span>
-                                </label>
                             </div>
                         </div>
-                        <div className="flex justify-end gap-2">
-                            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                                Batal
-                            </Button>
-                            <Button type="submit">Update Kegiatan</Button>
+
+                        {/* Section 6: Files & Featured */}
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-base flex items-center gap-2">
+                                <span className="text-lg">📎</span> File & Pengaturan
+                            </h3>
+                            <div className="space-y-4">
+                            {/* Flyer Upload */}
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-flyerFile">Upload Flyer (Opsional)</Label>
+                                <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-accent/50 transition-colors">
+                                    <input
+                                        id="edit-flyerFile"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFlyerFileChange}
+                                        className="hidden"
+                                    />
+                                    <label htmlFor="edit-flyerFile" className="cursor-pointer block">
+                                        {flyerPreview ? (
+                                            <div className="space-y-2">
+                                                <img src={flyerPreview} alt="Flyer preview" className="w-full h-32 object-cover rounded" />
+                                                <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <p className="text-sm font-medium">Klik atau drag file gambar di sini</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, GIF (Max 5MB)</p>
+                                            </div>
+                                        )}
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Flyer URL Fallback */}
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-flyerUrl">atau URL Flyer (Jika tidak upload file)</Label>
+                                <Input
+                                    id="edit-flyerUrl"
+                                    value={formData.flyerUrl}
+                                    onChange={(e) => setFormData({...formData, flyerUrl: e.target.value})}
+                                    placeholder="https://example.com/flyer.jpg"
+                                    disabled={!!formData.flyerFile}
+                                />
+                            </div>
+
+                            {/* Certificate Upload */}
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-certificateFile">Upload Sertifikat (Opsional)</Label>
+                                <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-accent/50 transition-colors">
+                                    <input
+                                        id="edit-certificateFile"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleCertificateFileChange}
+                                        className="hidden"
+                                    />
+                                    <label htmlFor="edit-certificateFile" className="cursor-pointer block">
+                                        {certificatePreview ? (
+                                            <div className="space-y-2">
+                                                <img src={certificatePreview} alt="Certificate preview" className="w-full h-32 object-cover rounded" />
+                                                <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <p className="text-sm font-medium">Klik atau drag file gambar di sini</p>
+                                                <p className="text-xs text-muted-foreground">PNG, JPG, GIF (Max 5MB)</p>
+                                            </div>
+                                        )}
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Certificate URL Fallback */}
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-certificateUrl">atau URL Sertifikat (Jika tidak upload file)</Label>
+                                <Input
+                                    id="edit-certificateUrl"
+                                    value={formData.certificateUrl}
+                                    onChange={(e) => setFormData({...formData, certificateUrl: e.target.value})}
+                                    placeholder="https://example.com/certificate.jpg"
+                                    disabled={!!formData.certificateFile}
+                                />
+                            </div>
+
+                            <label className="flex items-center gap-2 cursor-pointer p-3 border rounded-md hover:bg-accent transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.isFeatured}
+                                    onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                                    className="w-4 h-4"
+                                />
+                                <span className="text-sm font-medium">⭐ Jadikan Event Unggulan</span>
+                            </label>
+                            </div>
                         </div>
                     </form>
+                    <div className="flex justify-end gap-2 pt-4 border-t mt-6">
+                        <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                            Batal
+                        </Button>
+                        <Button type="submit" onClick={handleUpdateEvent}>
+                            Update Kegiatan
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

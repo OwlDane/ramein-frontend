@@ -94,9 +94,11 @@ export interface Transaction {
   bankName?: string;
   snapToken?: string;
   snapUrl?: string;
+  invoiceUrl?: string;
+  invoiceId?: string;
   paidAt?: string;
   expiredAt?: string;
-  midtransResponse?: Record<string, unknown>;
+  xenditResponse?: Record<string, unknown>;
   failureReason?: string;
   notes?: string;
   isRefunded: boolean;
@@ -138,19 +140,68 @@ export interface TransactionStatistics {
 export async function getPaymentSummary(
   eventId: string,
 ): Promise<PaymentSummary> {
-  const response = await fetch(`${API_URL}/payment/summary`, {
-    method: "POST",
-    headers: createHeaders(),
-    body: JSON.stringify({ eventId }),
-  });
+  try {
+    const response = await fetch(`${API_URL}/payment/summary`, {
+      method: "POST",
+      headers: createHeaders(),
+      body: JSON.stringify({ eventId }),
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to get payment summary");
+    if (!response.ok) {
+      console.error("Payment summary API error:", data);
+      throw new Error(data.message || "Failed to get payment summary");
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error("Payment summary fetch error:", error);
+    // If payment API fails, try to get event data directly
+    try {
+      const eventResponse = await fetch(`${API_URL}/events/${eventId}`, {
+        method: "GET",
+        headers: createHeaders(),
+      });
+      
+      const eventData = await eventResponse.json();
+      
+      if (eventResponse.ok && eventData.data) {
+        const event = eventData.data;
+        const amount = Number(event.price || 0);
+        const adminFee = amount === 0 ? 0 : Math.round(Math.max(1000, amount * 0.015));
+        
+        // Create fallback summary
+        return {
+          event: {
+            id: event.id,
+            title: event.title,
+            date: event.date,
+            time: event.time,
+            location: event.location,
+            category: event.category || 'Event',
+            price: amount,
+          },
+          user: {
+            id: 'unknown',
+            name: 'User',
+            email: 'user@example.com',
+            phone: '',
+          },
+          pricing: {
+            amount,
+            adminFee,
+            totalAmount: amount + adminFee,
+            isFree: amount === 0,
+          },
+        };
+      }
+    } catch (fallbackError) {
+      console.error("Fallback event fetch error:", fallbackError);
+    }
+    
+    throw error;
   }
-
-  return data.data;
 }
 
 /**
@@ -169,7 +220,18 @@ export async function createTransaction(eventId: string): Promise<Transaction> {
     throw new Error(data.message || "Failed to create transaction");
   }
 
-  return data.data;
+  // For Xendit, if we have invoiceUrl, redirect to it
+  const transaction = data.data;
+  if (transaction.invoiceUrl && transaction.paymentStatus !== 'paid') {
+    // Store the transaction for later reference
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('current_transaction', JSON.stringify(transaction));
+    }
+    // Redirect to Xendit invoice
+    window.location.href = transaction.invoiceUrl;
+  }
+
+  return transaction;
 }
 
 /**
@@ -214,7 +276,7 @@ export async function getTransactionById(id: string): Promise<Transaction> {
 }
 
 /**
- * Check transaction status from Midtrans
+ * Check transaction status from Xendit
  */
 export async function checkTransactionStatus(
   orderId: string,

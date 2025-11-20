@@ -150,6 +150,7 @@ export function ArticlesSection() {
                                                         fill
                                                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                                                         priority
+                                                        sizes="(max-width: 768px) 100vw, 50vw"
                                                     />
                                                     <div className="absolute top-6 left-6">
                                                         <span className="px-4 py-2 rounded-full bg-background/90 backdrop-blur-sm text-sm font-medium">
@@ -218,6 +219,7 @@ export function ArticlesSection() {
                                                             alt={article.title}
                                                             fill
                                                             className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                                         />
                                                         <div className="absolute top-4 left-4">
                                                             <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-background/90 backdrop-blur-sm">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
-    currentView: string;
+    currentView: 'home' | 'events' | 'galeri' | 'articles' | 'dashboard' | 'event-detail' | 'contact' | 'login' | 'register';
 }
 
 export function Header({ currentView }: HeaderProps) {
@@ -18,19 +19,20 @@ export function Header({ currentView }: HeaderProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navigation = [
-        { name: 'Home', view: 'home' as const },
+        { name: 'Beranda', view: 'home' as const },
         { name: 'Event', view: 'events' as const },
-        { name: 'Articles', view: 'articles' as const },
-        { name: 'Contact', view: 'contact' as const },
+        { name: 'Galeri', view: 'galeri' as const },
+        { name: 'Artikel', view: 'articles' as const },
     ];
 
-    const handleNavigation = (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact' | 'articles') => {
+    const handleNavigation = (view: 'home' | 'events' | 'dashboard' | 'event-detail' | 'contact' | 'articles' | 'galeri') => {
         setIsMobileMenuOpen(false);
         
         // Map view to proper URL paths
         const pathMap = {
             'home': '/',
             'events': '/events',
+            'galeri': '/galeri',
             'articles': '/articles',
             'contact': '/contact',
             'dashboard': '/dashboard',
@@ -69,11 +71,23 @@ export function Header({ currentView }: HeaderProps) {
                         {/* Logo */}
                         <motion.button
                             onClick={() => handleNavigation('home')}
-                            className="text-xl lg:text-2xl font-bold tracking-tight text-foreground"
+                            className={`flex items-center ${currentView === 'login' || currentView === 'register' ? 'gap-2 lg:gap-3' : 'gap-0'}`}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            Ramein
+                            <Image
+                                src="/logo.png"
+                                alt="Ramein Logo"
+                                width={40}
+                                height={40}
+                                className="w-10 h-10 lg:w-12 lg:h-12"
+                                priority
+                            />
+                            {(currentView === 'login' || currentView === 'register') && (
+                                <span className="text-xl lg:text-2xl font-bold tracking-tight text-foreground">
+                                    Ramein
+                                </span>
+                            )}
                         </motion.button>
 
                         {/* Desktop Navigation */}
@@ -82,22 +96,15 @@ export function Header({ currentView }: HeaderProps) {
                                 <motion.button
                                     key={item.name}
                                     onClick={() => handleNavigation(item.view)}
-                                    className={`text-sm lg:text-base font-medium transition-colors relative ${
+                                    className={`text-sm lg:text-base font-medium transition-colors ${
                                         currentView === item.view
-                                            ? 'text-foreground'
+                                            ? 'text-green-600'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                     whileHover={{ y: -2 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
                                     {item.name}
-                                    {currentView === item.view && (
-                                        <motion.div
-                                            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-foreground"
-                                            layoutId="navbar-indicator"
-                                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                                        />
-                                    )}
                                 </motion.button>
                             ))}
                         </nav>
@@ -113,7 +120,7 @@ export function Header({ currentView }: HeaderProps) {
                                                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                                                     <Avatar className="h-10 w-10">
                                                         <AvatarImage src={undefined} alt={user?.name ?? 'User'} />
-                                                        <AvatarFallback className="bg-primary text-primary-foreground">
+                                                        <AvatarFallback className="bg-green-600 text-white">
                                                             {user?.name?.charAt(0) || 'U'}
                                                         </AvatarFallback>
                                                     </Avatar>
@@ -123,11 +130,11 @@ export function Header({ currentView }: HeaderProps) {
                                         <DropdownMenuContent className="w-48" align="end">
                                             <DropdownMenuItem onClick={() => router.push('/profile')}>
                                                 <User className="w-4 h-4 mr-2" />
-                                                Dashboard
+                                                Dasbor
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={logout}>
                                                 <LogOut className="w-4 h-4 mr-2" />
-                                                Logout
+                                                Keluar
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -139,15 +146,15 @@ export function Header({ currentView }: HeaderProps) {
                                                 variant="outline"
                                                 className="px-6 rounded-md border-2"
                                             >
-                                                Login
+                                                Masuk
                                             </Button>
                                         </motion.div>
                                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                             <Button
                                                 onClick={handleRegister}
-                                                className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 rounded-md"
+                                                className="bg-green-600 text-white hover:bg-green-700 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300"
                                             >
-                                                Register
+                                                Daftar
                                             </Button>
                                         </motion.div>
                                     </div>
@@ -210,10 +217,10 @@ export function Header({ currentView }: HeaderProps) {
                                     {isLoggedIn ? (
                                         <Button
                                             onClick={handleLogin}
-                                            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
+                                            className="w-full bg-green-600 text-white hover:bg-green-700 rounded-md shadow-md hover:shadow-lg transition-all duration-300"
                                             size="lg"
                                         >
-                                            Dashboard
+                                            Dasbor
                                         </Button>
                                     ) : (
                                         <>
@@ -223,14 +230,14 @@ export function Header({ currentView }: HeaderProps) {
                                                 className="w-full rounded-md border-2"
                                                 size="lg"
                                             >
-                                                Login
+                                                Masuk
                                             </Button>
                                             <Button
                                                 onClick={handleRegister}
-                                                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
+                                                className="w-full bg-green-600 text-white hover:bg-green-700 rounded-md shadow-md hover:shadow-lg transition-all duration-300"
                                                 size="lg"
                                             >
-                                                Register
+                                                Daftar
                                             </Button>
                                         </>
                                     )}

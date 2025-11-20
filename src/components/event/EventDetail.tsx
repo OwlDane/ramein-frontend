@@ -31,6 +31,29 @@ import { AttendanceModal } from "./AttendanceModal";
 import { getEventImages, getAvatarFallbackUrl } from "@/lib/unsplash";
 import { STORAGE_KEYS } from "@/constants";
 
+// Helper function to convert file path to absolute URL
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  
+  // If already an absolute URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If relative path (e.g., uploads/flyers/... or flyers/...), convert to absolute URL
+  if (imagePath.startsWith('uploads/') || imagePath.startsWith('flyers/') || imagePath.startsWith('certificates/')) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    // Remove trailing /api if present to avoid double /api
+    const cleanBaseUrl = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl;
+    // Remove 'uploads/' prefix if present (backend serves from /api/files which maps to uploads/)
+    const cleanPath = imagePath.startsWith('uploads/') ? imagePath.slice(8) : imagePath;
+    return `${cleanBaseUrl}/api/files/${cleanPath}`;
+  }
+  
+  // If starts with /, it's already a relative path for Next.js
+  return imagePath;
+};
+
 interface EventDetailProps {
   eventId: string;
   isLoggedIn: boolean;
@@ -318,10 +341,9 @@ export function EventDetail({
           location: data.location,
           category: data.category || "General",
           price: Number(data.price ?? 0),
-          image:
-            data.flyer && data.flyer.startsWith("http")
-              ? data.flyer
-              : `https://picsum.photos/seed/${data.id}/800/450`,
+          image: data.flyer
+            ? getImageUrl(data.flyer)
+            : `https://picsum.photos/seed/${data.id}/800/450`,
         }));
 
         // Load gallery images dynamically

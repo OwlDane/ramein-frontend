@@ -9,6 +9,29 @@ import { apiFetch, buildQuery } from "@/lib/api";
 import type { BackendEvent } from "@/types/event";
 import { format } from "date-fns";
 
+// Helper function to convert file path to absolute URL
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  
+  // If already an absolute URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If relative path (e.g., uploads/flyers/... or flyers/...), convert to absolute URL
+  if (imagePath.startsWith('uploads/') || imagePath.startsWith('flyers/') || imagePath.startsWith('certificates/')) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    // Remove trailing /api if present to avoid double /api
+    const cleanBaseUrl = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl;
+    // Remove 'uploads/' prefix if present (backend serves from /api/files which maps to uploads/)
+    const cleanPath = imagePath.startsWith('uploads/') ? imagePath.slice(8) : imagePath;
+    return `${cleanBaseUrl}/api/files/${cleanPath}`;
+  }
+  
+  // If starts with /, it's already a relative path for Next.js
+  return imagePath;
+};
+
 interface FeaturedEventsSectionProps {
   onViewEvents: () => void;
 }
@@ -64,13 +87,13 @@ export function FeaturedEventsSection({
             className="text-center mb-16"
           >
             <span className="text-sm tracking-[0.3em] uppercase text-muted-foreground font-medium block mb-4">
-              FEATURED EVENTS
+              KEGIATAN UNGGULAN
             </span>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Your Story, <span className="italic">Our Stage</span>
+              Cerita Anda, <span className="italic">Panggung Kami</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover events that inspire, connect, and transform
+              Temukan kegiatan yang menginspirasi, menghubungkan, dan mengubah
             </p>
           </motion.div>
 
@@ -96,7 +119,7 @@ export function FeaturedEventsSection({
                       <div className="absolute inset-0">
                         <Image
                           src={
-                            event.flyer ||
+                            getImageUrl(event.flyer) ||
                             `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=600&fit=crop&seed=${event.id}`
                           }
                           alt={event.title}
@@ -173,9 +196,9 @@ export function FeaturedEventsSection({
                   onClick={onViewEvents}
                   size="lg"
                   variant="outline"
-                  className="group border-2"
+                  className="group border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-all duration-300"
                 >
-                  View All Events
+                  Lihat Semua Kegiatan
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </motion.div>
@@ -183,7 +206,7 @@ export function FeaturedEventsSection({
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
-                No featured events available at the moment.
+                Tidak ada kegiatan unggulan yang tersedia saat ini.
               </p>
             </div>
           )}

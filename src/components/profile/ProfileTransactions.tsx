@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Loader2,
   Eye,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
@@ -25,6 +26,7 @@ import {
   formatCurrency,
   getPaymentStatusLabel,
   getPaymentMethodLabel,
+  cancelTransaction,
   type Transaction,
 } from "@/lib/paymentApi";
 import { toast } from "sonner";
@@ -319,6 +321,31 @@ function TransactionDetailModal({
   transaction: Transaction;
   onClose: () => void;
 }) {
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancelTransaction = async () => {
+    if (!confirm('Apakah Anda yakin ingin membatalkan transaksi ini?')) {
+      return;
+    }
+
+    try {
+      setIsCancelling(true);
+      await cancelTransaction(transaction.orderId);
+      toast.success('Transaksi berhasil dibatalkan');
+      onClose();
+      // Refresh page to update transaction list
+      window.location.reload();
+    } catch (error) {
+      console.error('Cancel transaction error:', error);
+      toast.error(error instanceof Error ? error.message : 'Gagal membatalkan transaksi');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  // Check if transaction can be cancelled (only pending transactions)
+  const canCancel = transaction.paymentStatus === 'pending';
+
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
@@ -472,8 +499,28 @@ function TransactionDetailModal({
           )}
         </div>
 
-        <div className="p-6 border-t bg-gray-50">
-          <Button className="w-full" onClick={onClose}>
+        <div className="p-6 border-t bg-gray-50 space-y-3">
+          {canCancel && (
+            <Button
+              variant="destructive"
+              className="w-full"
+              onClick={handleCancelTransaction}
+              disabled={isCancelling}
+            >
+              {isCancelling ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Membatalkan...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Batalkan Transaksi
+                </>
+              )}
+            </Button>
+          )}
+          <Button variant="outline" className="w-full" onClick={onClose}>
             Tutup
           </Button>
         </div>

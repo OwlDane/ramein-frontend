@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/pdf-compatibility.css";
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -191,6 +192,20 @@
     /* Remove extra border/outline on autofilled inputs */
     input[type="email"]:-webkit-autofill {
         border: 1px solid var(--border) !important;
+    }
+
+    /* Global override for modern color functions that cause PDF issues */
+    ::placeholder {
+        color: rgba(107, 114, 128, 0.5) !important;
+    }
+
+    /* Override any problematic color functions */
+    [style*="lab("],
+    [style*="oklab("],
+    [style*="lch("],
+    [style*="oklch("],
+    [style*="color-mix"] {
+        color: #6b7280 !important;
     }
 }
 

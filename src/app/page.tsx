@@ -9,8 +9,8 @@ import { Hero } from "@/components/common/Hero";
 import { DreamsSection } from "@/components/common/DreamsSection";
 import { Footer } from "@/components/layout/Footer";
 import { FeaturedEventsSection } from "@/components/event/FeaturedEventsSection";
-import { UpcomingEventsSection } from "@/components/event/UpcomingEventsSection";
-import { NewsSection } from "@/components/common/NewsSection";
+import { FAQSection } from "@/components/common/FAQSection";
+import { ContactSection } from "@/components/common/ContactSection";
 import { BackToTop } from "@/components/common/BackToTop";
 
 export default function HomePage() {
@@ -18,10 +18,6 @@ export default function HomePage() {
 
   const handleViewEvents = () => {
     router.push('/events');
-  };
-
-  const handleEventSelect = (eventId: string) => {
-    router.push(`/events/${eventId}`);
   };
 
   const pageVariants = {
@@ -46,11 +42,8 @@ export default function HomePage() {
         <Hero onViewEvents={handleViewEvents} />
         <DreamsSection onViewEvents={handleViewEvents} />
         <FeaturedEventsSection onViewEvents={handleViewEvents} />
-        <UpcomingEventsSection
-          onEventSelect={handleEventSelect}
-          onViewAllEvents={handleViewEvents}
-        />
-        <NewsSection />
+        <FAQSection />
+        <ContactSection />
       </motion.main>
 
       <Footer />

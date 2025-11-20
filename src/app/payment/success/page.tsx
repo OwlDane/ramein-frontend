@@ -284,10 +284,10 @@ function PaymentSuccessContent() {
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium">
-                    E-Ticket telah dikirim ke email Anda
+                    Pembayaran berhasil diproses
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Periksa inbox atau folder spam
+                    Selesaikan pendaftaran untuk mendapatkan token kehadiran
                   </p>
                 </div>
               </li>
@@ -296,7 +296,7 @@ function PaymentSuccessContent() {
                 <div>
                   <p className="font-medium">Simpan order ID untuk referensi</p>
                   <p className="text-sm text-muted-foreground">
-                    Gunakan untuk check-in di hari event
+                    Order ID: {transaction?.orderId}
                   </p>
                 </div>
               </li>
@@ -304,10 +304,10 @@ function PaymentSuccessContent() {
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium">
-                    Sertifikat akan tersedia setelah event
+                    E-Ticket akan dikirim setelah pendaftaran
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Anda akan menerima notifikasi via email
+                    Anda akan menerima token kehadiran via email
                   </p>
                 </div>
               </li>
@@ -316,7 +316,7 @@ function PaymentSuccessContent() {
         </Card>
 
         {/* Action Buttons */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
           <Button
             variant="outline"
             onClick={handleDownloadReceipt}
@@ -339,6 +339,28 @@ function PaymentSuccessContent() {
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
+
+        {/* Complete Registration Button */}
+        {transaction && transaction.event && (
+          <Card className="shadow-lg bg-gradient-to-br from-green-50 to-white border-green-200 mb-6">
+            <CardContent className="p-6 text-center">
+              <h3 className="text-lg font-semibold mb-3 text-green-800">
+                Selesaikan Pendaftaran Anda
+              </h3>
+              <p className="text-sm text-green-700 mb-4">
+                Pembayaran berhasil! Klik tombol di bawah untuk menyelesaikan pendaftaran dan mendapatkan token kehadiran.
+              </p>
+              <Button
+                onClick={() => router.push(`/events/${transaction.event?.id}`)}
+                className="w-full bg-green-600 hover:bg-green-700"
+                size="lg"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Selesaikan Pendaftaran
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Back to Home */}
         <div className="text-center mt-8">

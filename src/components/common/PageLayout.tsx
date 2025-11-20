@@ -8,7 +8,7 @@ import { BackToTop } from "@/components/common/BackToTop";
 
 interface PageLayoutProps {
   children: React.ReactNode;
-  currentView: "home" | "events" | "articles" | "contact" | "dashboard";
+  currentView: "home" | "events" | "articles" | "contact" | "dashboard" | "login" | "register";
 }
 
 export function PageLayout({ children, currentView }: PageLayoutProps) {

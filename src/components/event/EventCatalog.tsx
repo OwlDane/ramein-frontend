@@ -16,9 +16,38 @@ import {
 import { apiFetch, buildQuery } from "@/lib/api";
 import type { BackendEvent } from "@/types/event";
 import { format, parseISO } from "date-fns";
+import { EventBanner } from "./EventBanner";
+
+// Helper function to convert file path to absolute URL
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  
+  // If already an absolute URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If relative path (e.g., uploads/flyers/... or flyers/...), convert to absolute URL
+  if (imagePath.startsWith('uploads/') || imagePath.startsWith('flyers/') || imagePath.startsWith('certificates/')) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    // Remove trailing /api if present to avoid double /api
+    const cleanBaseUrl = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl;
+    // Remove 'uploads/' prefix if present (backend serves from /api/files which maps to uploads/)
+    const cleanPath = imagePath.startsWith('uploads/') ? imagePath.slice(8) : imagePath;
+    return `${cleanBaseUrl}/api/files/${cleanPath}`;
+  }
+  
+  // If starts with /, it's already a relative path for Next.js
+  return imagePath;
+};
 
 interface EventCatalogProps {
   onEventSelect: (eventId: string) => void;
+}
+
+interface Category {
+  id: string | number;
+  nama_kategori: string;
 }
 
 export function EventCatalog({ onEventSelect }: EventCatalogProps) {
@@ -28,15 +57,24 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [events, setEvents] = useState<BackendEvent[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
-  const categories = [
-    "all",
-    "Technology",
-    "Marketing",
-    "Business",
-    "Design",
-    "Creative",
-  ];
+  // Fetch categories from database
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await apiFetch<Category[]>('/categories');
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Fetch events from backend
   useEffect(() => {
@@ -75,26 +113,30 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-screen-2xl mx-auto">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-12"
-          >
-            <span className="text-sm tracking-[0.3em] uppercase text-muted-foreground font-medium block mb-4">
-              DISCOVER
-            </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              All <span className="italic">Events</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-              Explore amazing events and find your next experience
-            </p>
-          </motion.div>
+    <div className="min-h-screen bg-background">
+      {/* Event Banner */}
+      <EventBanner />
+
+      <div className="py-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-screen-2xl mx-auto">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-12"
+            >
+              <span className="text-sm tracking-[0.3em] uppercase text-muted-foreground font-medium block mb-4">
+                TEMUKAN
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                Semua <span className="italic">Kegiatan</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
+                Jelajahi kegiatan menarik dan temukan pengalaman berikutnya
+              </p>
+            </motion.div>
 
           {/* Search & Filter Bar */}
           <motion.div
@@ -109,7 +151,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search events..."
+                  placeholder="Cari kegiatan..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 rounded-2xl border border-border bg-card focus:outline-none focus:border-foreground/30 transition-colors text-lg"
@@ -124,7 +166,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                 className="rounded-2xl px-8"
               >
                 <SlidersHorizontal className="w-5 h-5 mr-2" />
-                Filters
+                Filter
                 {(selectedCategory !== "all" || sortBy !== "nearest") && (
                   <span className="ml-2 w-2 h-2 rounded-full bg-primary" />
                 )}
@@ -146,29 +188,44 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                       {/* Category Filter */}
                       <div>
                         <label className="block text-sm font-medium mb-3">
-                          Category
+                          Kategori
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {categories.map((cat) => (
-                            <button
-                              key={cat}
-                              onClick={() => setSelectedCategory(cat)}
-                              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                                selectedCategory === cat
-                                  ? "bg-foreground text-background"
-                                  : "bg-muted hover:bg-muted/80"
-                              }`}
-                            >
-                              {cat === "all" ? "All Categories" : cat}
-                            </button>
-                          ))}
+                          <button
+                            key="all"
+                            onClick={() => setSelectedCategory("all")}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                              selectedCategory === "all"
+                                ? "bg-foreground text-background"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            Semua Kategori
+                          </button>
+                          {categoriesLoading ? (
+                            <span className="text-sm text-muted-foreground py-2">Loading...</span>
+                          ) : (
+                            categories.map((cat) => (
+                              <button
+                                key={cat.id}
+                                onClick={() => setSelectedCategory(String(cat.id))}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                  selectedCategory === String(cat.id)
+                                    ? "bg-foreground text-background"
+                                    : "bg-muted hover:bg-muted/80"
+                                }`}
+                              >
+                                {cat.nama_kategori}
+                              </button>
+                            ))
+                          )}
                         </div>
                       </div>
 
                       {/* Sort Filter */}
                       <div>
                         <label className="block text-sm font-medium mb-3">
-                          Sort By
+                          Urutkan Berdasarkan
                         </label>
                         <div className="flex flex-wrap gap-2">
                           <button
@@ -179,7 +236,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                                 : "bg-muted hover:bg-muted/80"
                             }`}
                           >
-                            Nearest First
+                            Terdekat
                           </button>
                           <button
                             onClick={() => setSortBy("furthest")}
@@ -189,7 +246,27 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                                 : "bg-muted hover:bg-muted/80"
                             }`}
                           >
-                            Furthest First
+                            Terjauh
+                          </button>
+                          <button
+                            onClick={() => setSortBy("cheapest")}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                              sortBy === "cheapest"
+                                ? "bg-foreground text-background"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            Termurah
+                          </button>
+                          <button
+                            onClick={() => setSortBy("expensive")}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                              sortBy === "expensive"
+                                ? "bg-foreground text-background"
+                                : "bg-muted hover:bg-muted/80"
+                            }`}
+                          >
+                            Termahal
                           </button>
                         </div>
                       </div>
@@ -200,6 +277,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                       <div className="mt-4 pt-4 border-t border-border">
                         <Button
                           onClick={() => {
+                            setSearchQuery("");
                             setSelectedCategory("all");
                             setSortBy("nearest");
                           }}
@@ -207,7 +285,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                           size="sm"
                         >
                           <X className="w-4 h-4 mr-2" />
-                          Clear Filters
+                          Hapus Filter
                         </Button>
                       </div>
                     )}
@@ -225,7 +303,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
             className="mb-6"
           >
             <p className="text-muted-foreground">
-              {loading ? "Loading..." : `${events.length} events found`}
+              {loading ? "Memuat..." : `${events.length} kegiatan ditemukan`}
             </p>
           </motion.div>
 
@@ -243,9 +321,9 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
               <div className="w-20 h-20 rounded-full bg-muted mx-auto mb-6 flex items-center justify-center">
                 <Search className="w-10 h-10 text-muted-foreground" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">No events found</h3>
+              <h3 className="text-2xl font-bold mb-2">Kegiatan tidak ditemukan</h3>
               <p className="text-muted-foreground mb-6">
-                Try adjusting your filters or search query
+                Coba sesuaikan filter atau cari dengan kata kunci lain
               </p>
               <Button
                 onClick={() => {
@@ -255,7 +333,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                 }}
                 variant="outline"
               >
-                Clear All Filters
+                Hapus Semua Filter
               </Button>
             </motion.div>
           ) : (
@@ -278,7 +356,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                         <Image
                           src={
-                            event.flyer ||
+                            getImageUrl(event.flyer) ||
                             `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop&seed=${event.id}`
                           }
                           alt={event.title}
@@ -355,8 +433,9 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
               })}
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
-  );
-}
+  ); 
+} 

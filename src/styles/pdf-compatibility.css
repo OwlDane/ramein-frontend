@@ -1,0 +1,182 @@
+/* PDF Compatibility CSS - Override modern color functions */
+
+/* Override TailwindCSS modern color functions for PDF generation */
+@media print {
+  ::placeholder {
+    color: rgba(107, 114, 128, 0.5) !important;
+  }
+}
+
+/* Global override for modern color functions */
+* {
+  /* Force safe color fallbacks */
+  --tw-placeholder-opacity: 0.5;
+}
+
+/* Specific overrides for problematic CSS functions */
+@supports not (color: lab(50% 20 -30)) {
+  * {
+    color: inherit !important;
+  }
+}
+
+@supports not (color: oklab(0.5 0.2 -0.3)) {
+  * {
+    color: inherit !important;
+  }
+}
+
+/* Global PDF-safe color overrides */
+.pdf-safe {
+    /* Override any color-mix functions */
+    color: inherit !important;
+}
+
+.pdf-safe ::placeholder {
+    color: rgba(107, 114, 128, 0.5) !important;
+}
+
+.pdf-safe [style*="color-mix"] {
+    color: #6b7280 !important;
+}
+
+.pdf-safe [style*="oklab"] {
+    color: #6b7280 !important;
+    background-color: #ffffff !important;
+}
+
+.pdf-safe [style*="lab("] {
+    color: #6b7280 !important;
+    background-color: #ffffff !important;
+}
+
+.pdf-safe [style*="lch("] {
+    color: #6b7280 !important;
+    background-color: #ffffff !important;
+}
+
+/* Ensure solid backgrounds for PDF */
+.pdf-safe .bg-gradient-to-r,
+.pdf-safe .bg-gradient-to-l,
+.pdf-safe .bg-gradient-to-t,
+.pdf-safe .bg-gradient-to-b,
+.pdf-safe [class*="gradient"] {
+    background: #f9fafb !important;
+    background-image: none !important;
+}
+
+/* Fix common TailwindCSS colors for PDF compatibility */
+.pdf-safe .text-green-600 {
+    color: #059669 !important;
+}
+
+.pdf-safe .bg-green-600 {
+    background-color: #059669 !important;
+}
+
+.pdf-safe .border-green-600 {
+    border-color: #059669 !important;
+}
+
+/* Fix button styling specifically */
+.pdf-safe button,
+.pdf-safe .btn,
+.pdf-safe [role="button"] {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+}
+
+.pdf-safe button:hover,
+.pdf-safe .btn:hover,
+.pdf-safe [role="button"]:hover {
+  background-color: #047857 !important;
+}
+
+.pdf-safe .text-gray-900 {
+    color: #111827 !important;
+}
+
+.pdf-safe .text-gray-800 {
+    color: #1f2937 !important;
+}
+
+.pdf-safe .text-gray-700 {
+    color: #374151 !important;
+}
+
+.pdf-safe .text-gray-600 {
+    color: #4b5563 !important;
+}
+
+.pdf-safe .text-gray-500 {
+    color: #6b7280 !important;
+}
+
+.pdf-safe .text-gray-400 {
+    color: #9ca3af !important;
+}
+
+.pdf-safe .bg-white {
+    background-color: #ffffff !important;
+}
+
+.pdf-safe .bg-gray-50 {
+    background-color: #f9fafb !important;
+}
+
+.pdf-safe .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+}
+
+.pdf-safe .bg-gray-200 {
+    background-color: #e5e7eb !important;
+}
+
+.pdf-safe .border-gray-200 {
+    border-color: #e5e7eb !important;
+}
+
+.pdf-safe .border-gray-300 {
+    border-color: #d1d5db !important;
+}
+
+/* Override any CSS custom properties that might use modern color functions */
+.pdf-safe * {
+  --tw-placeholder-color: rgba(107, 114, 128, 0.5) !important;
+}
+
+/* Force override for all modern color functions globally */
+html {
+  /* Override TailwindCSS placeholder color */
+  --tw-placeholder-opacity: 0.5 !important;
+}
+
+/* Aggressive override for problematic color functions */
+::placeholder {
+  color: rgba(107, 114, 128, 0.5) !important;
+}
+
+/* Override any element that might use lab/oklab */
+[style*="lab("],
+[style*="oklab("],
+[style*="lch("],
+[style*="oklch("],
+[style*="color-mix"] {
+  color: #6b7280 !important;
+  background-color: transparent !important;
+}
+
+/* Specific overrides for ticket elements */
+#e-ticket-content.pdf-safe {
+    background-color: #ffffff !important;
+}
+
+#e-ticket-content.pdf-safe * {
+    color: inherit !important;
+}
+
+#e-ticket-content.pdf-safe ::placeholder {
+    color: rgba(107, 114, 128, 0.5) !important;
+}

@@ -136,13 +136,31 @@ npm run test     # Unit tests
 
 ## 🌍 Deployment
 
-* **Vercel** (direkomendasikan)
-* **Docker**:
+### Railway Deployment (Recommended)
 
-  ```bash
-  docker build -t ramein-frontend .
-  docker run -p 3000:3000 ramein-frontend
-  ```
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and deploy
+railway login
+railway init
+railway up
+```
+
+See [RAILWAY_DEPLOYMENT.md](../RAILWAY_DEPLOYMENT.md) for detailed instructions.
+
+### Vercel (Alternative)
+
+* Deploy to Vercel for static hosting
+* Configure environment variables in Vercel dashboard
+
+### Docker (Manual)
+
+```bash
+docker build -t ramein-frontend .
+docker run -p 3000:3000 ramein-frontend
+```
 
 ---
 

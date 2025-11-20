@@ -33,6 +33,7 @@ interface ETicketProps {
 export function ETicket({ participant, user, onDownload, showActions = true }: ETicketProps) {
     const [qrCode, setQrCode] = useState<string>('');
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         generateQR();
@@ -41,6 +42,15 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
     const generateQR = async () => {
         try {
             setLoading(true);
+            setError(null);
+
+            // Check if tokenNumber exists
+            if (!participant.tokenNumber) {
+                setError('Token number not available');
+                setQrCode('');
+                return;
+            }
+
             const qrDataURL = await generateQRCode(participant.tokenNumber, {
                 width: 250,
                 margin: 2,
@@ -52,6 +62,8 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
             setQrCode(qrDataURL);
         } catch (error) {
             console.error('Failed to generate QR code:', error);
+            setError(error instanceof Error ? error.message : 'Failed to generate QR code');
+            setQrCode('');
         } finally {
             setLoading(false);
         }
@@ -117,7 +129,7 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
             transition={{ duration: 0.5 }}
             className="w-full max-w-2xl mx-auto"
         >
-            <Card id="e-ticket-content" className="border-2 border-border overflow-hidden">
+            <Card id="e-ticket-content" className="border-2 border-border overflow-hidden pdf-safe">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 p-6 border-b-2 border-dashed border-border">
                     <div className="flex items-center justify-between mb-4">
@@ -222,7 +234,13 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
                                 <div className="flex justify-center items-center h-64">
                                     <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
                                 </div>
-                            ) : (
+                            ) : error ? (
+                                <div className="flex justify-center items-center h-64">
+                                    <div className="text-center">
+                                        <p className="text-sm text-red-600 font-medium">{error}</p>
+                                    </div>
+                                </div>
+                            ) : qrCode ? (
                                 <div className="space-y-4">
                                     <div className="inline-block p-4 bg-white rounded-2xl shadow-lg">
                                         <img src={qrCode} alt="QR Code" className="w-64 h-64" />
@@ -243,6 +261,12 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
                                                 <Share2 className="w-4 h-4" />
                                             </Button>
                                         </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex justify-center items-center h-64">
+                                    <div className="text-center">
+                                        <p className="text-sm text-muted-foreground">QR code tidak tersedia</p>
                                     </div>
                                 </div>
                             )}

@@ -13,21 +13,21 @@ export function DreamsSection({ onViewEvents }: DreamsSectionProps) {
   const features = [
     {
       icon: Calendar,
-      title: "Diverse Events",
+      title: "Beragam Kegiatan",
       description:
-        "From workshops to conferences, find events that match your passion",
+        "Dari workshop hingga konferensi, temukan kegiatan yang sesuai passion Anda",
     },
     {
       icon: Users,
-      title: "Community",
+      title: "Komunitas",
       description:
-        "Connect with like-minded people and build lasting relationships",
+        "Terhubung dengan orang-orang yang berpikiran sama dan bangun hubungan yang langgeng",
     },
     {
       icon: Award,
-      title: "Certificates",
+      title: "Sertifikat",
       description:
-        "Get recognized for your participation with official certificates",
+        "Dapatkan pengakuan atas partisipasi Anda dengan sertifikat resmi",
     },
   ];
 
@@ -51,27 +51,27 @@ export function DreamsSection({ onViewEvents }: DreamsSectionProps) {
                 transition={{ duration: 0.6 }}
                 className="text-sm tracking-[0.3em] uppercase text-muted-foreground font-medium block mb-6"
               >
-                OUR MISSION
+                MISI KAMI
               </motion.span>
 
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Bringing Dreams to Life,{" "}
-                <span className="italic">One Event at a Time!</span>
+                Mewujudkan Impian,{" "}
+                <span className="italic">Satu Kegiatan dalam Satu Waktu!</span>
               </h2>
 
               <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                We&apos;re on a mission to revolutionize event management and
-                make quality education accessible to everyone. Whether
-                you&apos;re looking to learn, network, or celebrate, Ramein
-                connects you with events that matter.
+                Kami berkomitmen untuk merevolusi manajemen kegiatan dan
+                membuat pendidikan berkualitas dapat diakses oleh semua orang. Baik
+                Anda ingin belajar, berjaringan, atau merayakan, Ramein
+                menghubungkan Anda dengan kegiatan yang bermakna.
               </p>
 
               <Button
                 onClick={onViewEvents}
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 group"
+                className="bg-green-600 text-white hover:bg-green-700 group shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                Discover Events
+                Temukan Kegiatan
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </motion.div>
@@ -84,12 +84,13 @@ export function DreamsSection({ onViewEvents }: DreamsSectionProps) {
               transition={{ duration: 0.8 }}
               className="relative"
             >
-              <div className="aspect-square rounded-3xl bg-gradient-to-br from-muted to-accent overflow-hidden shadow-soft">
+              <div className="aspect-square rounded-3xl bg-gradient-to-br from-green-50 to-green-100 overflow-hidden shadow-soft border border-green-100">
                 <Image
                   src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&h=800&fit=crop"
                   alt="Event atmosphere"
                   fill
                   className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
 
@@ -103,7 +104,7 @@ export function DreamsSection({ onViewEvents }: DreamsSectionProps) {
               >
                 <div className="text-4xl font-bold mb-1">1000+</div>
                 <div className="text-sm text-muted-foreground">
-                  Events Hosted
+                  Kegiatan Terselenggara
                 </div>
               </motion.div>
             </motion.div>

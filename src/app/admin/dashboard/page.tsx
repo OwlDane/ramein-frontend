@@ -17,6 +17,7 @@ import {
   Settings,
   Banknote,
   FileText,
+  Images,
 } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminEventManagement } from "@/components/admin/AdminEventManagement";
@@ -24,6 +25,7 @@ import { AdminUserManagement } from "@/components/admin/AdminUserManagement";
 import { AdminCertificateManagementNew as AdminCertificateManagement } from "@/components/admin/AdminCertificateManagementNew";
 import { AdminPaymentManagement } from "@/components/admin/AdminPaymentManagement";
 import { AdminArticleManagement } from "@/components/admin/AdminArticleManagement";
+import { AdminGalleryManagement } from "@/components/admin/AdminGalleryManagement";
 
 interface AdminUser {
   id: string;
@@ -161,7 +163,7 @@ function AdminDashboardContent() {
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-primary" />
+              <BarChart3 className="w-8 h-8 text-primary" />
             </div>
             <div>
               <h1 className="text-xl font-bold">Ramein</h1>
@@ -178,35 +180,35 @@ function AdminDashboardContent() {
             </p>
             <Button
               variant={activeTab === "overview" ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-12"
               onClick={() => {
                 setActiveTab("overview");
                 setIsMobileMenuOpen(false);
               }}
             >
-              <BarChart3 className="w-4 h-4 mr-3" />
+              <BarChart3 className="w-6 h-6 mr-3" />
               Dashboard
             </Button>
             <Button
               variant={activeTab === "events" ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-12"
               onClick={() => {
                 setActiveTab("events");
                 setIsMobileMenuOpen(false);
               }}
             >
-              <Calendar className="w-4 h-4 mr-3" />
+              <Calendar className="w-6 h-6 mr-3" />
               Kegiatan
             </Button>
             <Button
               variant={activeTab === "users" ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-12"
               onClick={() => {
                 setActiveTab("users");
                 setIsMobileMenuOpen(false);
               }}
             >
-              <Users className="w-4 h-4 mr-3" />
+              <Users className="w-6 h-6 mr-3" />
               Pengguna
             </Button>
           </div>
@@ -217,46 +219,57 @@ function AdminDashboardContent() {
             </p>
             <Button
               variant={activeTab === "payments" ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-12"
               onClick={() => {
                 setActiveTab("payments");
                 setIsMobileMenuOpen(false);
               }}
             >
-              <Banknote className="w-4 h-4 mr-3" />
+              <Banknote className="w-6 h-6 mr-3" />
               Pembayaran
             </Button>
             <Button
               variant={activeTab === "certificates" ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-12"
               onClick={() => {
                 setActiveTab("certificates");
                 setIsMobileMenuOpen(false);
               }}
             >
-              <Award className="w-4 h-4 mr-3" />
+              <Award className="w-6 h-6 mr-3" />
               Sertifikat
             </Button>
             <Button
               variant={activeTab === "articles" ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-12"
               onClick={() => {
                 setActiveTab("articles");
                 setIsMobileMenuOpen(false);
               }}
             >
-              <FileText className="w-4 h-4 mr-3" />
+              <FileText className="w-6 h-6 mr-3" />
               Artikel
             </Button>
             <Button
+              variant={activeTab === "gallery" ? "secondary" : "ghost"}
+              className="w-full justify-start h-12"
+              onClick={() => {
+                setActiveTab("gallery");
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              <Images className="w-6 h-6 mr-3" />
+              Galeri
+            </Button>
+            <Button
               variant={activeTab === "settings" ? "secondary" : "ghost"}
-              className="w-full justify-start"
+              className="w-full justify-start h-12"
               onClick={() => {
                 setActiveTab("settings");
                 setIsMobileMenuOpen(false);
               }}
             >
-              <Settings className="w-4 h-4 mr-3" />
+              <Settings className="w-6 h-6 mr-3" />
               Pengaturan
             </Button>
           </div>
@@ -280,7 +293,7 @@ function AdminDashboardContent() {
 
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
             <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+              <Clock className="w-4 h-4" />
               <span className={sessionTimeLeft < 60 ? "text-destructive" : ""}>
                 {formatTime(sessionTimeLeft)}
               </span>
@@ -312,6 +325,7 @@ function AdminDashboardContent() {
                 {activeTab === "payments" && "Manajemen Pembayaran"}
                 {activeTab === "certificates" && "Manajemen Sertifikat"}
                 {activeTab === "articles" && "Manajemen Artikel"}
+                {activeTab === "gallery" && "Manajemen Galeri"}
                 {activeTab === "settings" && "Pengaturan"}
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground">
@@ -325,6 +339,8 @@ function AdminDashboardContent() {
                   "Generate dan kelola sertifikat"}
                 {activeTab === "articles" &&
                   "Kelola artikel dan konten blog"}
+                {activeTab === "gallery" &&
+                  "Kelola galeri dan dokumentasi kegiatan"}
                 {activeTab === "settings" &&
                   "Konfigurasi sistem dan pengaturan"}
               </p>
@@ -353,6 +369,7 @@ function AdminDashboardContent() {
           {activeTab === "articles" && (
             <AdminArticleManagement token={localStorage.getItem("ramein_admin_token") || ""} />
           )}
+          {activeTab === "gallery" && <AdminGalleryManagement />}
           {activeTab === "settings" && (
             <Card>
               <CardHeader>
