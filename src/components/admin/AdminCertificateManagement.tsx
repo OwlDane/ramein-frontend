@@ -159,7 +159,13 @@ export function AdminCertificateManagement() {
                 await fetchEventParticipants(selectedEvent);
             } else {
                 const errorData = await response.json();
-                setError(errorData.message || 'Gagal membuat sertifikat');
+                console.error('[Certificate] Generation failed:', {
+                    status: response.status,
+                    error: errorData,
+                    hasToken: !!token,
+                    tokenPrefix: token?.substring(0, 20)
+                });
+                setError(errorData.message || errorData.error || `Gagal membuat sertifikat (${response.status})`);
             }
         } catch (err) {
             console.error('Error generating certificate:', err);
