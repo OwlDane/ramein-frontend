@@ -48,7 +48,9 @@ interface TemplateSettings {
 export interface TemplateData {
     name: string;
     description: string;
-    backgroundImage: string | null;
+    category: string;
+    templateUrl: string;
+    thumbnailUrl: string;
     placeholders: PlaceholderConfig[];
     settings: TemplateSettings;
 }
@@ -215,29 +217,33 @@ export function CertificateTemplateEditor({ templateId, onSave, onCancel }: Cert
             return;
         }
 
+        if (!backgroundImage) {
+            setError('Background image harus diupload');
+            return;
+        }
+
         setIsSaving(true);
         setError(null);
 
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
             const templateData = {
                 name: templateName,
                 description: templateDescription,
-                backgroundImage: backgroundImage,
+                category: 'custom',
+                templateUrl: backgroundImage, // Base64 or URL
+                thumbnailUrl: backgroundImage, // Use same as template for now
                 placeholders: placeholders,
                 settings: settings
             };
 
             if (onSave) {
-                onSave(templateData);
+                await onSave(templateData);
             }
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
         } catch (err) {
-            setError('Gagal menyimpan template');
+            setError(err instanceof Error ? err.message : 'Gagal menyimpan template');
         } finally {
             setIsSaving(false);
         }

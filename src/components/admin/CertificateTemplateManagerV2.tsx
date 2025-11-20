@@ -102,6 +102,9 @@ export function CertificateTemplateManagerV2() {
                 ? `${API_BASE_URL}/certificate-templates/${editingTemplate}`
                 : `${API_BASE_URL}/certificate-templates`;
 
+            console.log('Saving template to:', url);
+            console.log('Template data:', templateData);
+
             const response = await fetch(url, {
                 method,
                 headers: {
@@ -111,13 +114,18 @@ export function CertificateTemplateManagerV2() {
                 body: JSON.stringify(templateData)
             });
 
+            const responseData = await response.json();
+            console.log('Response:', responseData);
+
             if (response.ok) {
                 toast.success(editingTemplate ? 'Template berhasil diupdate' : 'Template berhasil dibuat');
                 setShowEditor(false);
                 setEditingTemplate(null);
                 fetchTemplates();
             } else {
-                toast.error('Gagal menyimpan template');
+                const errorMsg = responseData.message || 'Gagal menyimpan template';
+                console.error('Save failed:', errorMsg);
+                toast.error(errorMsg);
             }
         } catch (error) {
             console.error('Error saving template:', error);

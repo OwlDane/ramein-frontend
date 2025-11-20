@@ -48,66 +48,67 @@ export function CertificateList({ userToken }: CertificateListProps) {
     const fetchCertificates = useCallback(async () => {
         try {
             setLoading(true);
-            // First get all participants, then filter those with certificates
-            const participants = await apiFetch<Array<{ 
-                id: string; 
-                eventId: string; 
-                certificate?: { 
-                    id: string; 
-                    certificateNumber?: string; 
-                    certificateUrl?: string; 
-                    verificationCode?: string; 
-                    isVerified?: boolean; 
-                    issuedAt?: string 
-                }; 
-                event: { 
-                    id: string; 
-                    title: string; 
+            console.log('[CertificateList] Fetching certificates...');
+            
+            // Use the correct endpoint for user certificates
+            const certs = await apiFetch<Array<{
+                id: string;
+                certificateNumber: string;
+                certificateUrl: string;
+                verificationCode: string;
+                issuedAt: string;
+                revokedAt?: string | null;
+                participantId: string;
+                eventId: string;
+                participant: {
+                    id: string;
+                    userId: string;
+                    user?: {
+                        name: string;
+                        email: string;
+                    };
+                };
+                event: {
+                    id: string;
+                    title: string;
                     description?: string;
-                    date: string; 
+                    date: string;
                     time?: string;
                     location: string;
                     flyer?: string;
                     category?: string;
-                }; 
-                attendedAt?: string 
-            }>>('/participants/my-events', {
+                };
+            }>>('/participants/my-certificates', {
                 token: userToken
             });
             
-            // Filter participants who have certificates
-            const participantsWithCertificates = participants.filter(p => p.certificate);
+            console.log('[CertificateList] Received certificates:', certs.length);
             
-            // Transform to certificate format with proper null checks
-            const certs: Certificate[] = participantsWithCertificates.map(p => {
-                // Since we filtered above, we know p.certificate exists, but TypeScript doesn't
-                const cert = p.certificate!;
-                
-                return {
-                    id: cert.id,
-                    participantId: p.id,
-                    eventId: p.eventId,
-                    certificateNumber: cert.certificateNumber || cert.id,
-                    certificateUrl: cert.certificateUrl || '', // Provide fallback
-                    verificationCode: cert.verificationCode || `CERT-${p.eventId.slice(0, 8).toUpperCase()}`,
-                    isVerified: cert.isVerified ?? true,
-                    issuedAt: new Date(cert.issuedAt || p.attendedAt || new Date()),
-                    event: {
-                        id: p.event.id,
-                        title: p.event.title,
-                        description: p.event.description || '',
-                        date: p.event.date,
-                        time: p.event.time || '00:00',
-                        location: p.event.location,
-                        flyer: p.event.flyer,
-                        category: p.event.category
-                    }
-                };
-            });
+            // Transform to Certificate format
+            const certificates: Certificate[] = certs.map(cert => ({
+                id: cert.id,
+                participantId: cert.participantId,
+                eventId: cert.eventId,
+                certificateNumber: cert.certificateNumber,
+                certificateUrl: cert.certificateUrl,
+                verificationCode: cert.verificationCode,
+                isVerified: !cert.revokedAt, // Not revoked = verified
+                issuedAt: new Date(cert.issuedAt),
+                event: {
+                    id: cert.event.id,
+                    title: cert.event.title,
+                    description: cert.event.description || '',
+                    date: cert.event.date,
+                    time: cert.event.time || '00:00',
+                    location: cert.event.location,
+                    flyer: cert.event.flyer,
+                    category: cert.event.category
+                }
+            }));
             
-            setCertificates(certs);
+            setCertificates(certificates);
         } catch (err: unknown) {
-            console.error('Failed to fetch certificates:', err);
+            console.error('[CertificateList] Failed to fetch certificates:', err);
             const errorMessage = err instanceof Error ? err.message : 'Gagal memuat daftar sertifikat';
             setError(errorMessage);
         } finally {
@@ -154,10 +155,39 @@ export function CertificateList({ userToken }: CertificateListProps) {
 
     const handleDownloadCertificate = async (certificateUrl: string, eventTitle: string) => {
         try {
-            // In a real app, this would trigger actual download
-            toast.success(`Download sertifikat untuk event "${eventTitle}"`);
-            console.log('Downloading certificate from:', certificateUrl);
-        } catch {
+            // Get base URL without /api suffix
+            const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+            const fullUrl = `${apiBaseUrl}${certificateUrl}`;
+            
+            console.log('Downloading certificate from:', fullUrl);
+            toast.loading('Mengunduh sertifikat...');
+            
+            // Fetch the PDF file
+            const response = await fetch(fullUrl);
+            if (!response.ok) {
+                throw new Error('Failed to download certificate');
+            }
+            
+            // Convert to blob
+            const blob = await response.blob();
+            
+            // Create blob URL and trigger download
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${eventTitle.replace(/[^a-z0-9]/gi, '_')}_certificate.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up blob URL
+            window.URL.revokeObjectURL(blobUrl);
+            
+            toast.dismiss();
+            toast.success(`Sertifikat "${eventTitle}" berhasil diunduh!`);
+        } catch (error) {
+            console.error('Download error:', error);
+            toast.dismiss();
             toast.error('Gagal mengunduh sertifikat');
         }
     };
@@ -390,7 +420,12 @@ export function CertificateList({ userToken }: CertificateListProps) {
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => window.open(certificate.certificateUrl, '_blank')}
+                                                    onClick={() => {
+                                                        // Get base URL without /api suffix
+                                                        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+                                                        const fullUrl = `${apiBaseUrl}${certificate.certificateUrl}`;
+                                                        window.open(fullUrl, '_blank');
+                                                    }}
                                                 >
                                                     <ExternalLink className="w-4 h-4 mr-2" />
                                                     Lihat Online
