@@ -23,7 +23,7 @@ export function Footer() {
     };
   }, [showPrivacy, showTerms, showFaq]);
 
-  const topNavLinks = [
+  const _topNavLinks = [ // Reserved for future use
     { name: "Beranda", href: "/" },
     { name: "Kegiatan", href: "/events" },
     { name: "Contact", href: "/contact" },

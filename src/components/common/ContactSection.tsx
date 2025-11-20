@@ -22,7 +22,8 @@ export function ContactSection() {
             await new Promise(resolve => setTimeout(resolve, 1000));
             alert('Pesan berhasil dikirim! Kami akan membalas dalam 24 jam.');
             setFormData({ name: '', email: '', message: '' });
-        } catch (error) {
+        } catch {
+            console.error('Failed to send message');
             alert('Terjadi kesalahan. Silakan coba lagi.');
         } finally {
             setIsSubmitting(false);

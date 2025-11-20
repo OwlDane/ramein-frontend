@@ -12,13 +12,8 @@ interface HeroProps {
   onViewEvents: () => void;
 }
 
-interface CategoryImage {
-  category: string;
-  image: string;
-}
-
 export function Hero({ onViewEvents }: HeroProps) {
-  const [events, setEvents] = useState<BackendEvent[]>([]);
+  const [, setEvents] = useState<BackendEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,15 +24,14 @@ export function Hero({ onViewEvents }: HeroProps) {
         const response = await apiFetch<{ events: BackendEvent[] }>(
           '/events?limit=6&status=PUBLISHED'
         );
+        setEvents(response.events);
         
         if (isMounted) {
-          setEvents(response.events || []);
           setLoading(false);
         }
       } catch (error) {
         console.error('Failed to fetch events:', error);
         if (isMounted) {
-          setEvents([]);
           setLoading(false);
         }
       }

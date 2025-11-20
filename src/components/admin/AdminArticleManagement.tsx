@@ -24,6 +24,7 @@ export function AdminArticleManagement({ token }: AdminArticleManagementProps) {
     useEffect(() => {
         fetchCategories();
         fetchArticles();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [statusFilter, categoryFilter]);
 
     const fetchCategories = async () => {
@@ -326,15 +327,57 @@ function ArticleFormModal({
         tags: article?.tags?.join(', ') || '',
         isPublished: article?.isPublished || false,
     });
+    const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+    const [coverImagePreview, setCoverImagePreview] = useState<string>(article?.coverImage || '');
+    const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file');
     const [saving, setSaving] = useState(false);
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('File harus berupa gambar (PNG, JPG, JPEG, WebP)');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ukuran file maksimal 5MB');
+                return;
+            }
+
+            setCoverImageFile(file);
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setCoverImagePreview(event.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
 
         try {
+            let finalCoverImage = formData.coverImage;
+
+            // If file is uploaded, convert to base64 or upload to server
+            if (coverImageFile && uploadMethod === 'file') {
+                // For now, use base64 (in production, upload to S3/storage)
+                const reader = new FileReader();
+                finalCoverImage = await new Promise<string>((resolve) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.readAsDataURL(coverImageFile);
+                });
+            }
+
             const data = {
                 ...formData,
+                coverImage: finalCoverImage,
                 tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
             };
 
@@ -424,14 +467,90 @@ function ArticleFormModal({
 
                     {/* Cover Image */}
                     <div>
-                        <label className="block text-sm font-medium mb-2">Cover Image URL</label>
-                        <input
-                            type="url"
-                            value={formData.coverImage}
-                            onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
-                            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:border-foreground/30"
-                            placeholder="https://example.com/image.jpg"
-                        />
+                        <label className="block text-sm font-medium mb-2">Cover Image</label>
+                        
+                        {/* Upload Method Tabs */}
+                        <div className="flex gap-2 mb-3">
+                            <button
+                                type="button"
+                                onClick={() => setUploadMethod('file')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                    uploadMethod === 'file'
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                }`}
+                            >
+                                📁 Upload File
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setUploadMethod('url')}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                    uploadMethod === 'url'
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                }`}
+                            >
+                                🔗 URL (Unsplash)
+                            </button>
+                        </div>
+
+                        {/* File Upload */}
+                        {uploadMethod === 'file' && (
+                            <div className="space-y-3">
+                                <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                                    onChange={handleFileUpload}
+                                    className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:border-foreground/30 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-foreground file:text-background hover:file:opacity-90"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Format: PNG, JPG, JPEG, WebP • Max: 5MB
+                                </p>
+                            </div>
+                        )}
+
+                        {/* URL Input */}
+                        {uploadMethod === 'url' && (
+                            <div className="space-y-3">
+                                <input
+                                    type="url"
+                                    value={formData.coverImage}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, coverImage: e.target.value });
+                                        setCoverImagePreview(e.target.value);
+                                    }}
+                                    className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:border-foreground/30"
+                                    placeholder="https://images.unsplash.com/photo-..."
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Paste URL dari Unsplash atau sumber lain
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Image Preview */}
+                        {coverImagePreview && (
+                            <div className="mt-3 relative">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={coverImagePreview}
+                                    alt="Cover preview"
+                                    className="w-full h-48 object-cover rounded-lg border border-border"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setCoverImagePreview('');
+                                        setCoverImageFile(null);
+                                        setFormData({ ...formData, coverImage: '' });
+                                    }}
+                                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Category */}

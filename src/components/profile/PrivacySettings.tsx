@@ -24,9 +24,9 @@ export function PrivacySettings({ userToken }: PrivacySettingsProps) {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Privacy Settings State
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [profileVisibility, setProfileVisibility] = useState('public');
+  const [_twoFactorEnabled, _setTwoFactorEnabled] = useState(false); // Reserved for future 2FA feature
+  const [_emailNotifications, _setEmailNotifications] = useState(true); // Reserved for notification settings
+  const [_profileVisibility, _setProfileVisibility] = useState('public'); // Reserved for privacy controls
 
   const validatePassword = (password: string): { valid: boolean; message: string } => {
     if (password.length < 8) {

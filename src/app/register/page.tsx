@@ -24,7 +24,7 @@ function RegisterPageContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [emailPreferences, setEmailPreferences] = useState(true);
+  const [emailPreferences] = useState(true); // setEmailPreferences reserved for future use
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Slide data

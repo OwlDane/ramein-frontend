@@ -721,6 +721,7 @@ export function AdminEventManagement() {
                                         <label htmlFor="certificateFile" className="cursor-pointer block">
                                             {certificatePreview ? (
                                                 <div className="space-y-2">
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img src={certificatePreview} alt="Certificate preview" className="w-full h-32 object-cover rounded" />
                                                     <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
                                                 </div>
@@ -1213,6 +1214,7 @@ export function AdminEventManagement() {
                                     <label htmlFor="edit-flyerFile" className="cursor-pointer block">
                                         {flyerPreview ? (
                                             <div className="space-y-2">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img src={flyerPreview} alt="Flyer preview" className="w-full h-32 object-cover rounded" />
                                                 <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
                                             </div>
@@ -1252,6 +1254,7 @@ export function AdminEventManagement() {
                                     <label htmlFor="edit-certificateFile" className="cursor-pointer block">
                                         {certificatePreview ? (
                                             <div className="space-y-2">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img src={certificatePreview} alt="Certificate preview" className="w-full h-32 object-cover rounded" />
                                                 <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
                                             </div>

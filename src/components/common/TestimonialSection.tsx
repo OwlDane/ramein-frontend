@@ -23,7 +23,7 @@ export default function TestimonialSection() {
     const containerRef = useRef<HTMLDivElement>(null)
     const [isVisible, setIsVisible] = useState(false)
     const [testimonials, setTestimonials] = useState<Testimonial[]>([])
-    const [loading, setLoading] = useState(true)
+    const [, setLoading] = useState(true); // loading state managed internally
 
     const { scrollYProgress } = useScroll({
         target: containerRef,

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { API_BASE_URL } from '@/lib/api';
 import { useRouter, useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// Card components imported but used in child components
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -26,6 +26,7 @@ import { AdminCertificateManagementNew as AdminCertificateManagement } from "@/c
 import { AdminPaymentManagement } from "@/components/admin/AdminPaymentManagement";
 import { AdminArticleManagement } from "@/components/admin/AdminArticleManagement";
 import { AdminGalleryManagement } from "@/components/admin/AdminGalleryManagement";
+import { AdminSettings } from "@/components/admin/AdminSettings";
 
 interface AdminUser {
   id: string;
@@ -370,18 +371,7 @@ function AdminDashboardContent() {
             <AdminArticleManagement token={localStorage.getItem("ramein_admin_token") || ""} />
           )}
           {activeTab === "gallery" && <AdminGalleryManagement />}
-          {activeTab === "settings" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Pengaturan Admin</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Pengaturan admin akan tersedia di versi selanjutnya.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {activeTab === "settings" && <AdminSettings />}
         </div>
       </main>
     </div>

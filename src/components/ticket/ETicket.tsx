@@ -67,6 +67,7 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
 
     useEffect(() => {
         generateQR();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [participant.tokenNumber]);
 
     const formatDate = (dateString: string) => {
@@ -243,6 +244,7 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
                             ) : qrCode ? (
                                 <div className="space-y-4">
                                     <div className="inline-block p-4 bg-white rounded-2xl shadow-lg">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={qrCode} alt="QR Code" className="w-64 h-64" />
                                     </div>
 

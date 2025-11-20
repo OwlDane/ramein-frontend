@@ -6,7 +6,7 @@ interface WishlistProps {
   userToken: string;
 }
 
-export function Wishlist({ userToken }: WishlistProps) {
+export function Wishlist({ }: WishlistProps) {
   return (
     <div className="space-y-6">
       <div>

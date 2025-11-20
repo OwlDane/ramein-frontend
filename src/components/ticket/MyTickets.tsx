@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Clock, MapPin, Ticket, Eye, Download, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Ticket, Eye, AlertCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { toast } from 'react-hot-toast';
 import { ETicket } from './ETicket';
@@ -48,6 +48,7 @@ export function MyTickets({ userToken }: MyTicketsProps) {
     useEffect(() => {
         fetchTickets();
         fetchUserProfile();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchTickets = async () => {
@@ -150,7 +151,7 @@ export function MyTickets({ userToken }: MyTicketsProps) {
                 
                 // Add logo image
                 pdf.addImage(logoBase64, 'PNG', margin, 15, 20, 20);
-            } catch (error) {
+            } catch {
                 console.log('Logo not found, using fallback');
                 // Fallback: Logo circle
                 pdf.setFillColor(5, 150, 105); // green-600
@@ -192,7 +193,7 @@ export function MyTickets({ userToken }: MyTicketsProps) {
                 pdf.setFontSize(10);
                 pdf.setTextColor(17, 24, 39);
                 pdf.text('SCAN QR CODE', qrX + (qrSize/2), qrY + qrSize + 5, { align: 'center' });
-            } catch (error) {
+            } catch {
                 console.log('QR Code generation failed, using placeholder');
                 // Fallback: QR placeholder (larger)
                 const qrSize = 40;

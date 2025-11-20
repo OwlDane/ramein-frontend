@@ -447,18 +447,20 @@ export async function getTransactionStatistics(
     throw new Error(data.message || "Failed to get transaction statistics");
   }
 
+  console.log('💰 Transaction Statistics from API:', data.data);
   return data.data;
 }
 
 /**
  * Format currency to Indonesian Rupiah
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | undefined | null): string {
+  const safeAmount = amount || 0;
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
-  }).format(amount);
+  }).format(safeAmount);
 }
 
 /**

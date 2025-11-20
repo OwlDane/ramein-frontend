@@ -89,6 +89,7 @@ export function UserDashboardNew({ user: initialUser }: UserDashboardProps) {
       setUserToken(token);
       fetchUserProfile(token);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userToken]);
 
   const fetchUserProfile = useCallback(async (token: string) => {

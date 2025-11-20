@@ -1,39 +1,54 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
     Award,
     Download,
     Search,
-    Plus,
     CheckCircle,
     Clock,
     Eye,
-    Users
+    Users,
+    AlertCircle,
+    FileCheck,
+    Loader2
 } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/api';
+import { motion } from 'framer-motion';
 
 interface Event {
     id: string;
     title: string;
     date: string;
+    time: string;
     location: string;
-    status: 'active' | 'completed' | 'upcoming';
+    category: string;
 }
 
 interface Participant {
     id: string;
-    name: string;
-    email: string;
-    attendance: 'present' | 'absent' | 'pending';
-    certificateGenerated: boolean;
-    certificateNumber?: string;
-    certificateUrl?: string;
+    userId: string;
+    eventId: string;
+    hasAttended: boolean;
+    attendedAt: string | null;
+    user: {
+        id: string;
+        name: string;
+        email: string;
+    };
+    certificate?: {
+        id: string;
+        certificateNumber: string;
+        certificateUrl: string;
+        issuedAt: string;
+    };
 }
 
-// bikin type khusus buat filter
 type FilterStatus = 'all' | 'generated' | 'pending';
 
 export function AdminCertificateManagement() {
@@ -41,72 +56,95 @@ export function AdminCertificateManagement() {
     const [selectedEvent, setSelectedEvent] = useState<string>('');
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGenerating, setIsGenerating] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
-    // Mock data - replace with actual API calls
+    // Fetch completed events
     useEffect(() => {
-        setEvents([
-            {
-                id: '1',
-                title: 'Workshop Digital Marketing 2024',
-                date: '2024-01-15',
-                location: 'Jakarta Convention Center',
-                status: 'completed'
-            },
-            {
-                id: '2',
-                title: 'Seminar Teknologi AI',
-                date: '2024-02-20',
-                location: 'Bandung Tech Hub',
-                status: 'completed'
-            },
-            {
-                id: '3',
-                title: 'Pelatihan React Development',
-                date: '2024-03-10',
-                location: 'Online',
-                status: 'upcoming'
-            }
-        ]);
+        fetchCompletedEvents();
+    }, []);
 
+    // Fetch participants when event is selected
+    useEffect(() => {
         if (selectedEvent) {
-            setParticipants([
-                {
-                    id: '1',
-                    name: 'John Doe',
-                    email: 'john@example.com',
-                    attendance: 'present',
-                    certificateGenerated: true,
-                    certificateNumber: 'CERT-2024-A1B2C3D4',
-                    certificateUrl: '/certificates/cert-1.pdf'
-                },
-                {
-                    id: '2',
-                    name: 'Jane Smith',
-                    email: 'jane@example.com',
-                    attendance: 'present',
-                    certificateGenerated: false
-                },
-                {
-                    id: '3',
-                    name: 'Bob Johnson',
-                    email: 'bob@example.com',
-                    attendance: 'absent',
-                    certificateGenerated: false
-                }
-            ]);
+            fetchEventParticipants(selectedEvent);
         }
     }, [selectedEvent]);
 
-    const handleGenerateCertificate = async (participantId: string) => {
+    const fetchCompletedEvents = async () => {
         setIsLoading(true);
+        setError(null);
         try {
-            const response = await fetch(`/api/certificates/generate`, {
+            const token = localStorage.getItem('ramein_admin_token');
+            const response = await fetch(`${API_BASE_URL}/admin/events?status=completed`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Filter only past events
+                const completedEvents = data.events.filter((event: Event) => {
+                    const eventDate = new Date(event.date);
+                    return eventDate < new Date();
+                });
+                setEvents(completedEvents);
+            } else {
+                setError('Gagal memuat daftar kegiatan');
+            }
+        } catch (err) {
+            console.error('Error fetching events:', err);
+            setError('Terjadi kesalahan saat memuat data');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const fetchEventParticipants = async (eventId: string) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('ramein_admin_token');
+            const response = await fetch(`${API_BASE_URL}/admin/events/${eventId}/participants`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Only show participants who attended
+                const attendedParticipants = data.participants.filter(
+                    (p: Participant) => p.hasAttended
+                );
+                setParticipants(attendedParticipants);
+            } else {
+                setError('Gagal memuat daftar peserta');
+            }
+        } catch (err) {
+            console.error('Error fetching participants:', err);
+            setError('Terjadi kesalahan saat memuat data peserta');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGenerateCertificate = async (participantId: string) => {
+        setIsGenerating(participantId);
+        setError(null);
+        setSuccess(null);
+        
+        try {
+            const token = localStorage.getItem('ramein_admin_token');
+            const response = await fetch(`${API_BASE_URL}/certificates/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('ramein_admin_token')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     participantId,
@@ -115,56 +153,120 @@ export function AdminCertificateManagement() {
             });
 
             if (response.ok) {
-                const updatedParticipants = participants.map(p =>
-                    p.id === participantId
-                        ? { ...p, certificateGenerated: true, certificateNumber: 'CERT-2024-NEW' }
-                        : p
-                );
-                setParticipants(updatedParticipants);
+                const data = await response.json();
+                setSuccess(`Sertifikat berhasil dibuat: ${data.certificateNumber}`);
+                // Refresh participants to show updated certificate
+                await fetchEventParticipants(selectedEvent);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Gagal membuat sertifikat');
             }
-        } catch (error) {
-            console.error('Error generating certificate:', error);
+        } catch (err) {
+            console.error('Error generating certificate:', err);
+            setError('Terjadi kesalahan saat membuat sertifikat');
         } finally {
-            setIsLoading(false);
+            setIsGenerating(null);
         }
     };
 
     const handleBulkGenerate = async () => {
-        const eligibleParticipants = participants.filter(p =>
-            p.attendance === 'present' && !p.certificateGenerated
+        const eligibleParticipants = participants.filter(p => 
+            p.hasAttended && !p.certificate
         );
 
+        if (eligibleParticipants.length === 0) {
+            setError('Tidak ada peserta yang memenuhi syarat untuk generate sertifikat');
+            return;
+        }
+
         setIsLoading(true);
+        setError(null);
+        setSuccess(null);
+
         try {
-            for (const participant of eligibleParticipants) {
-                await handleGenerateCertificate(participant.id);
+            const token = localStorage.getItem('ramein_admin_token');
+            const response = await fetch(`${API_BASE_URL}/certificates/generate-bulk`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    eventId: selectedEvent,
+                    participantIds: eligibleParticipants.map(p => p.id)
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setSuccess(`Berhasil membuat ${data.generated} sertifikat`);
+                // Refresh participants
+                await fetchEventParticipants(selectedEvent);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Gagal membuat sertifikat massal');
             }
-        } catch (error) {
-            console.error('Error bulk generating certificates:', error);
+        } catch (err) {
+            console.error('Error bulk generating certificates:', err);
+            setError('Terjadi kesalahan saat membuat sertifikat massal');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const filteredParticipants = participants.filter(participant => {
-        const matchesSearch =
-            participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            participant.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const handleDownloadCertificate = (certificateUrl: string, participantName: string) => {
+        const link = document.createElement('a');
+        link.href = certificateUrl;
+        link.download = `Sertifikat_${participantName.replace(/\s+/g, '_')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
-        const matchesFilter =
+    const filteredParticipants = participants.filter(participant => {
+        const matchesSearch = 
+            participant.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            participant.user.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesFilter = 
             filterStatus === 'all' ||
-            (filterStatus === 'generated' && participant.certificateGenerated) ||
-            (filterStatus === 'pending' && !participant.certificateGenerated && participant.attendance === 'present');
+            (filterStatus === 'generated' && participant.certificate) ||
+            (filterStatus === 'pending' && !participant.certificate);
 
         return matchesSearch && matchesFilter;
     });
 
-    const eligibleCount = participants.filter(p =>
-        p.attendance === 'present' && !p.certificateGenerated
-    ).length;
+    const stats = {
+        total: participants.length,
+        generated: participants.filter(p => p.certificate).length,
+        pending: participants.filter(p => !p.certificate).length
+    };
 
     return (
         <div className="space-y-6">
+            {/* Header */}
+            <div>
+                <h3 className="text-lg font-semibold">Generate Sertifikat</h3>
+                <p className="text-sm text-muted-foreground">
+                    Pilih kegiatan dan generate sertifikat untuk peserta yang hadir
+                </p>
+            </div>
+
+            {/* Alerts */}
+            {error && (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
+
+            {success && (
+                <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">{success}</AlertDescription>
+                </Alert>
+            )}
+
             {/* Event Selection */}
             <Card>
                 <CardHeader>
@@ -172,228 +274,229 @@ export function AdminCertificateManagement() {
                         <Award className="w-5 h-5" />
                         Pilih Event untuk Generate Sertifikat
                     </CardTitle>
+                    <CardDescription>
+                        Hanya menampilkan kegiatan yang sudah selesai
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {events.map((event) => (
-                            <Card
-                                key={event.id}
-                                className={`cursor-pointer transition-all hover:shadow-md ${
-                                    selectedEvent === event.id ? 'ring-2 ring-primary' : ''
-                                }`}
-                                onClick={() => setSelectedEvent(event.id)}
-                            >
-                                <CardContent className="p-4">
-                                    <div className="flex items-start justify-between mb-2">
-                                        <h3 className="font-semibold text-sm">{event.title}</h3>
-                                        <Badge variant={event.status === 'completed' ? 'default' : 'secondary'}>
-                                            {event.status}
+                    {isLoading && !selectedEvent ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                            <span className="ml-2">Memuat kegiatan...</span>
+                        </div>
+                    ) : events.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <Award className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                            <p>Belum ada kegiatan yang selesai</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {events.map((event) => (
+                                <motion.div
+                                    key={event.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                                        selectedEvent === event.id
+                                            ? 'border-primary bg-primary/5'
+                                            : 'border-border hover:border-primary/50'
+                                    }`}
+                                    onClick={() => setSelectedEvent(event.id)}
+                                >
+                                    <h4 className="font-semibold mb-2 line-clamp-2">{event.title}</h4>
+                                    <div className="space-y-1 text-sm text-muted-foreground">
+                                        <p className="flex items-center gap-2">
+                                            <Clock className="w-4 h-4" />
+                                            {new Date(event.date).toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'long',
+                                                year: 'numeric'
+                                            })}
+                                        </p>
+                                        <p className="line-clamp-1">{event.location}</p>
+                                        <Badge variant="secondary" className="mt-2">
+                                            {event.category}
                                         </Badge>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mb-1">{event.date}</p>
-                                    <p className="text-xs text-muted-foreground">{event.location}</p>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
+            {/* Participants List */}
             {selectedEvent && (
-                <>
-                    {/* Bulk Actions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Generate Sertifikat</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">
-                                        {eligibleCount} peserta yang hadir belum memiliki sertifikat
-                                    </p>
-                                </div>
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Users className="w-5 h-5" />
+                                    Daftar Peserta
+                                </CardTitle>
+                                <CardDescription>
+                                    Peserta yang hadir dan memenuhi syarat sertifikat
+                                </CardDescription>
+                            </div>
+                            <Button
+                                onClick={handleBulkGenerate}
+                                disabled={isLoading || stats.pending === 0}
+                                className="whitespace-nowrap"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Generating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FileCheck className="w-4 h-4 mr-2" />
+                                        Generate Semua ({stats.pending})
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="p-4 bg-muted rounded-lg">
+                                <p className="text-sm text-muted-foreground">Total Peserta</p>
+                                <p className="text-2xl font-bold">{stats.total}</p>
+                            </div>
+                            <div className="p-4 bg-green-50 rounded-lg">
+                                <p className="text-sm text-green-700">Sudah Generate</p>
+                                <p className="text-2xl font-bold text-green-700">{stats.generated}</p>
+                            </div>
+                            <div className="p-4 bg-orange-50 rounded-lg">
+                                <p className="text-sm text-orange-700">Belum Generate</p>
+                                <p className="text-2xl font-bold text-orange-700">{stats.pending}</p>
+                            </div>
+                        </div>
+
+                        {/* Filters */}
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Cari peserta..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                            <div className="flex gap-2">
                                 <Button
-                                    onClick={handleBulkGenerate}
-                                    disabled={eligibleCount === 0 || isLoading}
-                                    className="flex items-center gap-2"
+                                    variant={filterStatus === 'all' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setFilterStatus('all')}
                                 >
-                                    <Plus className="w-4 h-4" />
-                                    Generate Semua ({eligibleCount})
+                                    Semua
+                                </Button>
+                                <Button
+                                    variant={filterStatus === 'generated' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setFilterStatus('generated')}
+                                >
+                                    Sudah Generate
+                                </Button>
+                                <Button
+                                    variant={filterStatus === 'pending' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setFilterStatus('pending')}
+                                >
+                                    Belum Generate
                                 </Button>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
 
-                    {/* Search and Filter */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Daftar Peserta</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex gap-4 mb-4">
-                                <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                                    <input
-                                        type="text"
-                                        placeholder="Cari peserta..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border rounded-md"
-                                    />
-                                </div>
-                                <select
-                                    value={filterStatus}
-                                    onChange={(e) =>
-                                        setFilterStatus(e.target.value as FilterStatus)
-                                    }
-                                    className="px-4 py-2 border rounded-md"
-                                >
-                                    <option value="all">Semua Status</option>
-                                    <option value="generated">Sudah Generate</option>
-                                    <option value="pending">Belum Generate</option>
-                                </select>
+                        {/* Participants Table */}
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                                <span className="ml-2">Memuat peserta...</span>
                             </div>
-
-                            {/* Participants List */}
+                        ) : filteredParticipants.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                <p>Tidak ada peserta yang ditemukan</p>
+                            </div>
+                        ) : (
                             <div className="space-y-2">
                                 {filteredParticipants.map((participant) => (
-                                    <div
+                                    <motion.div
                                         key={participant.id}
-                                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                                     >
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-3">
-                                                <div>
-                                                    <h4 className="font-medium">{participant.name}</h4>
-                                                    <p className="text-sm text-muted-foreground">{participant.email}</p>
-                                                </div>
-                                                <Badge
-                                                    variant={
-                                                        participant.attendance === 'present'
-                                                            ? 'default'
-                                                            : participant.attendance === 'absent'
-                                                            ? 'destructive'
-                                                            : 'secondary'
-                                                    }
-                                                >
-                                                    {participant.attendance === 'present'
-                                                        ? 'Hadir'
-                                                        : participant.attendance === 'absent'
-                                                        ? 'Tidak Hadir'
-                                                        : 'Pending'}
-                                                </Badge>
-                                            </div>
-                                            {participant.certificateNumber && (
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    No. Sertifikat: {participant.certificateNumber}
+                                            <h4 className="font-semibold">{participant.user.name}</h4>
+                                            <p className="text-sm text-muted-foreground">{participant.user.email}</p>
+                                            {participant.certificate && (
+                                                <p className="text-xs text-green-600 mt-1">
+                                                    No. Sertifikat: {participant.certificate.certificateNumber}
                                                 </p>
                                             )}
                                         </div>
-
                                         <div className="flex items-center gap-2">
-                                            {participant.certificateGenerated ? (
+                                            {participant.certificate ? (
                                                 <>
-                                                    <Button size="sm" variant="outline">
-                                                        <Eye className="w-4 h-4 mr-2" />
-                                                        Lihat
-                                                    </Button>
-                                                    <Button size="sm">
-                                                        <Download className="w-4 h-4 mr-2" />
+                                                    <Badge variant="default" className="bg-green-500">
+                                                        <CheckCircle className="w-3 h-3 mr-1" />
+                                                        Generated
+                                                    </Badge>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => handleDownloadCertificate(
+                                                            participant.certificate!.certificateUrl,
+                                                            participant.user.name
+                                                        )}
+                                                    >
+                                                        <Download className="w-4 h-4 mr-1" />
                                                         Download
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => window.open(participant.certificate!.certificateUrl, '_blank')}
+                                                    >
+                                                        <Eye className="w-4 h-4" />
                                                     </Button>
                                                 </>
                                             ) : (
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => handleGenerateCertificate(participant.id)}
-                                                    disabled={participant.attendance !== 'present' || isLoading}
-                                                >
-                                                    <Plus className="w-4 h-4 mr-2" />
-                                                    Generate
-                                                </Button>
+                                                <>
+                                                    <Badge variant="secondary">
+                                                        <Clock className="w-3 h-3 mr-1" />
+                                                        Pending
+                                                    </Badge>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => handleGenerateCertificate(participant.id)}
+                                                        disabled={isGenerating === participant.id}
+                                                    >
+                                                        {isGenerating === participant.id ? (
+                                                            <>
+                                                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                                                Generating...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Award className="w-4 h-4 mr-1" />
+                                                                Generate
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                </>
                                             )}
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
                             </div>
-
-                            {filteredParticipants.length === 0 && (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    <Award className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                    <p>Tidak ada peserta ditemukan</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Certificate Statistics */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Total Peserta</p>
-                                        <p className="text-2xl font-bold">{participants.length}</p>
-                                    </div>
-                                    <Users className="w-8 h-8 text-muted-foreground" />
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Hadir</p>
-                                        <p className="text-2xl font-bold text-green-600">
-                                            {participants.filter(p => p.attendance === 'present').length}
-                                        </p>
-                                    </div>
-                                    <CheckCircle className="w-8 h-8 text-green-600" />
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Sertifikat</p>
-                                        <p className="text-2xl font-bold text-blue-600">
-                                            {participants.filter(p => p.certificateGenerated).length}
-                                        </p>
-                                    </div>
-                                    <Award className="w-8 h-8 text-blue-600" />
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">Pending</p>
-                                        <p className="text-2xl font-bold text-orange-600">
-                                            {participants.filter(p => p.attendance === 'present' && !p.certificateGenerated).length}
-                                        </p>
-                                    </div>
-                                    <Clock className="w-8 h-8 text-orange-600" />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </>
-            )}
-
-            {!selectedEvent && (
-                <Card>
-                    <CardContent className="p-8 text-center">
-                        <Award className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-lg font-semibold mb-2">Pilih Event</h3>
-                        <p className="text-muted-foreground">
-                            Silakan pilih event terlebih dahulu untuk melihat daftar peserta dan generate sertifikat
-                        </p>
+                        )}
                     </CardContent>
                 </Card>
             )}

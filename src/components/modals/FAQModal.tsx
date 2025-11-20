@@ -102,7 +102,7 @@ export function FAQModal({ isOpen, onClose }: FAQModalProps) {
                 {/* Content with Accordion */}
                 <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] scroll-smooth">
                     <Accordion type="single" collapsible className="space-y-3">
-                        {faqData.map((faq, index) => (
+                        {faqData.map((faq) => (
                             <AccordionItem
                                 key={faq.id}
                                 value={faq.id}

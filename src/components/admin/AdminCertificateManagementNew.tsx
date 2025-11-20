@@ -3,7 +3,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, Palette } from 'lucide-react';
-import { CertificateTemplateManager } from './CertificateTemplateManager';
+import { CertificateTemplateManagerV2 } from './CertificateTemplateManagerV2';
 import { AdminCertificateManagement } from './AdminCertificateManagement';
 
 export function AdminCertificateManagementNew() {
@@ -26,7 +26,7 @@ export function AdminCertificateManagementNew() {
                 </TabsContent>
 
                 <TabsContent value="templates">
-                    <CertificateTemplateManager />
+                    <CertificateTemplateManagerV2 />
                 </TabsContent>
             </Tabs>
         </div>

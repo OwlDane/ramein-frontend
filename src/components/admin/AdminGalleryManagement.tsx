@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { apiFetch } from "@/lib/api";
 import type { GalleryItem, GalleryResponse } from "@/types/gallery";
-import { Plus, Edit, Trash2, Download, Calendar, MapPin, Users, Upload, X } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, MapPin, Users, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 interface GalleryFormState {

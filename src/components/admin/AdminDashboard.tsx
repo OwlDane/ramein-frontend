@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
     Calendar,
-    Award,
     Download,
     AlertCircle,
     RefreshCw,
@@ -25,6 +24,10 @@ import {
 import { MonthlyEventsChart } from './charts/MonthlyEventsChart';
 import { MonthlyParticipantsChart } from './charts/MonthlyParticipantsChart';
 import { TopEventsChart } from './charts/TopEventsChart';
+import { EnhancedKPICard } from './dashboard/EnhancedKPICard';
+import { DateRangePicker, DateRange } from './dashboard/DateRangePicker';
+import { FinancialAnalytics, FinancialData } from './dashboard/FinancialAnalytics';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DashboardStats {
     monthlyEvents: Array<{ month: number; count: number }>;
@@ -71,6 +74,14 @@ export function AdminDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [activeView, setActiveView] = useState<'overview' | 'financial'>('overview');
+    const [dateRange, setDateRange] = useState<DateRange>({
+        startDate: new Date(new Date().getFullYear(), 0, 1),
+        endDate: new Date(),
+        label: 'Tahun Ini'
+    });
+    const [financialData, setFinancialData] = useState<FinancialData | null>(null);
+    const [isLoadingFinancial, setIsLoadingFinancial] = useState(false);
 
     useEffect(() => {
         fetchDashboardStats();
@@ -100,6 +111,47 @@ export function AdminDashboard() {
             setIsLoading(false);
         }
     };
+
+    const fetchFinancialData = async () => {
+        try {
+            setIsLoadingFinancial(true);
+            const adminToken = localStorage.getItem('ramein_admin_token');
+            
+            const startDate = dateRange.startDate.toISOString().split('T')[0];
+            const endDate = dateRange.endDate.toISOString().split('T')[0];
+            
+            const response = await fetch(
+                `${API_BASE_URL}/admin/dashboard/financial?startDate=${startDate}&endDate=${endDate}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`
+                    }
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📊 Financial Data from API:', data);
+                setFinancialData(data);
+            } else {
+                const errorText = await response.text();
+                console.error('❌ Financial API Error:', response.status, errorText);
+                setError('Gagal memuat data finansial');
+            }
+        } catch (error) {
+            console.error('Failed to fetch financial data:', error);
+            setError('Terjadi kesalahan saat memuat data finansial');
+        } finally {
+            setIsLoadingFinancial(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeView === 'financial') {
+            fetchFinancialData();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeView, dateRange]);
 
     const handleExportData = async (format: 'xlsx' | 'csv' = 'xlsx') => {
         try {
@@ -175,119 +227,71 @@ export function AdminDashboard() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold">Dashboard Overview</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold">Dashboard</h2>
                     <p className="text-sm sm:text-base text-muted-foreground">
                         Statistik dan analisis sistem Ramein
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" onClick={() => fetchDashboardStats()} size="sm" className="text-xs sm:text-sm">
-                        <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">Refresh</span>
-                        <span className="sm:hidden">↻</span>
-                    </Button>
-                    <Button onClick={() => handleExportData('xlsx')} size="sm" className="text-xs sm:text-sm">
-                        <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">Export Excel</span>
-                        <span className="sm:hidden">Excel</span>
-                    </Button>
-                    <Button variant="outline" onClick={() => handleExportData('csv')} size="sm" className="text-xs sm:text-sm">
-                        <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">Export CSV</span>
-                        <span className="sm:hidden">CSV</span>
-                    </Button>
-                </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                >
-                    <Card>
-                        <CardContent className="p-3 sm:p-4 md:p-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                <div>
-                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                                        Total Kegiatan
-                                    </p>
-                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
-                                        {stats.overallStats.totalEvents}
-                                    </p>
-                                </div>
-                                <Calendar className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+            <Tabs value={activeView} onValueChange={(v) => setActiveView(v as 'overview' | 'financial')}>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <TabsList>
+                        <TabsTrigger value="overview">Overview</TabsTrigger>
+                        <TabsTrigger value="financial">Financial Analytics</TabsTrigger>
+                    </TabsList>
+                    
+                    <div className="flex flex-wrap gap-2">
+                        <DateRangePicker value={dateRange} onChange={setDateRange} />
+                        <Button variant="outline" onClick={() => fetchDashboardStats()} size="sm">
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            <span className="hidden sm:inline">Refresh</span>
+                        </Button>
+                        <Button onClick={() => handleExportData('xlsx')} size="sm">
+                            <Download className="w-4 h-4 mr-2" />
+                            <span className="hidden sm:inline">Export</span>
+                        </Button>
+                    </div>
+                </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <Card>
-                        <CardContent className="p-3 sm:p-4 md:p-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                <div>
-                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                                        Total Peserta
-                                    </p>
-                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
-                                        {stats.overallStats.totalParticipants}
-                                    </p>
-                                </div>
-                                <Users className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+                <TabsContent value="overview" className="space-y-6 mt-6">
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <Card>
-                        <CardContent className="p-3 sm:p-4 md:p-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                <div>
-                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                                        Kehadiran
-                                    </p>
-                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
-                                        {stats.overallStats.totalAttendance}
-                                    </p>
-                                </div>
-                                <Award className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                >
-                    <Card>
-                        <CardContent className="p-3 sm:p-4 md:p-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                <div>
-                                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                                        Tingkat Kehadiran
-                                    </p>
-                                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
-                                        {stats.overallStats.attendanceRate}%
-                                    </p>
-                                </div>
-                                <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+            {/* Enhanced KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <EnhancedKPICard
+                    title="Total Kegiatan"
+                    value={stats.overallStats.totalEvents}
+                    icon={Calendar}
+                    color="blue"
+                    sparklineData={stats.monthlyEvents.map(m => m.count)}
+                />
+                
+                <EnhancedKPICard
+                    title="Total Peserta"
+                    value={stats.overallStats.totalParticipants}
+                    icon={Users}
+                    color="green"
+                    sparklineData={stats.monthlyParticipants.map(m => m.registrations)}
+                />
+                
+                <EnhancedKPICard
+                    title="Total Pengguna"
+                    value={stats.overallStats.totalUsers}
+                    icon={Users}
+                    color="purple"
+                />
+                
+                <EnhancedKPICard
+                    title="Tingkat Kehadiran"
+                    value={stats.overallStats.attendanceRate}
+                    icon={CheckCircle}
+                    color="orange"
+                    target={{
+                        current: parseInt(stats.overallStats.attendanceRate),
+                        target: 100,
+                        label: "Target kehadiran"
+                    }}
+                />
             </div>
 
             {/* Quick Actions */}
@@ -448,6 +452,25 @@ export function AdminDashboard() {
                     </CardContent>
                 </Card>
             </motion.div>
+
+                </TabsContent>
+
+                <TabsContent value="financial" className="space-y-6 mt-6">
+                    {financialData ? (
+                        <FinancialAnalytics 
+                            data={financialData} 
+                            isLoading={isLoadingFinancial} 
+                        />
+                    ) : (
+                        <div className="text-center py-12">
+                            <p className="text-muted-foreground">
+                                {isLoadingFinancial ? 'Memuat data finansial...' : 'Pilih rentang tanggal untuk melihat analisis finansial'}
+                            </p>
+                        </div>
+                    )}
+                </TabsContent>
+
+            </Tabs>
 
         </div>
     );

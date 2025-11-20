@@ -72,6 +72,7 @@ export function EventHistory({ userToken }: EventHistoryProps) {
     useEffect(() => {
         fetchEventHistory();
         fetchUserProfile();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchEventHistory]);
 
     const fetchUserProfile = async () => {
@@ -180,7 +181,7 @@ export function EventHistory({ userToken }: EventHistoryProps) {
                 
                 // Add logo image
                 pdf.addImage(logoBase64, 'PNG', margin, 15, 20, 20);
-            } catch (error) {
+            } catch {
                 console.log('Logo not found, using fallback');
                 // Fallback: Logo circle
                 pdf.setFillColor(5, 150, 105); // green-600
@@ -222,7 +223,7 @@ export function EventHistory({ userToken }: EventHistoryProps) {
                 pdf.setFontSize(10);
                 pdf.setTextColor(17, 24, 39);
                 pdf.text('SCAN QR CODE', qrX + (qrSize/2), qrY + qrSize + 5, { align: 'center' });
-            } catch (error) {
+            } catch {
                 console.log('QR Code generation failed, using placeholder');
                 // Fallback: QR placeholder (larger)
                 const qrSize = 40;
