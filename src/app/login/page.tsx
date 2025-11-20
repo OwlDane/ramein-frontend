@@ -20,6 +20,8 @@ function LoginPageContent() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [isResendingVerification, setIsResendingVerification] = useState(false);
+    const [showVerificationButton, setShowVerificationButton] = useState(false);
 
     // Slide data
     const slides = [
@@ -87,8 +89,10 @@ function LoginPageContent() {
             const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
             if (errorMessage.includes('verifikasi')) {
                 setError('Akun Anda belum diverifikasi. Silakan cek email Anda untuk verifikasi sebelum login.');
+                setShowVerificationButton(true);
             } else {
                 setError(errorMessage);
+                setShowVerificationButton(false);
             }
         } finally {
             setIsLoading(false);
@@ -100,6 +104,36 @@ function LoginPageContent() {
         setOtp('');
         setError('');
         setSuccess('');
+        setShowVerificationButton(false);
+    };
+
+    const handleResendVerification = async () => {
+        setIsResendingVerification(true);
+        setError('');
+        setSuccess('');
+        
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/request-verification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Gagal mengirim email verifikasi');
+            }
+            
+            setSuccess('Link verifikasi telah dikirim ke email Anda. Silakan cek inbox atau spam folder.');
+            setShowVerificationButton(false);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Gagal mengirim email verifikasi';
+            setError(errorMessage);
+        } finally {
+            setIsResendingVerification(false);
+        }
     };
 
     return (
@@ -236,6 +270,16 @@ function LoginPageContent() {
                             {error && (
                                 <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
                                     {error}
+                                    {showVerificationButton && (
+                                        <button
+                                            type="button"
+                                            onClick={handleResendVerification}
+                                            disabled={isResendingVerification}
+                                            className="mt-2 text-green-600 hover:text-green-700 font-medium underline disabled:opacity-50"
+                                        >
+                                            {isResendingVerification ? 'Mengirim...' : 'Klik disini untuk Verifikasi'}
+                                        </button>
+                                    )}
                                 </div>
                             )}
 
