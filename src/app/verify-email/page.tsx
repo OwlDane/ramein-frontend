@@ -16,10 +16,39 @@ function VerifyEmailContent() {
     const [success, setSuccess] = useState('');
     const [otpSent, setOtpSent] = useState(false);
     const [isAutoRequesting, setIsAutoRequesting] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
 
     const { requestOTP, verifyOTP } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    // Auto-verify with token from email link
+    const handleAutoVerifyToken = useCallback(async (token: string) => {
+        setIsVerifying(true);
+        setError('');
+        setSuccess('');
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify-email/${token}`, {
+                method: 'GET',
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Verifikasi gagal');
+            }
+            
+            const data = await response.json();
+            setSuccess('Email berhasil diverifikasi! Redirecting to login...');
+            setTimeout(() => {
+                router.push('/login?verified=true');
+            }, 2000);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Token verifikasi tidak valid atau sudah kadaluarsa';
+            setError(errorMessage);
+        } finally {
+            setIsVerifying(false);
+        }
+    }, [router]);
 
     // Auto-request OTP when coming from registration
     const handleAutoRequestOTP = useCallback(async (emailAddress: string) => {
@@ -36,21 +65,28 @@ function VerifyEmailContent() {
         } finally {
             setIsAutoRequesting(false);
         }
-    }, [requestOTP]); // Add requestOTP as dependency if it comes from props/context
+    }, [requestOTP]);
     
-    // Then use it in useEffect
+    // Handle both token-based and OTP-based verification
     useEffect(() => {
+        const token = searchParams.get('token');
         const emailParam = searchParams.get('email');
         const fromRegister = searchParams.get('fromRegister');
 
+        // Priority 1: Token from email link
+        if (token) {
+            handleAutoVerifyToken(token);
+            return;
+        }
+
+        // Priority 2: OTP flow from registration
         if (emailParam && fromRegister === 'true') {
             setEmail(emailParam);
-            // Auto-request OTP after a short delay
             setTimeout(() => {
                 handleAutoRequestOTP(emailParam);
             }, 1000);
         }
-    }, [searchParams, handleAutoRequestOTP]);
+    }, [searchParams, handleAutoRequestOTP, handleAutoVerifyToken]);
 
     const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -159,8 +195,21 @@ function VerifyEmailContent() {
                         </p>
                     </div>
 
+                    {/* Auto-verifying with token */}
+                    {isVerifying && (
+                        <div className="text-center mb-6">
+                            <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+                            <h2 className="text-xl font-semibold text-foreground mb-2">
+                                Memverifikasi Email...
+                            </h2>
+                            <p className="text-sm text-muted-foreground">
+                                Mohon tunggu, kami sedang memverifikasi email Anda.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Auto-requesting OTP message */}
-                    {isAutoRequesting && (
+                    {isAutoRequesting && !isVerifying && (
                         <div className="text-center mb-6">
                             <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
                             <p className="text-sm text-muted-foreground">
@@ -169,8 +218,23 @@ function VerifyEmailContent() {
                         </div>
                     )}
 
+                    {/* Error Message (global) */}
+                    {error && !otpSent && !isVerifying && (
+                        <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Success Message (global) */}
+                    {success && !otpSent && !isVerifying && (
+                        <div className="text-sm text-green-600 bg-green-50 border border-green-200 rounded-md p-3 mb-4 flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4" />
+                            {success}
+                        </div>
+                    )}
+
                     {/* Verify OTP Form - Only show when OTP is sent */}
-                    {otpSent && (
+                    {otpSent && !isVerifying && (
                         <form onSubmit={handleVerifyOTP} className="space-y-4">
                             <div>
                                 <label htmlFor="otp" className="block text-sm font-medium text-foreground mb-2">
