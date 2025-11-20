@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Search,
   MapPin,
@@ -12,11 +13,13 @@ import {
   X,
   Loader2,
   ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { apiFetch, buildQuery } from "@/lib/api";
 import type { BackendEvent } from "@/types/event";
 import { format, parseISO } from "date-fns";
 import { EventBanner } from "./EventBanner";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Helper function to convert file path to absolute URL
 const getImageUrl = (imagePath: string | null | undefined): string => {
@@ -51,6 +54,7 @@ interface Category {
 }
 
 export function EventCatalog({ onEventSelect }: EventCatalogProps) {
+  const { token, isLoggedIn } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("nearest");
@@ -59,6 +63,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
   const [events, setEvents] = useState<BackendEvent[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [registrationStatus, setRegistrationStatus] = useState<Record<string, boolean>>({});
 
   // Fetch categories from database
   useEffect(() => {
@@ -88,6 +93,23 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
         });
         const data = await apiFetch<BackendEvent[]>(`/events${q}`);
         setEvents(data);
+
+        // Fetch registration status if user is logged in
+        if (isLoggedIn && token && data.length > 0) {
+          const eventIds = data.map(e => e.id).join(',');
+          try {
+            const status = await apiFetch<Record<string, boolean>>(
+              `/participants/check-registration?eventIds=${eventIds}`,
+              { token }
+            );
+            setRegistrationStatus(status);
+          } catch (error) {
+            console.error('Failed to fetch registration status:', error);
+            setRegistrationStatus({});
+          }
+        } else {
+          setRegistrationStatus({});
+        }
       } catch (e) {
         console.error("Failed to fetch events:", e);
         setEvents([]);
@@ -96,7 +118,7 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
       }
     };
     fetchEvents();
-  }, [searchQuery, sortBy, selectedCategory]);
+  }, [searchQuery, sortBy, selectedCategory, isLoggedIn, token]);
 
   const formatEventDate = (dateString: string) => {
     try {
@@ -365,6 +387,16 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                           className="object-cover transition-transform duration-700 group-hover:scale-110"
                         />
 
+                        {/* Registration Status Badge */}
+                        {registrationStatus[event.id] && (
+                          <div className="absolute top-4 left-4">
+                            <Badge className="bg-green-500 hover:bg-green-600 text-white border-0 shadow-lg flex items-center gap-1.5 px-3 py-1.5">
+                              <CheckCircle2 className="w-4 h-4" />
+                              Sudah Terdaftar
+                            </Badge>
+                          </div>
+                        )}
+
                         {/* Date Badge */}
                         <div className="absolute top-4 right-4 bg-background/95 backdrop-blur-sm rounded-2xl p-3 text-center min-w-[70px]">
                           <div className="text-2xl font-bold leading-none">
@@ -403,22 +435,31 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                           )}
                         </div>
 
-                        {/* Price */}
+                        {/* Price or Registration Status */}
                         <div className="mb-4 pb-4 border-t border-border pt-4">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold text-primary">
-                              {"price" in event && event.price
-                                ? new Intl.NumberFormat("id-ID", {
-                                    style: "currency",
-                                    currency: "IDR",
-                                    minimumFractionDigits: 0,
-                                  }).format(event.price as number)
-                                : "Gratis"}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              /orang
-                            </span>
-                          </div>
+                          {registrationStatus[event.id] ? (
+                            <div className="flex items-center gap-2 text-green-600">
+                              <CheckCircle2 className="w-5 h-5" />
+                              <span className="text-lg font-semibold">
+                                Anda sudah terdaftar
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-bold text-primary">
+                                {"price" in event && event.price
+                                  ? new Intl.NumberFormat("id-ID", {
+                                      style: "currency",
+                                      currency: "IDR",
+                                      minimumFractionDigits: 0,
+                                    }).format(event.price as number)
+                                  : "Gratis"}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                /orang
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* View Details Button */}
