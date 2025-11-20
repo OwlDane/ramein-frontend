@@ -35,10 +35,6 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        generateQR();
-    }, [participant.tokenNumber]);
-
     const generateQR = async () => {
         try {
             setLoading(true);
@@ -68,6 +64,10 @@ export function ETicket({ participant, user, onDownload, showActions = true }: E
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        generateQR();
+    }, [participant.tokenNumber]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);

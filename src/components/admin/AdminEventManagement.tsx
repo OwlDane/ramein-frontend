@@ -678,7 +678,11 @@ export function AdminEventManagement() {
                                         <label htmlFor="flyerFile" className="cursor-pointer block">
                                             {flyerPreview ? (
                                                 <div className="space-y-2">
-                                                    <img src={flyerPreview} alt="Flyer preview" className="w-full h-32 object-cover rounded" />
+                                                    <ImageWithFallback
+                                                        src={flyerPreview}
+                                                        alt="Flyer preview"
+                                                        className="w-full h-32 object-cover rounded"
+                                                    />
                                                     <p className="text-sm text-muted-foreground">Klik untuk ganti file</p>
                                                 </div>
                                             ) : (

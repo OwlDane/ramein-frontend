@@ -219,7 +219,7 @@ export function ProfileLayout({ user: initialUser }: ProfileLayoutProps) {
       transition={pageTransition}
     >
       {/* Header - Consistent dengan pages lainnya */}
-      <Header currentView="profile" />
+      <Header currentView="dashboard" />
 
       {/* Mobile Menu Button for Sidebar - Fixed position */}
       <div className="lg:hidden fixed top-20 left-4 z-40">

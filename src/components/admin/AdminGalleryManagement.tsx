@@ -328,41 +328,41 @@ export function AdminGalleryManagement() {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-4">
-                            {/* Image Upload */}
+                        <div className="p-6">
                             <div>
-                                <label className="block text-sm font-medium mb-2">Foto Galeri</label>
-                                <div className="flex gap-4">
+                                <label className="block text-sm font-medium mb-2">Gambar</label>
+                                <div className="flex items-center gap-2">
+                                    <label className="flex-1">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="hidden"
+                                        />
+                                        <div className="bg-muted py-2 px-3 rounded-lg text-sm text-muted-foreground cursor-pointer">
+                                            Unggah gambar
+                                        </div>
+                                    </label>
                                     {formData.imagePreview && (
-                                        <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted">
-                                            <img src={formData.imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                        <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-muted">
+                                            <ImageWithFallback
+                                                src={formData.imagePreview}
+                                                alt="Gambar galeri"
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
                                     )}
-                                    <div className="flex-1">
-                                        <label className="flex items-center justify-center w-full px-4 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <Upload className="w-4 h-4" />
-                                                <span className="text-sm">Upload Foto</span>
-                                            </div>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                                className="hidden"
-                                            />
-                                        </label>
-                                        {!formData.imageFile && (
-                                            <input
-                                                type="text"
-                                                name="imageUrl"
-                                                placeholder="Atau masukkan URL gambar"
-                                                value={formData.imageUrl}
-                                                onChange={handleInputChange}
-                                                className="w-full mt-2 px-3 py-2 border rounded-lg text-sm"
-                                            />
-                                        )}
-                                    </div>
                                 </div>
+                                {!formData.imageFile && (
+                                    <input
+                                        type="text"
+                                        name="imageUrl"
+                                        placeholder="Atau masukkan URL gambar"
+                                        value={formData.imageUrl}
+                                        onChange={handleInputChange}
+                                        className="w-full mt-2 px-3 py-2 border rounded-lg text-sm"
+                                    />
+                                )}
                             </div>
 
                             {/* Title */}
