@@ -140,7 +140,7 @@ export function AdminCertificateManagement() {
         
         try {
             const token = localStorage.getItem('ramein_admin_token');
-            const response = await fetch(`${API_BASE_URL}/certificates/generate`, {
+            const response = await fetch(`${API_BASE_URL}/api/certificates/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ export function AdminCertificateManagement() {
 
         try {
             const token = localStorage.getItem('ramein_admin_token');
-            const response = await fetch(`${API_BASE_URL}/certificates/generate-bulk`, {
+            const response = await fetch(`${API_BASE_URL}/api/certificates/generate-bulk`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
