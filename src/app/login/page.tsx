@@ -53,7 +53,9 @@ function LoginPageContent() {
     const router = useRouter();
 
     const handleGoogleLogin = useGoogleLogin({
+        scope: 'email profile openid',
         onSuccess: async (tokenResponse) => {
+            console.log('Google login successful:', tokenResponse);
             setIsLoading(true);
             setError('');
             try {
@@ -66,7 +68,8 @@ function LoginPageContent() {
                 setIsLoading(false);
             }
         },
-        onError: () => {
+        onError: (error) => {
+            console.error('Google login error:', error);
             setError('Google login was cancelled or failed');
         },
     });
