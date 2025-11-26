@@ -108,6 +108,14 @@ export function AdminEventManagement() {
     const [flyerPreview, setFlyerPreview] = useState<string>('');
     const [certificatePreview, setCertificatePreview] = useState<string>('');
 
+    // Get minimum date (H+3 from today)
+    const getMinDate = () => {
+        const today = new Date();
+        const minDate = new Date(today);
+        minDate.setDate(today.getDate() + 3);
+        return minDate.toISOString().split('T')[0];
+    };
+
     const fetchEvents = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -474,14 +482,18 @@ export function AdminEventManagement() {
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="date">Tanggal</Label>
+                                    <Label htmlFor="date">Tanggal (minimal H+3)</Label>
                                     <Input
                                         id="date"
                                         type="date"
                                         value={formData.date}
+                                        min={getMinDate()}
                                         onChange={(e) => setFormData({...formData, date: e.target.value})}
                                         required
                                     />
+                                    <p className="text-xs text-muted-foreground">
+                                        Tanggal minimal: {new Date(getMinDate()).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </p>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="time">Waktu</Label>
@@ -983,14 +995,18 @@ export function AdminEventManagement() {
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-date">Tanggal</Label>
+                                <Label htmlFor="edit-date">Tanggal (minimal H+3)</Label>
                                 <Input
                                     id="edit-date"
                                     type="date"
                                     value={formData.date}
+                                    min={getMinDate()}
                                     onChange={(e) => setFormData({...formData, date: e.target.value})}
                                     required
                                 />
+                                <p className="text-xs text-muted-foreground">
+                                    Tanggal minimal: {new Date(getMinDate()).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="edit-time">Waktu</Label>
