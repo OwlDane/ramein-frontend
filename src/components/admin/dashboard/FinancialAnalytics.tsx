@@ -249,7 +249,7 @@ export function FinancialAnalytics({ data, isLoading = false }: FinancialAnalyti
                                         cx="50%"
                                         cy="50%"
                                         labelLine={false}
-                                        // @ts-ignore - Recharts PieLabel type is incompatible with custom formatter
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         label={(entry: any) =>
                                             `${entry.category}: ${entry.percentage.toFixed(1)}%`
                                         }
