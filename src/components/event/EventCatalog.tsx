@@ -138,6 +138,16 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
     }
   };
 
+  const isEventPassed = (dateString: string): boolean => {
+    try {
+      const eventDate = parseISO(dateString);
+      const now = new Date();
+      return eventDate < now;
+    } catch {
+      return false;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Event Banner */}
@@ -401,15 +411,26 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                           </div>
                         )}
 
+                        {/* Status Badge - Telah Berakhir */}
+                        {isEventPassed(event.date) && (
+                          <div className="absolute top-4 right-4">
+                            <Badge className="bg-red-500/90 hover:bg-red-600 text-white border-0 shadow-lg">
+                              Telah Berakhir
+                            </Badge>
+                          </div>
+                        )}
+
                         {/* Date Badge */}
-                        <div className="absolute top-4 right-4 bg-background/95 backdrop-blur-sm rounded-2xl p-3 text-center min-w-[70px]">
-                          <div className="text-2xl font-bold leading-none">
-                            {dateInfo.day}
+                        {!isEventPassed(event.date) && (
+                          <div className="absolute top-4 right-4 bg-background/95 backdrop-blur-sm rounded-2xl p-3 text-center min-w-[70px]">
+                            <div className="text-2xl font-bold leading-none">
+                              {dateInfo.day}
+                            </div>
+                            <div className="text-xs font-medium uppercase mt-1">
+                              {dateInfo.month}
+                            </div>
                           </div>
-                          <div className="text-xs font-medium uppercase mt-1">
-                            {dateInfo.month}
-                          </div>
-                        </div>
+                        )}
                       </div>
 
                       {/* Content */}
@@ -439,32 +460,34 @@ export function EventCatalog({ onEventSelect }: EventCatalogProps) {
                           )}
                         </div>
 
-                        {/* Price or Registration Status */}
-                        <div className="mb-4 pb-4 border-t border-border pt-4">
-                          {registrationStatus[event.id] ? (
-                            <div className="flex items-center gap-2 text-green-600">
-                              <CheckCircle2 className="w-5 h-5" />
-                              <span className="text-lg font-semibold">
-                                Anda sudah terdaftar
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-2xl font-bold text-primary">
-                                {"price" in event && event.price
-                                  ? new Intl.NumberFormat("id-ID", {
-                                      style: "currency",
-                                      currency: "IDR",
-                                      minimumFractionDigits: 0,
-                                    }).format(event.price as number)
-                                  : "Gratis"}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                /orang
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        {/* Price or Registration Status - Hide for past events */}
+                        {!isEventPassed(event.date) && (
+                          <div className="mb-4 pb-4 border-t border-border pt-4">
+                            {registrationStatus[event.id] ? (
+                              <div className="flex items-center gap-2 text-green-600">
+                                <CheckCircle2 className="w-5 h-5" />
+                                <span className="text-lg font-semibold">
+                                  Anda sudah terdaftar
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold text-primary">
+                                  {"price" in event && event.price
+                                    ? new Intl.NumberFormat("id-ID", {
+                                        style: "currency",
+                                        currency: "IDR",
+                                        minimumFractionDigits: 0,
+                                      }).format(event.price as number)
+                                    : "Gratis"}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  /orang
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {/* View Details Button */}
                         <div className="flex items-center gap-2 text-foreground font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">

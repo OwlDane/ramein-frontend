@@ -145,6 +145,7 @@ export function EventDetail({
   onAuthRequired,
 }: EventDetailProps) {
   const [isRegistered, setIsRegistered] = useState(false);
+  const [hasAttended, setHasAttended] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
@@ -382,20 +383,16 @@ export function EventDetail({
           token: token,
         });
 
-        const isUserRegistered = response.some(
-          (participant) =>
-            participant.eventId === eventId &&
-            participant.hasAttended !== undefined,
-        );
+        const participant = response.find((p) => p.eventId === eventId);
+        const isUserRegistered = !!participant;
+        const userHasAttended = participant?.hasAttended === true;
 
         setIsRegistered(isUserRegistered);
+        setHasAttended(userHasAttended);
 
         // Get registration token if user is registered
-        if (isUserRegistered) {
-          const participant = response.find((p) => p.eventId === eventId);
-          if (participant?.tokenNumber) {
-            setRegistrationToken(participant.tokenNumber);
-          }
+        if (isUserRegistered && participant?.tokenNumber) {
+          setRegistrationToken(participant.tokenNumber);
         }
       } catch (error) {
         console.error("Failed to check registration status:", error);
@@ -473,7 +470,7 @@ export function EventDetail({
 
   const handleAttendanceSuccess = () => {
     // Update local state to reflect attendance
-    setIsRegistered(true);
+    setHasAttended(true);
     setShowAttendanceModal(false);
   };
 
@@ -982,15 +979,30 @@ export function EventDetail({
                     whileTap={{ scale: !isRegistrationOpen().open && !isRegistered ? 1 : 0.98 }}
                   >
                     {isRegistered ? (
-                      <Button
-                        disabled
-                        className="w-full h-12 bg-green-600 hover:bg-green-600 text-white shadow-lg text-lg cursor-default"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Check className="w-5 h-5" />
-                          Sudah Terdaftar
+                      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 shadow-sm">
+                        {/* Decorative background */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5" />
+                        <div className="absolute top-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full -translate-y-12 -translate-x-12" />
+                        
+                        <div className="relative p-5">
+                          <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
+                              <Check className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-base font-bold text-blue-900 mb-1">
+                                Pendaftaran Berhasil! ✨
+                              </h3>
+                              <p className="text-blue-700 text-sm">
+                                Anda telah terdaftar untuk event ini
+                              </p>
+                            </div>
+                            <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
+                              Terdaftar
+                            </Badge>
+                          </div>
                         </div>
-                      </Button>
+                      </div>
                     ) : !isRegistrationOpen().open ? (
                       <div className="space-y-2">
                         <Button
@@ -1022,8 +1034,8 @@ export function EventDetail({
                     )}
                   </motion.div>
 
-                  {/* Attendance Button - Show only if registered */}
-                  {isRegistered && (
+                  {/* Attendance Button - Show only if registered but not attended */}
+                  {isRegistered && !hasAttended && (
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -1044,35 +1056,105 @@ export function EventDetail({
                     </motion.div>
                   )}
 
-                  {/* Registration Token Display */}
-                  {isRegistered && registrationToken && (
+                  {/* Already Attended Status - Improved Design */}
+                  {isRegistered && hasAttended && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 shadow-sm"
+                    >
+                      {/* Decorative background pattern */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-green-500/5" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -translate-y-16 translate-x-16" />
+                      
+                      <div className="relative p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                            <Check className="w-6 h-6 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-bold text-emerald-900 mb-1">
+                              Kehadiran Berhasil! 🎉
+                            </h3>
+                            <p className="text-emerald-700 text-sm leading-relaxed">
+                              Terima kasih telah menghadiri event ini. Sertifikat digital Anda sedang diproses dan akan tersedia dalam 24-48 jam.
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Progress indicator */}
+                        <div className="mt-4 p-3 bg-white/60 rounded-xl border border-emerald-200/30">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                              <BookOpen className="w-4 h-4 text-emerald-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-emerald-800">Sertifikat Digital</p>
+                              <p className="text-xs text-emerald-600">Akan dikirim via email & tersedia di dashboard</p>
+                            </div>
+                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+                              Diproses
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Registration Token Display - Improved */}
+                  {isRegistered && registrationToken && !hasAttended && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
-                      className="p-4 bg-muted/30 rounded-lg border border-primary/20"
+                      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200/50 shadow-sm"
                     >
-                      <p className="text-sm text-muted-foreground mb-2 text-center">
-                        Token Kehadiran Anda
-                      </p>
-                      <div className="flex items-center gap-2 justify-center">
-                        <code className="text-lg font-mono font-bold text-primary tracking-wider">
-                          {registrationToken}
-                        </code>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            navigator.clipboard.writeText(registrationToken)
-                          }
-                          className="shrink-0"
-                        >
-                          Salin
-                        </Button>
+                      {/* Decorative background */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/5" />
+                      <div className="absolute bottom-0 right-0 w-28 h-28 bg-purple-500/10 rounded-full translate-y-14 translate-x-14" />
+                      
+                      <div className="relative p-5">
+                        <div className="text-center mb-4">
+                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 rounded-full mb-3">
+                            <Target className="w-4 h-4 text-purple-600" />
+                            <span className="text-sm font-medium text-purple-800">Token Kehadiran</span>
+                          </div>
+                          <h3 className="text-base font-bold text-purple-900 mb-1">
+                            Siap untuk Absensi! 🎯
+                          </h3>
+                          <p className="text-purple-700 text-sm">
+                            Gunakan token ini untuk mengisi daftar hadir
+                          </p>
+                        </div>
+                        
+                        <div className="bg-white/70 rounded-xl p-4 border border-purple-200/30">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 text-center">
+                              <code className="text-2xl font-mono font-bold text-purple-800 tracking-wider block">
+                                {registrationToken}
+                              </code>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                navigator.clipboard.writeText(registrationToken);
+                                toast.success('Token berhasil disalin!');
+                              }}
+                              className="shrink-0 border-purple-200 text-purple-700 hover:bg-purple-50"
+                            >
+                              Salin
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-3 text-center">
+                          <p className="text-xs text-purple-600">
+                            💡 Simpan token ini dengan aman untuk proses absensi
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground text-center mt-2">
-                        Simpan token ini untuk mengisi daftar hadir
-                      </p>
                     </motion.div>
                   )}
 
