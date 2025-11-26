@@ -10,7 +10,7 @@ import {
   Award,
   CreditCard,
   Shield,
-  Heart,
+  Bell,
   LogOut,
   Menu,
   X,
@@ -31,7 +31,7 @@ import { ProfileEvents } from "@/components/profile/ProfileEvents";
 import { ProfileCertificates } from "@/components/profile/ProfileCertificates";
 import { ProfileTransactions } from "@/components/profile/ProfileTransactions";
 import { PrivacySettings } from "@/components/profile/PrivacySettings";
-import { Wishlist } from "@/components/profile/Wishlist";
+import { NotificationsTab } from "@/components/profile/NotificationsTab";
 import { MyTickets } from "@/components/ticket/MyTickets";
 
 interface ProfileLayoutProps {
@@ -53,7 +53,7 @@ type MenuView =
   | "transactions"
   | "certificates"
   | "privacy"
-  | "wishlist";
+  | "notifications";
 
 export function ProfileLayout({ user: initialUser }: ProfileLayoutProps) {
   const { logout } = useAuth();
@@ -73,7 +73,7 @@ export function ProfileLayout({ user: initialUser }: ProfileLayoutProps) {
     // Check URL query parameter for view
     const searchParams = new URLSearchParams(window.location.search);
     const viewParam = searchParams.get('view');
-    if (viewParam && ['settings', 'tickets', 'events', 'transactions', 'certificates', 'privacy', 'wishlist'].includes(viewParam)) {
+    if (viewParam && ['settings', 'tickets', 'events', 'transactions', 'certificates', 'privacy', 'notifications'].includes(viewParam)) {
       setActiveView(viewParam as MenuView);
     }
   }, []);
@@ -135,9 +135,9 @@ export function ProfileLayout({ user: initialUser }: ProfileLayoutProps) {
       icon: Shield,
     },
     {
-      id: "wishlist" as MenuView,
-      label: "Wishlist",
-      icon: Heart,
+      id: "notifications" as MenuView,
+      label: "Notifikasi",
+      icon: Bell,
     },
   ];
 
@@ -184,8 +184,8 @@ export function ProfileLayout({ user: initialUser }: ProfileLayoutProps) {
         return <ProfileCertificates userToken={userToken} />;
       case "privacy":
         return <PrivacySettings userToken={userToken} />;
-      case "wishlist":
-        return <Wishlist userToken={userToken} />;
+      case "notifications":
+        return <NotificationsTab userToken={userToken} />;
       default:
         return (
           <ProfileSettings

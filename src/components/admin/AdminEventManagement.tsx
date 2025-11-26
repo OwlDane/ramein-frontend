@@ -978,12 +978,16 @@ export function AdminEventManagement() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-categoryId">Kategori</Label>
+                                <Label htmlFor="edit-categoryId" className="flex items-center gap-2">
+                                    Kategori 
+                                    <span className="text-xs text-orange-600 font-normal">(Tidak dapat diubah)</span>
+                                </Label>
                                 <select
                                     id="edit-categoryId"
                                     value={formData.categoryId}
                                     onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    className="flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-not-allowed opacity-60"
+                                    disabled
                                     required
                                 >
                                     <option value="">Pilih kategori</option>
@@ -993,6 +997,7 @@ export function AdminEventManagement() {
                                         </option>
                                     ))}
                                 </select>
+                                <p className="text-xs text-muted-foreground">Kategori tidak dapat diubah setelah event dibuat</p>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="edit-date">Tanggal (minimal H+3)</Label>
@@ -1077,7 +1082,10 @@ export function AdminEventManagement() {
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-maxParticipants">Kapasitas Peserta</Label>
+                                <Label htmlFor="edit-maxParticipants" className="flex items-center gap-2">
+                                    Kapasitas Peserta
+                                    <span className="text-xs text-orange-600 font-normal">(Tidak dapat diubah)</span>
+                                </Label>
                                 <Input
                                     id="edit-maxParticipants"
                                     type="number"
@@ -1085,10 +1093,16 @@ export function AdminEventManagement() {
                                     value={formData.maxParticipants}
                                     onChange={(e) => setFormData({...formData, maxParticipants: e.target.value})}
                                     placeholder="Unlimited"
+                                    disabled
+                                    className="bg-muted cursor-not-allowed opacity-60"
                                 />
+                                <p className="text-xs text-muted-foreground">Kapasitas tidak dapat diubah untuk menjaga konsistensi pendaftaran</p>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-price">Harga (Rp)</Label>
+                                <Label htmlFor="edit-price" className="flex items-center gap-2">
+                                    Harga (Rp)
+                                    <span className="text-xs text-orange-600 font-normal">(Tidak dapat diubah)</span>
+                                </Label>
                                 <Input
                                     id="edit-price"
                                     type="number"
@@ -1096,7 +1110,10 @@ export function AdminEventManagement() {
                                     value={formData.price}
                                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                                     placeholder="0"
+                                    disabled
+                                    className="bg-muted cursor-not-allowed opacity-60"
                                 />
+                                <p className="text-xs text-muted-foreground">Harga tidak dapat diubah setelah ada peserta yang mendaftar</p>
                             </div>
                             </div>
                         </div>

@@ -22,6 +22,8 @@ import {
   Mail,
   Phone,
   ClipboardCheck,
+  XCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
@@ -124,6 +126,7 @@ interface Event {
   originalPrice: number;
   maxParticipants: number;
   currentParticipants: number;
+  registrationDeadline?: string; // Deadline pendaftaran
   image: string;
   gallery: string[];
   organizer: Organizer;
@@ -412,6 +415,37 @@ export function EventDetail({
       }
     }
   }, [isLoggedIn, eventId, checkRegistrationStatus]);
+
+  // Helper function: Check if registration is still open
+  const isRegistrationOpen = () => {
+    const now = new Date();
+    
+    // Check registration deadline
+    if (event.registrationDeadline) {
+      const deadline = new Date(event.registrationDeadline);
+      if (now > deadline) {
+        return { open: false, reason: 'Batas waktu pendaftaran telah berakhir' };
+      }
+    }
+    
+    // Check if event has started (Hari H)
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (today >= eventDate) {
+      return { open: false, reason: 'Pendaftaran ditutup. Event telah dimulai' };
+    }
+    
+    // Check max participants
+    if (event.maxParticipants && event.currentParticipants >= event.maxParticipants) {
+      return { open: false, reason: 'Pendaftaran penuh. Kuota peserta terpenuhi' };
+    }
+    
+    return { open: true, reason: '' };
+  };
 
   const handleRegister = () => {
     if (!isLoggedIn) {
@@ -944,26 +978,48 @@ export function EventDetail({
 
                   {/* Registration Button */}
                   <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: !isRegistrationOpen().open && !isRegistered ? 1 : 1.02 }}
+                    whileTap={{ scale: !isRegistrationOpen().open && !isRegistered ? 1 : 0.98 }}
                   >
-                    <Button
-                      onClick={handleRegister}
-                      disabled={isRegistered}
-                      className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
-                    >
-                      {isRegistered ? (
+                    {isRegistered ? (
+                      <Button
+                        disabled
+                        className="w-full h-12 bg-green-600 hover:bg-green-600 text-white shadow-lg text-lg cursor-default"
+                      >
                         <div className="flex items-center gap-2">
                           <Check className="w-5 h-5" />
                           Sudah Terdaftar
                         </div>
-                      ) : (
+                      </Button>
+                    ) : !isRegistrationOpen().open ? (
+                      <div className="space-y-2">
+                        <Button
+                          disabled
+                          className="w-full h-12 bg-gray-400 hover:bg-gray-400 text-white shadow-lg text-lg cursor-not-allowed"
+                        >
+                          <div className="flex items-center gap-2">
+                            <XCircle className="w-5 h-5" />
+                            Pendaftaran Ditutup
+                          </div>
+                        </Button>
+                        <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                          <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-sm text-orange-700">
+                            {isRegistrationOpen().reason}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={handleRegister}
+                        className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
+                      >
                         <div className="flex items-center gap-2">
                           <Sparkles className="w-5 h-5" />
                           Daftar Sekarang
                         </div>
-                      )}
-                    </Button>
+                      </Button>
+                    )}
                   </motion.div>
 
                   {/* Attendance Button - Show only if registered */}
